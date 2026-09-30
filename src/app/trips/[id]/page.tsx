@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Loader2,
   Sparkles,
+  Wallet,
 } from "lucide-react";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
@@ -102,20 +103,28 @@ export default function TripDetailPage() {
           </Button>
 
           {trip && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDelete}
-              disabled={deleting}
-              className="text-destructive hover:bg-destructive/10 border-destructive/30 gap-1.5"
-            >
-              {deleting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Trash2 className="w-4 h-4" />
-              )}
-              Delete Trip
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button size="sm" asChild className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
+                <Link href={`/trips/${trip.id}/budget`}>
+                  <Wallet className="w-4 h-4" />
+                  Budget & Optimization
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="text-destructive hover:bg-destructive/10 border-destructive/30 gap-1.5"
+              >
+                {deleting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                Delete Trip
+              </Button>
+            </div>
           )}
         </div>
 

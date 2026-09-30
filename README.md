@@ -2,7 +2,7 @@
 
 > Production-ready, Vercel-deployable travel operating system built using free-tier cloud primitives.
 
-Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, OpenStreetMap / OSRM routing, and Open-Meteo meteorological forecasts to provide hyper-localized, optimized travel itineraries.
+Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, OpenStreetMap / OSRM routing, Open-Meteo meteorological forecasts, and a deterministic non-LLM budget optimization engine to provide hyper-localized, cost-optimized travel itineraries.
 
 ---
 
@@ -15,6 +15,7 @@ Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, Open
 | **Styling** | Tailwind CSS & shadcn/ui components | Open Source |
 | **Database** | Supabase (PostgreSQL + PostGIS + pgvector) | Free Tier (500MB) |
 | **Authentication** | Supabase Auth + Session SSR Middleware | Free Tier |
+| **Budget Engine** | Deterministic Integer Minor Units (`BudgetEngine`) | Non-LLM Custom Engine |
 | **AI Engine** | Google Gemini 1.5 Flash via `@google/generative-ai` | Free Tier (Google AI Studio) |
 | **Maps & Spatial** | PostGIS `geography(Point, 4326)`, Leaflet & OpenStreetMap | Free / Open Source |
 | **Routing** | OSRM (Open Source Routing Machine) | Free Public API |
@@ -37,22 +38,31 @@ Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, Open
 - `/api/destinations/[id]/*`: Endpoints for attractions, hotels, restaurants, and transit options.
 - `/api/geo/route`: Routing endpoint for on-demand waypoint route geometry, distance, and duration.
 
-### Protected Itinerary Routes (Secured by Next.js Middleware)
+### Protected Itinerary & Budget Routes (Secured by Next.js Middleware)
 - `/dashboard`: Travel dashboard with upcoming & previous trips, quick stats, and empty states.
 - `/trips`: Searchable and filterable itinerary directory with status badges.
 - `/trips/new`: Itinerary planning form with duration calculation, budget & currency selectors, pace options, and automatic "destination discovery required" fallback.
 - `/trips/[id]`: Individual itinerary inspection, configuration review, and deletion management.
+- `/trips/[id]/budget`: **Phase 4 Interactive Budget & Optimization Dashboard** with category breakdowns, over-budget warnings, 4 optimization profiles, deterministic alternatives with live Accept/Reject trade-offs, and an expense ledger.
+- `/api/trips/[id]/budget`: REST endpoint for budget calculations, optimization profiles, and expense CRUD.
 - `/profile`: Multi-section personal traveler identity, contact details, emergency contacts, and AI preference tuning.
 
 ---
 
-## 🗺️ Geospatial & Routing Features (Phase 3)
+## 💰 Deterministic Budget & Optimization Engine (Phase 4)
 
-- **Interactive Leaflet Canvas**: Zero-SSR crash implementation utilizing dynamic imports with custom semantic SVG pins (Destination, Attractions, Accommodations, Dining).
-- **Multi-Mode Routing**: Support for `driving`, `walking`, and `cycling` with realistic speed and travel time estimates.
-- **RoutingProvider Abstraction**: Decoupled interface with `calculateRoute()`, `calculateDistance()`, and `calculateTravelTime()`.
-- **Resilient Fallback**: Automatic failover to Haversine great-circle calculation with mode-adjusted speeds on network timeout or OSRM unavailability.
-- **PostGIS Integration**: Stored geographic coordinates (`geography(Point, 4326)`) and GIST-indexed spatial queries for radius discovery.
+- **Strict Non-LLM Determinism**: All monetary values, cost breakdowns, and over-budget differences are computed deterministically with zero LLM hallucination risk.
+- **Integer Minor Units Precision**: Calculations run in integer minor units (1 INR = 100 paise) preventing IEEE-754 floating-point errors (`0.1 + 0.2 = 0.3`).
+- **All 8 Standard Categories Supported**: `transport`, `hotel`, `food`, `local_transport`, `activities`, `shopping`, `emergency_buffer`, `other`.
+- **4 Optimization Profiles**:
+  1. `Budget Saver`: Aggressively trims costs via verified budget stays, train/bus alternatives, and free scenic/cultural spots.
+  2. `Time Saver`: Minimizes commute overhead via route clustering and rapid transit.
+  3. `Experience Maximizer`: Protects premier culinary and bucket-list activities.
+  4. `Balanced`: Pragmatic midpoint balancing cost, speed, and leisure.
+- **Rule-Based Alternatives with Trade-Offs**:
+  - Cheaper hotel, cheaper transport, different transport mode, cheaper dining, remove low-priority activity, replace activity, optimize local route.
+  - Interactive **Accept** / **Reject** buttons that dynamically adjust category costs, recalculate totals, and eliminate deficits in real time.
+- **Expense Tracking Ledger**: Travelers can log actual on-the-ground expenditures by category, tracking live expenses against the allocated cap.
 
 ---
 
@@ -83,6 +93,7 @@ Add your credentials:
 Execute the migrations in order in your Supabase SQL Editor:
 1. [`supabase/migrations/20241001000000_initial_schema.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241001000000_initial_schema.sql): Sets up user profiles, travel preferences, trips, trip members, RLS policies, and triggers.
 2. [`supabase/migrations/20241002000000_core_travel_data.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241002000000_core_travel_data.sql): Sets up destinations, attractions, hotels, restaurants, transport, taxis, reviews, spatial indexes, and the `find_nearby_attractions` PostGIS function.
+3. [`supabase/migrations/20241003000000_budget_and_expenses.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241003000000_budget_and_expenses.sql): Sets up `price_snapshots` and `expenses` tables with RLS policies and indexes.
 
 ### 5. Running the Development Server
 ```bash
@@ -92,7 +103,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 6. Validation & Quality Checks
 ```bash
-# Run full automated test suite (32 tests: auth, trip CRUD, spatial search, catalog, routing)
+# Run full automated test suite (50 tests: auth, trip CRUD, spatial search, catalog, routing, budget engine)
 npm test
 
 # Run TypeScript strict typecheck

@@ -531,6 +531,110 @@ export interface Database {
           source?: string;
         };
       };
+      price_snapshots: {
+        Row: {
+          id: string;
+          trip_id: string;
+          item_type: "hotel" | "attraction" | "transport" | "restaurant" | "local_transport";
+          item_id: string;
+          item_name: string;
+          price_minor_units: number;
+          currency: string;
+          snapshot_date: string;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          trip_id: string;
+          item_type: "hotel" | "attraction" | "transport" | "restaurant" | "local_transport";
+          item_id: string;
+          item_name: string;
+          price_minor_units: number;
+          currency?: string;
+          snapshot_date?: string;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          trip_id?: string;
+          item_type?: "hotel" | "attraction" | "transport" | "restaurant" | "local_transport";
+          item_id?: string;
+          item_name?: string;
+          price_minor_units?: number;
+          currency?: string;
+          snapshot_date?: string;
+          metadata?: Json;
+        };
+      };
+      expenses: {
+        Row: {
+          id: string;
+          trip_id: string;
+          user_id: string | null;
+          category:
+            | "transport"
+            | "hotel"
+            | "food"
+            | "local_transport"
+            | "activities"
+            | "shopping"
+            | "emergency_buffer"
+            | "other";
+          title: string;
+          amount_minor_units: number;
+          currency: string;
+          paid_at: string;
+          payment_method: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          trip_id: string;
+          user_id?: string | null;
+          category:
+            | "transport"
+            | "hotel"
+            | "food"
+            | "local_transport"
+            | "activities"
+            | "shopping"
+            | "emergency_buffer"
+            | "other";
+          title: string;
+          amount_minor_units: number;
+          currency?: string;
+          paid_at?: string;
+          payment_method?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          trip_id?: string;
+          user_id?: string | null;
+          category?:
+            | "transport"
+            | "hotel"
+            | "food"
+            | "local_transport"
+            | "activities"
+            | "shopping"
+            | "emergency_buffer"
+            | "other";
+          title?: string;
+          amount_minor_units?: number;
+          currency?: string;
+          paid_at?: string;
+          payment_method?: string | null;
+          notes?: string | null;
+          updated_at?: string;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: {

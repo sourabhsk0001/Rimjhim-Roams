@@ -55,29 +55,55 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 4: AI Itinerary Synthesis Engine (Next Phase)
+## Phase 4: Deterministic Travel Budget & Optimization Engine (Completed)
+- [x] Integer minor units architecture guaranteeing zero floating-point currency drift (1 INR = 100 paise).
+- [x] Dedicated `BudgetEngine` with 9 deterministic calculation functions:
+  - `calculateTransportCost()`
+  - `calculateHotelCost()`
+  - `calculateFoodCost()`
+  - `calculateLocalTransportCost()`
+  - `calculateActivityCost()`
+  - `calculateEmergencyBuffer()`
+  - `calculateTripCost()`
+  - `calculateRemainingBudget()`
+  - `calculateOverBudget()`
+- [x] Strict budget categories:
+  - `transport`, `hotel`, `food`, `local_transport`, `activities`, `shopping`, `emergency_buffer`, `other`
+- [x] 4 rule-based optimization profiles:
+  - `Budget Saver`, `Time Saver`, `Experience Maximizer`, `Balanced`
+- [x] Deterministic alternative generation:
+  - Cheaper hotel, cheaper transport, different transport mode, cheaper restaurant, remove low-priority activity, replace activity, optimize route.
+  - Clear metrics: current cost, proposed cost, possible savings, and explicit trade-offs.
+  - Interactive Accept/Reject workflow updating projected costs in real time.
+- [x] Database migration and models for `price_snapshots` and `expenses` with RLS.
+- [x] Interactive frontend page: `/trips/[tripId]/budget` with KPIs, breakdown, alternatives, and expense ledger.
+- [x] 18 unit tests covering precision, calculations, profiles, alternatives, and expense ledger (50 tests total).
+
+---
+
+## Phase 5: AI Itinerary Synthesis Engine (Next Phase)
 - [ ] Structured Prompt engineering with Gemini 1.5 Flash using JSON Schema output mode.
 - [ ] Multi-day itinerary synthesis clustering activities by neighborhood to minimize travel fatigue.
-- [ ] Budget estimation calculations and cost allocation across attractions, dining, and transit.
+- [ ] Integration of BudgetEngine output into AI synthesis prompts to enforce financial constraints.
 - [ ] Streaming response support for low perceived latency.
 
 ---
 
-## Phase 5: Weather Forecast & Environmental Intelligence
+## Phase 6: Weather Forecast & Environmental Intelligence
 - [ ] Open-Meteo meteorological integration (7-day forecast, temperature, rain probability).
 - [ ] Destination weather widgets tied to travel dates and GPS coordinates.
 - [ ] Weather-informed attraction scheduling recommendations (indoor vs outdoor activities).
 
 ---
 
-## Phase 6: Semantic Discovery & Vector Search
+## Phase 7: Semantic Discovery & Vector Search
 - [ ] Embedding generation for curated points of interest (POIs).
 - [ ] pgvector cosine similarity search (`match_places` stored procedure).
 - [ ] Natural language search (e.g. "cafes with good wifi and quiet courtyard").
 
 ---
 
-## Phase 7: Production Polish & Vercel Deployment
+## Phase 8: Production Polish & Vercel Deployment
 - [ ] Edge caching and Incremental Static Regeneration (ISR) for popular travel guides.
 - [ ] End-to-end testing and lighthouse performance optimization.
 - [ ] Vercel one-click deployment verification and continuous integration setup.
