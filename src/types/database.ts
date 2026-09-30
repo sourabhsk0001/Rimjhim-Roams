@@ -6,6 +6,12 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
+export type TravellerType = "solo" | "couple" | "family" | "friends" | "business";
+export type TravelPace = "relaxed" | "moderate" | "fast-paced";
+export type BudgetTier = "budget" | "moderate" | "luxury";
+export type TripStatus = "planning" | "confirmed" | "in_progress" | "completed" | "cancelled";
+export type MemberRole = "owner" | "editor" | "viewer";
+
 export interface Database {
   public: {
     Tables: {
@@ -34,142 +40,150 @@ export interface Database {
           updated_at?: string;
         };
       };
-      trips: {
+      traveller_profiles: {
         Row: {
           id: string;
           user_id: string;
-          title: string;
-          destination: string;
-          destination_coords: unknown | null; // PostGIS geography(Point, 4326)
-          start_date: string;
-          end_date: string;
-          budget_category: string;
-          traveler_count: number;
-          summary: string | null;
+          nationality: string | null;
+          phone_number: string | null;
+          bio: string | null;
+          emergency_contact: Json | null;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
           user_id: string;
-          title: string;
-          destination: string;
-          destination_coords?: unknown | null;
-          start_date: string;
-          end_date: string;
-          budget_category?: string;
-          traveler_count?: number;
-          summary?: string | null;
+          nationality?: string | null;
+          phone_number?: string | null;
+          bio?: string | null;
+          emergency_contact?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
           user_id?: string;
-          title?: string;
-          destination?: string;
-          destination_coords?: unknown | null;
-          start_date?: string;
-          end_date?: string;
-          budget_category?: string;
-          traveler_count?: number;
-          summary?: string | null;
+          nationality?: string | null;
+          phone_number?: string | null;
+          bio?: string | null;
+          emergency_contact?: Json | null;
           updated_at?: string;
         };
       };
-      itinerary_items: {
+      travel_preferences: {
+        Row: {
+          id: string;
+          user_id: string;
+          preferred_pace: TravelPace;
+          budget_tier: BudgetTier;
+          dietary_restrictions: string[];
+          interests: string[];
+          preferred_accommodation: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          preferred_pace?: TravelPace;
+          budget_tier?: BudgetTier;
+          dietary_restrictions?: string[];
+          interests?: string[];
+          preferred_accommodation?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          preferred_pace?: TravelPace;
+          budget_tier?: BudgetTier;
+          dietary_restrictions?: string[];
+          interests?: string[];
+          preferred_accommodation?: string;
+          updated_at?: string;
+        };
+      };
+      trips: {
+        Row: {
+          id: string;
+          user_id: string;
+          origin: string;
+          destination: string;
+          start_date: string;
+          end_date: string;
+          duration_days: number;
+          budget: number;
+          currency: string;
+          traveller_count: number;
+          traveller_type: TravellerType;
+          travel_pace: TravelPace;
+          preferences: Json;
+          status: TripStatus;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          origin: string;
+          destination?: string;
+          start_date: string;
+          end_date: string;
+          duration_days: number;
+          budget: number;
+          currency?: string;
+          traveller_count?: number;
+          traveller_type?: TravellerType;
+          travel_pace?: TravelPace;
+          preferences?: Json;
+          status?: TripStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          origin?: string;
+          destination?: string;
+          start_date?: string;
+          end_date?: string;
+          duration_days?: number;
+          budget?: number;
+          currency?: string;
+          traveller_count?: number;
+          traveller_type?: TravellerType;
+          travel_pace?: TravelPace;
+          preferences?: Json;
+          status?: TripStatus;
+          updated_at?: string;
+        };
+      };
+      trip_members: {
         Row: {
           id: string;
           trip_id: string;
-          day_number: number;
-          title: string;
-          description: string | null;
-          location_name: string;
-          location_coords: unknown | null; // PostGIS geography(Point, 4326)
-          start_time: string | null;
-          end_time: string | null;
-          cost_amount: number | null;
-          cost_currency: string | null;
-          category: string;
+          user_id: string;
+          role: MemberRole;
           created_at: string;
         };
         Insert: {
           id?: string;
           trip_id: string;
-          day_number: number;
-          title: string;
-          description?: string | null;
-          location_name: string;
-          location_coords?: unknown | null;
-          start_time?: string | null;
-          end_time?: string | null;
-          cost_amount?: number | null;
-          cost_currency?: string | null;
-          category?: string;
+          user_id: string;
+          role?: MemberRole;
           created_at?: string;
         };
         Update: {
           id?: string;
           trip_id?: string;
-          day_number?: number;
-          title?: string;
-          description?: string | null;
-          location_name?: string;
-          location_coords?: unknown | null;
-          start_time?: string | null;
-          end_time?: string | null;
-          cost_amount?: number | null;
-          cost_currency?: string | null;
-          category?: string;
-        };
-      };
-      places: {
-        Row: {
-          id: string;
-          name: string;
-          address: string | null;
-          category: string | null;
-          location: unknown; // PostGIS geography(Point, 4326)
-          embedding: number[] | null; // pgvector (768 or 1536 dim)
-          metadata: Json | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          name: string;
-          address?: string | null;
-          category?: string | null;
-          location: unknown;
-          embedding?: number[] | null;
-          metadata?: Json | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          name?: string;
-          address?: string | null;
-          category?: string | null;
-          location?: unknown;
-          embedding?: number[] | null;
-          metadata?: Json | null;
+          user_id?: string;
+          role?: MemberRole;
         };
       };
     };
     Views: Record<string, never>;
-    Functions: {
-      match_places: {
-        Args: {
-          query_embedding: number[];
-          match_threshold: number;
-          match_count: number;
-        };
-        Returns: {
-          id: string;
-          name: string;
-          category: string;
-          similarity: number;
-        }[];
-      };
-    };
+    Functions: Record<string, never>;
   };
 }

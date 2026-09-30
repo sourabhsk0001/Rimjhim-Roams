@@ -14,11 +14,29 @@ Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, Open
 | **Language** | TypeScript (Strict mode) | Open Source |
 | **Styling** | Tailwind CSS & shadcn/ui components | Open Source |
 | **Database** | Supabase (PostgreSQL + PostGIS + pgvector) | Free Tier (500MB) |
+| **Authentication** | Supabase Auth + Session SSR Middleware | Free Tier |
 | **AI Engine** | Google Gemini 1.5 Flash via `@google/generative-ai` | Free Tier (Google AI Studio) |
 | **Maps** | Leaflet & OpenStreetMap tiles | Free / Open Source |
 | **Routing** | OSRM (Open Source Routing Machine) | Free Public API |
 | **Weather** | Open-Meteo API | Free (No API key required) |
 | **Deployment** | Vercel | Free Hobby Tier |
+
+---
+
+## 🧭 Application Routes
+
+### Public Routes
+- `/`: Landing page highlighting architecture, feature cards, and demo plans.
+- `/login`: Secure authentication portal with redirect preservation.
+- `/register`: User onboarding and account creation.
+- `/api/health`: Health monitoring and service availability status.
+
+### Protected Routes (Secured by Next.js Middleware)
+- `/dashboard`: Comprehensive travel dashboard with upcoming & previous trips, quick stats, and empty states.
+- `/trips`: Searchable and filterable itinerary directory with status badges.
+- `/trips/new`: Itinerary planning form with duration calculation, budget & currency selectors, pace options, and automatic "destination discovery required" fallback.
+- `/trips/[id]`: Individual itinerary inspection, configuration review, and deletion management.
+- `/profile`: Multi-section personal traveler identity, contact details, emergency contacts, and AI preference tuning.
 
 ---
 
@@ -45,18 +63,27 @@ Add your credentials:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anon key
 - `GEMINI_API_KEY`: Google AI Studio API key
 
-### 4. Running the Development Server
+### 4. Database Setup
+Execute the migration located in [`supabase/migrations/20241001000000_initial_schema.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241001000000_initial_schema.sql) in your Supabase SQL Editor. This sets up all 5 tables (`profiles`, `traveller_profiles`, `travel_preferences`, `trips`, `trip_members`), RLS policies, and triggers.
+
+### 5. Running the Development Server
 ```bash
 npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 5. Running Tests & Build
+### 6. Validation & Quality Checks
 ```bash
-# Run unit tests
+# Run unit test suite (12 tests)
 npm test
 
-# Run production build
+# Run TypeScript strict typecheck
+npm run typecheck
+
+# Run ESLint validation
+npm run lint
+
+# Run optimized production build
 npm run build
 ```
 
@@ -64,6 +91,7 @@ npm run build
 
 ## 🏛️ Documentation
 - [System Architecture](file:///C:/Rimjhim%20Roams/docs/architecture.md)
+- [Database & Schema Architecture](file:///C:/Rimjhim%20Roams/docs/database.md)
 - [Phased Project Roadmap](file:///C:/Rimjhim%20Roams/docs/roadmap.md)
 
 ---
