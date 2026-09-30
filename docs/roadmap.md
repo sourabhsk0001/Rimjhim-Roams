@@ -328,7 +328,45 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 14: Production Polish, PWA Offline Support & Monitoring
+## Phase 14: Travel Management Layer (Packing, Private Documents & Bookings) (Completed)
+- [x] Database Schema & Migrations (`supabase/migrations/20241009000000_travel_management.sql`):
+  - `public.trip_packing_items`: Checklist storage with category checks, quantity, checked state, custom items, and RLS.
+  - `public.trip_documents`: Private storage metadata tracking with file path, MIME types, and RLS.
+  - `public.trip_bookings`: Bookings table with provider, reference, types, status checks, and RLS.
+  - Storage bucket registration: Private bucket `travel-documents` (20MB limit, allowed MIME types).
+- [x] Domain Models (`src/types/travel-management.ts`):
+  - Complete types for `PackingCategory`, `PackingItem`, `GeneratePackingInput`, `PackingListSummary`, `TravelDocumentType`, `TripDocument`, `UploadDocumentInput`, `BookingType`, `BookingStatus`, `TripBooking`, `CreateBookingInput`, `BookingsSummary`.
+- [x] Deterministic Packing Engine (`src/lib/engines/packing-engine.ts`):
+  - Adapts to destination, duration, weather (cold/alpine, rainy/monsoon, warm/tropical), activities (beach, trekking, temples/heritage, nightlife, business), and traveller type (solo, couple, family, friends, business).
+  - 6 required categories: `Clothing`, `Documents`, `Toiletries`, `Electronics`, `Weather`, `Activity-specific`.
+  - Checkboxes, category toggles, custom items, and progress summary.
+- [x] Private Storage & Secure Documents (`src/lib/services/document-service.ts`):
+  - Supabase Storage integration with private storage bucket (`travel-documents`).
+  - Strict expiring signed URLs (1 hour expiration) preventing exposure of raw storage URLs.
+  - 4 document types: `tickets`, `hotel confirmations`, `activity confirmations`, `other travel documents`.
+  - Strict access control: members can view/download; editors/owners can upload/delete; intruders are blocked.
+- [x] Booking Records & Invariant Enforcement (`src/lib/services/booking-service.ts`):
+  - 7 booking types: `flight`, `train`, `bus`, `hotel`, `taxi`, `activity`, `restaurant`.
+  - Invariant: *Do not claim confirmation without actual provider confirmation*. Status requires valid provider booking reference to be `confirmed`; otherwise downgraded to `pending_confirmation`.
+  - Currency minor units precision, status lifecycle, and spent/pending aggregates.
+- [x] REST API Endpoints:
+  - `GET`, `PATCH`, `POST`, `DELETE /api/trips/[id]/packing`
+  - `POST /api/trips/[id]/packing/regenerate`
+  - `GET`, `POST /api/trips/[id]/documents`
+  - `DELETE /api/trips/[id]/documents/[docId]`
+  - `GET`, `POST /api/trips/[id]/bookings`
+  - `PATCH`, `DELETE /api/trips/[id]/bookings/[bookingId]`
+- [x] Interactive Frontend Pages:
+  - `/trips/[tripId]/packing`: Dynamic packing list with progress counter, category filters, custom item additions, and one-tap re-generation.
+  - `/trips/[tripId]/documents`: Secure documents vault with private storage badge, category filters, signed URL download buttons, and upload modal.
+  - `/trips/[tripId]/bookings`: Bookings management dashboard with spend and confirmation stats, provider verification callouts, and booking creation modal.
+  - Updated Trip Detail page (`/trips/[id]`) with navigation actions for Packing, Documents, and Bookings.
+- [x] 14 comprehensive unit and integration tests in `test/phase14.test.ts` (178 tests total passing across all 14 phases).
+
+---
+
+## Phase 15: Production Polish, PWA Offline Support & Monitoring
 - [ ] Offline caching for emergency cards and destination safety data via Service Workers.
 - [ ] Multi-region CDN asset delivery and static optimization.
 - [ ] Continuous integration automated deployment pipeline.
+

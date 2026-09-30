@@ -29,6 +29,9 @@ import {
   Vote,
   Scale,
   ShieldAlert,
+  Luggage,
+  FileText,
+  CalendarCheck,
 } from "lucide-react";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
@@ -322,6 +325,27 @@ export default function TripDetailPage() {
                 <Link href={`/trips/${trip.id}/safety`}>
                   <ShieldAlert className="w-4 h-4 text-rose-600" />
                   Safety & SOS
+                </Link>
+              </Button>
+
+              <Button size="sm" asChild variant="outline" className="gap-1.5 border-blue-300 text-blue-700 hover:bg-blue-50 font-medium">
+                <Link href={`/trips/${trip.id}/packing`}>
+                  <Luggage className="w-4 h-4 text-blue-600" />
+                  Packing
+                </Link>
+              </Button>
+
+              <Button size="sm" asChild variant="outline" className="gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-50 font-medium">
+                <Link href={`/trips/${trip.id}/documents`}>
+                  <FileText className="w-4 h-4 text-amber-600" />
+                  Documents
+                </Link>
+              </Button>
+
+              <Button size="sm" asChild variant="outline" className="gap-1.5 border-teal-300 text-teal-700 hover:bg-teal-50 font-medium">
+                <Link href={`/trips/${trip.id}/bookings`}>
+                  <CalendarCheck className="w-4 h-4 text-teal-600" />
+                  Bookings
                 </Link>
               </Button>
 
