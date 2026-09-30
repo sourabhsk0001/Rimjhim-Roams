@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ragService } from "@/lib/services/rag-service";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export async function POST(req: NextRequest) {
   try {
+    const rateLimitResponse = enforceRateLimit(req, {
+      prefix: "rag_chat",
+      maxRequests: 30,
+      windowMs: 60 * 1000,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
+
     const body = await req.json().catch(() => ({}));
     const { question, destination, category, minSimilarity } = body;
 

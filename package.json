@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test test/health.test.mjs test/phase1.test.ts test/phase2.test.ts test/phase3.test.ts test/phase4.test.ts test/phase5.test.ts test/phase6.test.ts test/phase7.test.ts test/phase8.test.ts test/phase9.test.ts test/phase10.test.ts test/phase11.test.ts test/phase12.test.ts test/phase13.test.ts test/phase14.test.ts test/phase15.test.ts"
+    "test": "tsx --test test/health.test.mjs test/phase1.test.ts test/phase2.test.ts test/phase3.test.ts test/phase4.test.ts test/phase5.test.ts test/phase6.test.ts test/phase7.test.ts test/phase8.test.ts test/phase9.test.ts test/phase10.test.ts test/phase11.test.ts test/phase12.test.ts test/phase13.test.ts test/phase14.test.ts test/phase15.test.ts test/security_audit.test.ts test/e2e_critical_flow.test.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
@@ -25,6 +26,7 @@
     "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@types/leaflet": "^1.9.14",
     "@types/node": "^20.17.0",
     "@types/react": "^18.3.11",

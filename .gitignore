@@ -35,3 +35,7 @@ ehthumbs_vista.db
 .idea/
 *.sublime-project
 *.sublime-workspace
+
+# Playwright
+test-results/
+playwright-report/

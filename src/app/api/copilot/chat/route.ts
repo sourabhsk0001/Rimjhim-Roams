@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { copilotService } from "@/lib/services/copilot-service";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 async function getActiveUserId(req: NextRequest): Promise<string | null> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -28,6 +29,13 @@ async function getActiveUserId(req: NextRequest): Promise<string | null> {
  */
 export async function POST(req: NextRequest) {
   try {
+    const rateLimitResponse = enforceRateLimit(req, {
+      prefix: "copilot_chat",
+      maxRequests: 30,
+      windowMs: 60 * 1000,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
+
     const userId = await getActiveUserId(req);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized. Please sign in." }, { status: 401 });

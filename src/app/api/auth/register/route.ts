@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export async function POST(req: NextRequest) {
   try {
+    const rateLimitResponse = enforceRateLimit(req, {
+      prefix: "auth_register",
+      maxRequests: 15,
+      windowMs: 60 * 1000,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
+
     const { email, password, fullName } = await req.json();
 
     if (!email || !password) {
@@ -23,13 +31,17 @@ export async function POST(req: NextRequest) {
     const isMock = !supabaseUrl || supabaseUrl.includes("mock-project");
 
     if (isMock) {
+      const demoId = email.toLowerCase().includes("demo")
+        ? "demo-user-123"
+        : `user-${Buffer.from(email).toString("hex").substring(0, 10)}`;
+
       const response = NextResponse.json({
         success: true,
         message: "Registration successful (demo mode).",
-        user: { id: "demo-user-123", email, fullName },
+        user: { id: demoId, email, fullName },
       });
       // Set demo cookie
-      response.cookies.set("rr_demo_session", "demo-user-123", {
+      response.cookies.set("rr_demo_session", demoId, {
         path: "/",
         httpOnly: false,
         sameSite: "lax",

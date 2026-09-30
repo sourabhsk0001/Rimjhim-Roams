@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGeminiClient, GEMINI_MODEL } from "@/lib/gemini/client";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export async function POST(req: NextRequest) {
   try {
+    const rateLimitResponse = enforceRateLimit(req, {
+      prefix: "trips_generate",
+      maxRequests: 25,
+      windowMs: 60 * 1000,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
+
     const body = await req.json();
     const { destination, days = 3, budget = "moderate" } = body;
 
