@@ -426,7 +426,7 @@ export class WeatherService {
   // Private Weather-Itinerary Logic Helpers
   // ============================================================================
 
-  private isOutdoorActivity(item: ItineraryItem): boolean {
+  public isOutdoorActivity(item: ItineraryItem): boolean {
     const text = `${item.title} ${item.category}`.toLowerCase();
 
     // Sights explicitly classified as indoor or all-weather are not outdoor
@@ -464,7 +464,7 @@ export class WeatherService {
     return false;
   }
 
-  private isAdverseWeather(weather: HourlyWeather): boolean {
+  public isAdverseWeather(weather: HourlyWeather): boolean {
     if (weather.precipitationProbability >= 50) return true;
     if (weather.precipitation >= 2.0) return true;
 
@@ -615,7 +615,7 @@ export class WeatherService {
     });
   }
 
-  private async getCandidateIndoorAttractions(
+  public async getCandidateIndoorAttractions(
     destinationId?: string
   ): Promise<Attraction[]> {
     if (!destinationId) {
@@ -634,7 +634,7 @@ export class WeatherService {
     );
   }
 
-  private resolveCoordinates(destinationQuery: string): {
+  public resolveCoordinates(destinationQuery: string): {
     latitude: number;
     longitude: number;
     locationName: string;

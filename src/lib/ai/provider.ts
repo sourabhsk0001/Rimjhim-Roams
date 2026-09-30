@@ -175,6 +175,34 @@ export class DeterministicCopilotProvider implements AIModelProvider {
     const text = (lastMessage?.content || "").toLowerCase();
     const tripId = context?.tripId || "demo-trip-1";
 
+    // Scenario: "I'm 45 minutes late. Re-plan my day."
+    if (
+      text.includes("late") ||
+      text.includes("re-plan my day") ||
+      text.includes("replan my day") ||
+      text.includes("behind schedule") ||
+      (text.includes("replan") && text.includes("day"))
+    ) {
+      const delayMatch = text.match(/(\d+)\s*(?:min|minute|minutes)/i);
+      const delayMinutes = delayMatch ? parseInt(delayMatch[1], 10) : 45;
+
+      return {
+        content: `I'll re-plan your day for a ${delayMinutes}-minute delay while preserving your important landmarks and adjusting for opening hours and weather.`,
+        toolCalls: [
+          {
+            id: `call_${Date.now()}_replan_day`,
+            name: "replan_trip",
+            arguments: {
+              tripId,
+              dayNumber: 1,
+              delayMinutes,
+              adjustmentGoal: "replan_day",
+            },
+          },
+        ],
+      };
+    }
+
     // Scenario 1: "Make today's trip cheaper"
     if (text.includes("cheaper") || text.includes("save money") || text.includes("reduce budget") || text.includes("lower cost")) {
       return {

@@ -193,3 +193,45 @@ Every schedule block records:
 - **Overlapping Activities**: Collision detection between consecutive item windows.
 - **Impossible Travel**: Transit requirements exceeding the allocated inter-stop gap.
 - **Excessive Daily Schedule**: Waking hours exhaustion or extended periods (>9h) without rest/meals.
+
+---
+
+## 4. Real-Time Itinerary Replanning Architecture ("RE-PLAN MY DAY")
+
+### Engine Flow (`ReplanEngine`)
+```text
+User Delay / GPS Location / New Time
+          │
+          ▼
+1. Isolate Past/Completed Items (end_time <= currentTime)
+          │
+          ▼
+2. Determine Current Route Origin (GPS coordinates or last completed item)
+          │
+          ▼
+3. Hourly Weather Evaluation (Defer outdoor sights to dry slots or substitute indoor)
+          │
+          ▼
+4. Opening & Closing Hours Check (Drop past-closing POIs; shorten dwell before closing)
+          │
+          ▼
+5. Delay Compression (Compress flexible 90-120m dwells to 60-75m to preserve landmarks)
+          │
+          ▼
+6. Low-Priority Schedule Trimming (Deterministic pruning when day capacity is exceeded)
+          │
+          ▼
+7. Invariant Verification (Discrete visit, travel, waiting, buffer minutes preserved)
+          │
+          ▼
+8. Explainable Diff Generation (Added, Removed, Moved, Shortened, Extended with reasons)
+          │
+          ▼
+9. Exact Budget Delta & Time Allocation Audit
+```
+
+### Deterministic Replanning Invariants
+- **Non-Destructive Preservation**: Must-visit landmarks and high-priority items are prioritized and preserved whenever feasible through dwell compression rather than outright removal.
+- **Separated Time Quotas**: `visit_minutes`, `travel_minutes`, `waiting_minutes`, and `buffer_minutes` are never combined into a single ambiguous number.
+- **Explainable Change Rationale**: Every modification in `result.changes` contains a human-readable `reason` citing the exact cause (weather window, closing time, delay compression, or schedule overrun).
+- **Floating-Point Immunity**: Budget delta calculations use integer minor currency units to ensure zero arithmetic drift.

@@ -234,7 +234,37 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 11: Production Polish & Vercel Deployment
+## Phase 11: Real-Time Itinerary Replanning ("RE-PLAN MY DAY")
+- [x] Deterministic Replan Engine (`src/lib/engines/replan-engine.ts`):
+  - Recalculates remaining day itinerary without random full-itinerary destruction.
+  - Automatically isolates completed past activities prior to current timestamp.
+  - Time shift absorption: Recalculates travel times from current user GPS coordinates or last visited location.
+  - Dynamic dwell compression: Safely reduces flexible visits (e.g., 120m/90m -> 75m/60m) to recover 30-60 minute delays while preserving landmark stops.
+  - Operational hours enforcement: Removes stops if arrival falls past closing time; shortens dwell to finish before closing.
+  - Weather conflict handling: Defers rain-conflicted outdoor activities (e.g. beaches, viewpoints) to later dry windows (e.g. 4 PM -> 6 PM) or introduces indoor cultural alternatives.
+  - Low-priority item removal: Deterministically trims lowest priority activities (priority weight 4) when day schedule is exhausted, citing explicit human-readable reasons (`"Insufficient remaining time in daily schedule."`).
+  - Discrete time invariant: Maintains separate `visit_minutes`, `travel_minutes`, `waiting_minutes`, and `buffer_minutes` across all items.
+  - Exact budget delta calculation: Minor-unit accounting of cost additions or subtractions with zero floating-point drift.
+- [x] Change Tracking & Explainability (`ReplanChange`):
+  - Explicit change categories: `Added`, `Removed`, `Moved`, `Shortened`, `Extended`.
+  - Detailed human-readable reasons (e.g. `"Moved to 18:00 for better weather window"`, `"Shortened from 120m to 75m to absorb 45-minute delay"`).
+- [x] API Endpoint (`POST /api/trips/[id]/replan`):
+  - Validates user authorization and inputs (`currentTime`, `delayMinutes`, `currentLocation`, `completedItemIds`, `apply`).
+  - Supports dry-run preview or atomic persistence to database.
+- [x] AI Travel Copilot Tool Integration:
+  - Extended `replan_trip` tool schema with `delayMinutes`, `dayNumber`, and `currentTime`.
+  - Copilot scenario matching: `"I'm 45 minutes late. Re-plan my day."` triggers deterministic replan engine and produces structured before/after diffs.
+- [x] Interactive UI Modal (`src/components/travel/replan-modal.tsx`):
+  - Delay preset quick-buttons (`+15m`, `+30m`, `+45m`, `+60m`).
+  - GPS geolocation button (`Use My Current GPS Location`).
+  - Visual summary cards showing delay, items preserved, items moved, items dropped, and budget difference.
+  - Side-by-side Before vs. After schedule comparison with color-coded diff badges and reason callouts.
+  - "Apply Replanned Schedule" button to save updates to the trip.
+- [x] 11 unit, integration, and AI Copilot tests in `test/phase11.test.ts` (137 tests total passing across all phases).
+
+---
+
+## Phase 12: Production Polish & Performance Optimization
 - [ ] Edge caching and Incremental Static Regeneration (ISR) for popular travel guides.
 - [ ] End-to-end testing and lighthouse performance optimization.
 - [ ] Vercel one-click deployment verification and continuous integration setup.

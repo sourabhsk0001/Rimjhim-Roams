@@ -22,6 +22,7 @@ import { formatCurrency, toMinorUnits, fromMinorUnits } from "@/lib/budget/money
 import { timeEngine } from "@/lib/time/engine";
 import { calculateRoute, calculateDistance } from "@/lib/geo/routing";
 import { tripPlannerService } from "@/lib/services/trip-planner-service";
+import { replanEngine } from "@/lib/engines/replan-engine";
 import { DurationTier } from "@/types/time";
 
 // ==============================================================================
@@ -164,12 +165,15 @@ export const COPILOT_TOOL_DEFINITIONS: ToolDefinition[] = [
   },
   {
     name: "replan_trip",
-    description: "Deterministically replan or adjust a trip (e.g. 'make trip cheaper', reduce budget, or swap hotel).",
+    description: "Deterministically replan or adjust a trip (e.g. 're-plan my day when 45 minutes late', 'make trip cheaper', reduce budget, or swap hotel).",
     parameters: {
       type: "object",
       properties: {
         tripId: { type: "string", description: "Trip ID to replan" },
-        adjustmentGoal: { type: "string", enum: ["make_cheaper", "regenerate", "budget_saver"], description: "Goal" },
+        adjustmentGoal: { type: "string", enum: ["replan_day", "make_cheaper", "regenerate", "budget_saver"], description: "Goal" },
+        delayMinutes: { type: "number", description: "Delay in minutes if running late (e.g. 45)" },
+        dayNumber: { type: "number", description: "Day number to replan (defaults to 1)" },
+        currentTime: { type: "string", description: "Current time (e.g. '14:45')" },
         targetBudget: { type: "number", description: "Optional new lower budget ceiling" },
       },
       required: ["tripId"],
@@ -619,6 +623,39 @@ export class ToolRegistry {
       throw new Error("Trip not found or unauthorized access.");
     }
 
+    // Branch 1: Real-time Schedule Replanning ("replan_day" or delayMinutes / currentTime specified)
+    if (
+      args.adjustmentGoal === "replan_day" ||
+      typeof args.delayMinutes === "number" ||
+      typeof args.currentTime === "string"
+    ) {
+      const dayNumber = Number(args.dayNumber || 1);
+      const delayMinutes = typeof args.delayMinutes === "number" ? args.delayMinutes : 45;
+      const replanRes = await replanEngine.replanDay({
+        tripId,
+        dayNumber,
+        delayMinutes,
+        currentTime: args.currentTime as string | undefined,
+        currentLocation: args.currentLocation as any,
+        userId: context.userId,
+        apply: true,
+      });
+
+      return {
+        tripId,
+        dayNumber,
+        delayMinutes,
+        currentTime: replanRes.currentTime,
+        mode: "replan_day",
+        changes: replanRes.changes,
+        summary: replanRes.summary,
+        budget: replanRes.budget,
+        itemsCount: replanRes.replannedItems.length,
+        explanation: `Successfully replanned Day ${dayNumber} for a ${delayMinutes}-minute delay. Preserved ${replanRes.summary.itemsPreserved} items, adjusted ${replanRes.summary.itemsMoved} times, shortened ${replanRes.summary.itemsShortened} activities, and removed ${replanRes.summary.itemsRemoved} infeasible activities.`,
+      };
+    }
+
+    // Branch 2: Budget Optimization Replanning ("make_cheaper" / targetBudget)
     const targetBudget = typeof args.targetBudget === "number" ? args.targetBudget : undefined;
     const plan = await tripPlannerService.planTrip(tripId, context.userId);
 

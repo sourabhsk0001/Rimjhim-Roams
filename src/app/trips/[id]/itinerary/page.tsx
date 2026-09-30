@@ -48,6 +48,7 @@ import {
   DurationTier,
   ItemPriority,
 } from "@/types/time";
+import { ReplanModal } from "@/components/travel/replan-modal";
 
 export default function TripItineraryPage() {
   const params = useParams();
@@ -59,6 +60,9 @@ export default function TripItineraryPage() {
   const [selectedDayNumber, setSelectedDayNumber] = useState<number>(1);
   const [currentDay, setCurrentDay] = useState<DayItineraryData | null>(null);
   const [validation, setValidation] = useState<ScheduleValidationResult | null>(null);
+
+  // Re-plan My Day Modal state
+  const [showReplanModal, setShowReplanModal] = useState(false);
 
   // Optimizing state
   const [optimizing, setOptimizing] = useState(false);
@@ -284,6 +288,16 @@ export default function TripItineraryPage() {
               className="gap-1.5 text-xs h-9"
             >
               <Plus className="w-3.5 h-3.5" /> Add Block
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowReplanModal(true)}
+              className="gap-2 text-xs h-9 border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-950/40 shadow-xs"
+            >
+              <Clock className="w-3.5 h-3.5 text-purple-600" />
+              Re-plan My Day
             </Button>
 
             <Button
@@ -710,6 +724,19 @@ export default function TripItineraryPage() {
             </Card>
           </div>
         )}
+
+        {/* Re-plan My Day Modal */}
+        <ReplanModal
+          isOpen={showReplanModal}
+          onClose={() => setShowReplanModal(false)}
+          tripId={tripId}
+          dayNumber={selectedDayNumber}
+          dayDate={currentDay?.date || new Date().toISOString().substring(0, 10)}
+          onApplied={async () => {
+            await loadDay(selectedDayNumber);
+            await loadAllDays();
+          }}
+        />
       </main>
     </div>
   );
