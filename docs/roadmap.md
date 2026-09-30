@@ -4,29 +4,44 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 1: Foundation & Architecture Setup (Current Phase)
+## Phase 1: Security Foundation & Trip CRUD (Completed)
 - [x] Initial repository audit and stack confirmation.
-- [x] Next.js 14 + TypeScript + Tailwind CSS configuration.
-- [x] Design system setup (shadcn/ui primitives: Button, Card, Badge).
-- [x] Core domain type modeling (`travel.ts`, `database.ts`).
-- [x] Integration stubs for Gemini AI, Supabase SSR, Open-Meteo weather, and OSRM routing.
-- [x] Environment template (`.env.example`) and architecture documentation.
-- [x] Local verification (`npm install`, `npm run build`, `npm test`).
+- [x] Next.js 14 + TypeScript + Tailwind CSS configuration with shadcn/ui.
+- [x] Supabase Auth, SSR session handling, and protected route middleware.
+- [x] User profiles, traveller profiles, and travel preferences data models.
+- [x] Trips CRUD with validation, error states, and automatic "destination discovery required" fallback.
+- [x] Database migrations with Row Level Security (RLS) policies.
+- [x] 12 unit tests for authentication protection, CRUD, authorization, and validation.
 
 ---
 
-## Phase 2: Authentication & User Profiles
-- [ ] Supabase Auth integration (Email/Password & Google OAuth).
-- [ ] Protected route middleware (`/trips`, `/saved`).
-- [ ] User profile and preferences onboarding (travel style, dietary needs, budget affinity).
+## Phase 2: Core Travel Data System & PostGIS Catalog (Completed)
+- [x] Database models and migrations for destinations, attractions, hotels, restaurants, transport, taxis, and reviews.
+- [x] Latitude and longitude support with stored PostGIS `geography(Point, 4326)` columns.
+- [x] GIST spatial indexes and `find_nearby_attractions` PostGIS stored procedure.
+- [x] Rich DEMO seed data for 8 major Indian travel hubs: Goa, Jaipur, Darjeeling, Delhi, Mumbai, Kolkata, Manali, and Bengaluru.
+- [x] Full operational fields: opening hours, ticket prices, visit durations, weather suitability, queue estimates, and dietary options.
+- [x] REST API endpoints:
+  - `GET /api/destinations` (with search and climate filter)
+  - `GET /api/destinations/nearby` (PostGIS spatial radius search)
+  - `GET /api/destinations/:id`
+  - `GET /api/destinations/:id/attractions`
+  - `GET /api/destinations/:id/hotels`
+  - `GET /api/destinations/:id/restaurants`
+  - `GET /api/destinations/:id/transport`
+- [x] Frontend discovery experiences:
+  - `/explore`: Searchable destination directory with climate filtering.
+  - `/explore/destinations/[id]`: Multi-tab guide with attractions, lodging, dining, transit, and interactive PostGIS radius query tool.
+- [x] Explicit DEMO DATA badges across all cards and detail views.
+- [x] 11 additional unit tests for catalog search, filtering, operational schemas, and Haversine distance calculations (23 tests total).
 
 ---
 
-## Phase 3: AI Trip Generation Engine
+## Phase 3: AI Itinerary Synthesis Engine (Next Phase)
 - [ ] Structured Prompt engineering with Gemini 1.5 Flash using JSON Schema output mode.
-- [ ] Multi-day itinerary synthesis with activity clustering by neighborhood to minimize travel fatigue.
-- [ ] Budget estimation calculations and cost allocation.
-- [ ] Streaming response support for fast user perceived latency.
+- [ ] Multi-day itinerary synthesis clustering activities by neighborhood to minimize travel fatigue.
+- [ ] Budget estimation calculations and cost allocation across attractions, dining, and transit.
+- [ ] Streaming response support for low perceived latency.
 
 ---
 
@@ -34,7 +49,6 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 - [ ] Leaflet dynamic map component with OpenStreetMap tiles and custom markers.
 - [ ] OSRM road geometry drawing for daily driving/walking routes.
 - [ ] Open-Meteo weather forecast widgets tied to itinerary dates and destination coordinates.
-- [ ] PostGIS spatial indexing in Supabase for nearby recommendations.
 
 ---
 

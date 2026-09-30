@@ -16,7 +16,7 @@ Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, Open
 | **Database** | Supabase (PostgreSQL + PostGIS + pgvector) | Free Tier (500MB) |
 | **Authentication** | Supabase Auth + Session SSR Middleware | Free Tier |
 | **AI Engine** | Google Gemini 1.5 Flash via `@google/generative-ai` | Free Tier (Google AI Studio) |
-| **Maps** | Leaflet & OpenStreetMap tiles | Free / Open Source |
+| **Maps & Spatial** | PostGIS `geography(Point, 4326)` & Leaflet | Free / Open Source |
 | **Routing** | OSRM (Open Source Routing Machine) | Free Public API |
 | **Weather** | Open-Meteo API | Free (No API key required) |
 | **Deployment** | Vercel | Free Hobby Tier |
@@ -25,14 +25,19 @@ Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, Open
 
 ## 🧭 Application Routes
 
-### Public Routes
+### Public & Discovery Routes
 - `/`: Landing page highlighting architecture, feature cards, and demo plans.
+- `/explore`: Searchable catalog of 8 core Indian destinations with climate filters and explicit DEMO badges.
+- `/explore/destinations/[id]`: Destination travel guide featuring attractions, hotels, dining, transit, and an interactive PostGIS radius search tool.
 - `/login`: Secure authentication portal with redirect preservation.
 - `/register`: User onboarding and account creation.
 - `/api/health`: Health monitoring and service availability status.
+- `/api/destinations`: REST endpoint for destinations with search and climate filters.
+- `/api/destinations/nearby`: PostGIS spatial radius query endpoint (`lat`, `lng`, `radius`).
+- `/api/destinations/[id]/*`: Endpoints for attractions, hotels, restaurants, and transit options.
 
-### Protected Routes (Secured by Next.js Middleware)
-- `/dashboard`: Comprehensive travel dashboard with upcoming & previous trips, quick stats, and empty states.
+### Protected Itinerary Routes (Secured by Next.js Middleware)
+- `/dashboard`: Travel dashboard with upcoming & previous trips, quick stats, and empty states.
 - `/trips`: Searchable and filterable itinerary directory with status badges.
 - `/trips/new`: Itinerary planning form with duration calculation, budget & currency selectors, pace options, and automatic "destination discovery required" fallback.
 - `/trips/[id]`: Individual itinerary inspection, configuration review, and deletion management.
@@ -64,7 +69,9 @@ Add your credentials:
 - `GEMINI_API_KEY`: Google AI Studio API key
 
 ### 4. Database Setup
-Execute the migration located in [`supabase/migrations/20241001000000_initial_schema.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241001000000_initial_schema.sql) in your Supabase SQL Editor. This sets up all 5 tables (`profiles`, `traveller_profiles`, `travel_preferences`, `trips`, `trip_members`), RLS policies, and triggers.
+Execute the migrations in order in your Supabase SQL Editor:
+1. [`supabase/migrations/20241001000000_initial_schema.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241001000000_initial_schema.sql): Sets up user profiles, travel preferences, trips, trip members, RLS policies, and triggers.
+2. [`supabase/migrations/20241002000000_core_travel_data.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241002000000_core_travel_data.sql): Sets up destinations, attractions, hotels, restaurants, transport, taxis, reviews, spatial indexes, and the `find_nearby_attractions` PostGIS function.
 
 ### 5. Running the Development Server
 ```bash
@@ -74,7 +81,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 6. Validation & Quality Checks
 ```bash
-# Run unit test suite (12 tests)
+# Run full automated test suite (23 tests: auth, trip CRUD, spatial search, catalog)
 npm test
 
 # Run TypeScript strict typecheck
