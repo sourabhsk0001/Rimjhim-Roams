@@ -37,7 +37,25 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 3: AI Itinerary Synthesis Engine (Next Phase)
+## Phase 3: Real Geospatial Functionality & Routing (Completed)
+- [x] Interactive Leaflet + OpenStreetMap canvas component with client/server SSR boundary protection (`next/dynamic` with `{ ssr: false }`).
+- [x] Custom zero-asset SVG pin markers with semantic color coding (Destination, Attractions, Hotels, Restaurants).
+- [x] Reusable `RoutingProvider` abstraction with `OSMRoutingProvider` implementation:
+  - `calculateRoute()`
+  - `calculateDistance()`
+  - `calculateTravelTime()`
+- [x] Multi-mode route calculation:
+  - `driving` (OSRM road geometry & driving speeds)
+  - `walking` (pace-adjusted travel times ~4.5 km/h)
+  - `cycling` (pace-adjusted travel times ~15 km/h)
+- [x] Resilient error handling, AbortController timeouts, and coordinate validation with graceful fallback to Haversine straight-line paths.
+- [x] `POST /api/geo/route` API endpoint for on-demand routing between waypoints.
+- [x] Destination detail page map integration with interactive waypoint selection, route mode switcher, and live route summary.
+- [x] 9 unit tests for coordinate validation, Haversine distances, routing modes, and fallback degradation (32 tests total).
+
+---
+
+## Phase 4: AI Itinerary Synthesis Engine (Next Phase)
 - [ ] Structured Prompt engineering with Gemini 1.5 Flash using JSON Schema output mode.
 - [ ] Multi-day itinerary synthesis clustering activities by neighborhood to minimize travel fatigue.
 - [ ] Budget estimation calculations and cost allocation across attractions, dining, and transit.
@@ -45,21 +63,21 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 4: Geospatial Routing & Weather Overlay
-- [ ] Leaflet dynamic map component with OpenStreetMap tiles and custom markers.
-- [ ] OSRM road geometry drawing for daily driving/walking routes.
-- [ ] Open-Meteo weather forecast widgets tied to itinerary dates and destination coordinates.
+## Phase 5: Weather Forecast & Environmental Intelligence
+- [ ] Open-Meteo meteorological integration (7-day forecast, temperature, rain probability).
+- [ ] Destination weather widgets tied to travel dates and GPS coordinates.
+- [ ] Weather-informed attraction scheduling recommendations (indoor vs outdoor activities).
 
 ---
 
-## Phase 5: Semantic Discovery & Vector Search
+## Phase 6: Semantic Discovery & Vector Search
 - [ ] Embedding generation for curated points of interest (POIs).
 - [ ] pgvector cosine similarity search (`match_places` stored procedure).
 - [ ] Natural language search (e.g. "cafes with good wifi and quiet courtyard").
 
 ---
 
-## Phase 6: Production Polish & Vercel Deployment
+## Phase 7: Production Polish & Vercel Deployment
 - [ ] Edge caching and Incremental Static Regeneration (ISR) for popular travel guides.
 - [ ] End-to-end testing and lighthouse performance optimization.
 - [ ] Vercel one-click deployment verification and continuous integration setup.

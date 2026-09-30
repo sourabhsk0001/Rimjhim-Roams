@@ -16,6 +16,7 @@ import {
   Loader2,
   Radar,
   Info,
+  Route,
 } from "lucide-react";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,10 @@ import {
   DemoBadge,
 } from "@/components/travel/cards";
 import {
+  InteractiveMap,
+  MapMarkerItem,
+} from "@/components/map/interactive-map";
+import {
   Destination,
   Attraction,
   Hotel,
@@ -39,6 +44,7 @@ import {
   TaxiOption,
   NearbyLocationResult,
 } from "@/types/travel";
+import { RouteMode, RouteResult } from "@/lib/geo/routing";
 
 export default function DestinationDetailPage() {
   const params = useParams();
@@ -51,14 +57,20 @@ export default function DestinationDetailPage() {
   const [transport, setTransport] = useState<TransportOption[]>([]);
   const [taxis, setTaxis] = useState<TaxiOption[]>([]);
 
+  // Geospatial Map State
+  const [routeMode, setRouteMode] = useState<RouteMode>("driving");
+  const [activeRoute, setActiveRoute] = useState<RouteResult | null>(null);
+  const [calculatingRoute, setCalculatingRoute] = useState(false);
+  const [selectedDestinationPoint, setSelectedDestinationPoint] = useState<string | null>(null);
+
   // PostGIS Nearby Radius Search
   const [radiusKm, setRadiusKm] = useState<number>(25);
   const [nearbyResults, setNearbyResults] = useState<NearbyLocationResult[]>([]);
   const [loadingNearby, setLoadingNearby] = useState(false);
 
   const [activeTab, setActiveTab] = useState<
-    "attractions" | "hotels" | "restaurants" | "transport" | "nearby"
-  >("attractions");
+    "map" | "attractions" | "hotels" | "restaurants" | "transport" | "nearby"
+  >("map");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -102,6 +114,19 @@ export default function DestinationDetailPage() {
             dData.destination.longitude,
             radiusKm
           );
+
+          // Initial route calculation if attractions exist
+          if (aData.attractions && aData.attractions.length > 0) {
+            const firstAttr = aData.attractions[0];
+            setSelectedDestinationPoint(firstAttr.name);
+            fetchRoute(
+              [
+                { latitude: dData.destination.latitude, longitude: dData.destination.longitude },
+                { latitude: firstAttr.latitude, longitude: firstAttr.longitude },
+              ],
+              "driving"
+            );
+          }
         }
       } catch (err: unknown) {
         setError(
@@ -117,6 +142,56 @@ export default function DestinationDetailPage() {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [destId]);
+
+  const fetchRoute = async (
+    waypoints: Array<{ latitude: number; longitude: number }>,
+    mode: RouteMode
+  ) => {
+    setCalculatingRoute(true);
+    try {
+      const res = await fetch("/api/geo/route", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ waypoints, mode }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setActiveRoute(data.route);
+      }
+    } catch (e) {
+      console.error("Failed to calculate route:", e);
+    } finally {
+      setCalculatingRoute(false);
+    }
+  };
+
+  const handleModeChange = (newMode: RouteMode) => {
+    setRouteMode(newMode);
+    if (destination && attractions.length > 0) {
+      const targetAttr = attractions.find((a) => a.name === selectedDestinationPoint) || attractions[0];
+      fetchRoute(
+        [
+          { latitude: destination.latitude, longitude: destination.longitude },
+          { latitude: targetAttr.latitude, longitude: targetAttr.longitude },
+        ],
+        newMode
+      );
+    }
+  };
+
+  const handleMarkerSelect = (marker: MapMarkerItem) => {
+    if (destination && marker.type !== "destination") {
+      setSelectedDestinationPoint(marker.name);
+      fetchRoute(
+        [
+          { latitude: destination.latitude, longitude: destination.longitude },
+          { latitude: marker.latitude, longitude: marker.longitude },
+        ],
+        routeMode
+      );
+    }
+  };
 
   const fetchNearby = async (lat: number, lng: number, radius: number) => {
     setLoadingNearby(true);
@@ -141,6 +216,54 @@ export default function DestinationDetailPage() {
       fetchNearby(destination.latitude, destination.longitude, newRadius);
     }
   };
+
+  // Assemble map markers
+  const mapMarkers: MapMarkerItem[] = destination
+    ? [
+        {
+          id: destination.id,
+          name: `${destination.name} (City Center)`,
+          latitude: destination.latitude,
+          longitude: destination.longitude,
+          type: "destination",
+          details: { category: "Destination Hub" },
+        },
+        ...attractions.map((a) => ({
+          id: a.id,
+          name: a.name,
+          latitude: a.latitude,
+          longitude: a.longitude,
+          type: "attraction" as const,
+          details: {
+            category: a.category,
+            price: a.ticket_price,
+            hours: `${a.opening_time} - ${a.closing_time}`,
+          },
+        })),
+        ...hotels.map((h) => ({
+          id: h.id,
+          name: h.name,
+          latitude: h.latitude,
+          longitude: h.longitude,
+          type: "hotel" as const,
+          details: {
+            price: `${h.price_per_night} / night`,
+            rating: h.rating,
+          },
+        })),
+        ...restaurants.map((r) => ({
+          id: r.id,
+          name: r.name,
+          latitude: r.latitude,
+          longitude: r.longitude,
+          type: "restaurant" as const,
+          details: {
+            cuisine: r.cuisine,
+            price: `${r.estimated_price_per_person} / person`,
+          },
+        })),
+      ]
+    : [];
 
   return (
     <div className="min-h-screen bg-muted/20 flex flex-col">
@@ -224,6 +347,7 @@ export default function DestinationDetailPage() {
             {/* Navigation Tabs */}
             <div className="flex flex-wrap gap-2 border-b pb-2">
               {[
+                { id: "map", label: "Interactive Map & Routes", icon: Route },
                 { id: "attractions", label: `Attractions (${attractions.length})`, icon: Compass },
                 { id: "hotels", label: `Hotels (${hotels.length})`, icon: Building },
                 { id: "restaurants", label: `Dining (${restaurants.length})`, icon: Utensils },
@@ -249,7 +373,78 @@ export default function DestinationDetailPage() {
               })}
             </div>
 
-            {/* Tab 1: Attractions */}
+            {/* Tab 1: Interactive Map & Routes */}
+            {activeTab === "map" && (
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
+                      <Route className="w-5 h-5 text-primary" />
+                      Interactive OpenStreetMap & OSRM Routing
+                    </h2>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Click any marker to route from {destination.name}&apos;s center. Switch between Driving, Walking, and Cycling.
+                    </p>
+                  </div>
+
+                  {calculatingRoute && (
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                      <span>Calculating route geometry...</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Reusable Interactive Map Canvas */}
+                <InteractiveMap
+                  center={[destination.latitude, destination.longitude]}
+                  zoom={12}
+                  markers={mapMarkers}
+                  routeCoordinates={activeRoute?.coordinates}
+                  routeDistanceKm={activeRoute?.distanceKm}
+                  routeDurationMinutes={activeRoute?.durationMinutes}
+                  routeMode={routeMode}
+                  onModeChange={handleModeChange}
+                  onMarkerSelect={handleMarkerSelect}
+                  height="460px"
+                />
+
+                {/* Route Target Selector */}
+                {attractions.length > 0 && (
+                  <div className="p-4 rounded-xl border bg-card flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <span className="font-semibold text-muted-foreground">
+                      Route From City Center To:
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {attractions.map((a) => (
+                        <button
+                          key={a.id}
+                          onClick={() => {
+                            setSelectedDestinationPoint(a.name);
+                            fetchRoute(
+                              [
+                                { latitude: destination.latitude, longitude: destination.longitude },
+                                { latitude: a.latitude, longitude: a.longitude },
+                              ],
+                              routeMode
+                            );
+                          }}
+                          className={`px-3 py-1.5 rounded-lg border font-medium transition-colors ${
+                            selectedDestinationPoint === a.name
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-muted/50 hover:bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {a.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tab 2: Attractions */}
             {activeTab === "attractions" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -271,7 +466,7 @@ export default function DestinationDetailPage() {
               </div>
             )}
 
-            {/* Tab 2: Hotels */}
+            {/* Tab 3: Hotels */}
             {activeTab === "hotels" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -293,7 +488,7 @@ export default function DestinationDetailPage() {
               </div>
             )}
 
-            {/* Tab 3: Restaurants */}
+            {/* Tab 4: Restaurants */}
             {activeTab === "restaurants" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -315,7 +510,7 @@ export default function DestinationDetailPage() {
               </div>
             )}
 
-            {/* Tab 4: Transport */}
+            {/* Tab 5: Transport */}
             {activeTab === "transport" && (
               <div className="space-y-8">
                 <div className="space-y-4">
@@ -358,7 +553,7 @@ export default function DestinationDetailPage() {
               </div>
             )}
 
-            {/* Tab 5: PostGIS Nearby Discovery */}
+            {/* Tab 6: PostGIS Nearby Discovery */}
             {activeTab === "nearby" && (
               <div className="space-y-6">
                 <Card className="bg-card">
