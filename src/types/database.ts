@@ -779,6 +779,95 @@ export interface Database {
           polyline?: Json | null;
         };
       };
+      knowledge_documents: {
+        Row: {
+          id: string;
+          title: string;
+          content: string;
+          source: string;
+          destination: string;
+          category: string;
+          published_at: string;
+          updated_at: string;
+          retrieved_at: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          content: string;
+          source: string;
+          destination?: string;
+          category?: string;
+          published_at?: string;
+          updated_at?: string;
+          retrieved_at?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          content?: string;
+          source?: string;
+          destination?: string;
+          category?: string;
+          published_at?: string;
+          updated_at?: string;
+          retrieved_at?: string | null;
+          metadata?: Json;
+        };
+      };
+      knowledge_chunks: {
+        Row: {
+          id: string;
+          document_id: string;
+          chunk_index: number;
+          title: string;
+          content: string;
+          source: string;
+          destination: string;
+          category: string;
+          token_count: number;
+          embedding: string | number[];
+          metadata: Json;
+          retrieved_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          document_id: string;
+          chunk_index: number;
+          title: string;
+          content: string;
+          source: string;
+          destination?: string;
+          category?: string;
+          token_count?: number;
+          embedding: string | number[];
+          metadata?: Json;
+          retrieved_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          document_id?: string;
+          chunk_index?: number;
+          title?: string;
+          content?: string;
+          source?: string;
+          destination?: string;
+          category?: string;
+          token_count?: number;
+          embedding?: string | number[];
+          metadata?: Json;
+          retrieved_at?: string | null;
+          updated_at?: string;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -798,6 +887,28 @@ export interface Database {
           ticket_price: number;
           distance_km: number;
           data_status: string;
+        }[];
+      };
+      match_knowledge_chunks: {
+        Args: {
+          query_embedding: number[];
+          match_threshold?: number;
+          match_count?: number;
+          filter_destination?: string | null;
+          filter_category?: string | null;
+        };
+        Returns: {
+          id: string;
+          document_id: string;
+          chunk_index: number;
+          title: string;
+          content: string;
+          source: string;
+          destination: string;
+          category: string;
+          token_count: number;
+          metadata: Json;
+          similarity: number;
         }[];
       };
     };

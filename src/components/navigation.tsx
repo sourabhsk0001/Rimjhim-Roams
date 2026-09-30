@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Compass, Map, User, LogOut, PlusCircle, LayoutDashboard, Globe, Sparkles } from "lucide-react";
+import { Compass, Map, User, LogOut, PlusCircle, LayoutDashboard, Globe, Sparkles, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
@@ -29,6 +29,7 @@ export function Navigation() {
     { label: "Explore", href: "/explore", icon: Globe },
     { label: "My Trips", href: "/trips", icon: Map },
     { label: "AI Copilot", href: "/assistant", icon: Sparkles },
+    { label: "Knowledge RAG", href: "/admin/knowledge", icon: BookOpen },
     { label: "Profile", href: "/profile", icon: User },
   ];
 

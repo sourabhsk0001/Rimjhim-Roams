@@ -48,6 +48,14 @@ flowchart TD
         WeatherService --> OpenMeteo[Open-Meteo Weather API]
     end
 
+    subgraph Travel RAG & Knowledge Layer
+        NextApp --> RagService[RagService Ingestion & Retrieval]
+        RagService --> Pipeline[Cleaning & Semantic Chunker]
+        RagService --> Security[Prompt Injection Defense & Delimiters]
+        RagService --> EmbeddingEngine[Gemini text-embedding-004 & Deterministic Fallback]
+        RagService <--> PgVector[(Supabase PostgreSQL + pgvector)]
+    end
+
     subgraph Data & Persistence Layer
         NextApp --> SupabaseSSR[Supabase Client / SSR]
         SupabaseSSR <--> Postgres[(Supabase PostgreSQL)]
@@ -56,7 +64,8 @@ flowchart TD
         Postgres --> RouteSegments[(Route Segments)]
         Postgres --> PriceSnapshots[(Price Snapshots)]
         Postgres --> Expenses[(Expenses Ledger)]
-        Postgres --> PgVector[(pgvector Embeddings)]
+        Postgres --> KnowledgeDocs[(knowledge_documents)]
+        Postgres --> KnowledgeChunks[(knowledge_chunks with pgvector)]
     end
 ```
 
@@ -90,13 +99,18 @@ Rimjhim Roams/
 │   └── roadmap.md            # Phased milestone delivery
 ├── src/
 │   ├── app/                  # Next.js App Router
+│   │   ├── admin/
+│   │   │   └── knowledge/    # Phase 10 Authoritative Knowledge & RAG Playground UI
 │   │   ├── api/
+│   │   │   ├── admin/
+│   │   │   │   └── knowledge/# Phase 10 Knowledge document ingestion & CRUD API
 │   │   │   ├── auth/         # Login, register, logout handlers
 │   │   │   ├── copilot/      # Phase 9 AI Copilot chat route (/api/copilot/chat)
 │   │   │   ├── destinations/ # Catalog, PostGIS radius queries & discovery (/discover)
 │   │   │   ├── geo/          # OSRM routing proxy (/api/geo/route)
 │   │   │   ├── health/       # Health monitoring endpoint
 │   │   │   ├── profile/      # User profile & preferences
+│   │   │   ├── rag/          # Phase 10 RAG vector search (/search) and chat (/chat)
 │   │   │   └── trips/        # AI trip synthesis, CRUD, /budget, /itinerary, /plan, /weather
 │   │   ├── assistant/        # Phase 9 Global AI Travel Copilot UI
 │   │   ├── dashboard/        # Authenticated user dashboard
@@ -122,12 +136,14 @@ Rimjhim Roams/
 │   │   ├── budget/           # BudgetEngine, money precision & optimizer
 │   │   ├── time/             # TimeEngine, duration calculation & validation
 │   │   ├── geo/              # RoutingProvider, OSRM & Open-Meteo
+│   │   ├── rag/              # Phase 10 Cleaning, chunking, 768-dim embeddings & security
 │   │   ├── weather/          # WeatherProvider, Open-Meteo & WeatherCacheManager
-│   │   ├── services/         # Copilot, TravelData, Trip, Budget, Itinerary, Planner, Discovery & Weather
+│   │   ├── services/         # Copilot, RAG, TravelData, Trip, Budget, Itinerary, Planner, Discovery & Weather
 │   │   ├── supabase/         # SSR & Browser Supabase clients
 │   │   └── utils.ts          # Styling & formatting utilities
 │   └── types/
 │       ├── ai.ts             # Phase 9 AI Copilot domain & tool schemas
+│       ├── rag.ts            # Phase 10 Knowledge documents, chunks & citations
 │       ├── budget.ts         # Budget & financial domain types
 │       ├── time.ts           # Time intelligence, itinerary & validation types
 │       ├── discovery.ts      # Destination discovery query & result types
@@ -145,14 +161,16 @@ Rimjhim Roams/
 │   ├── phase6.test.ts        # Complete TripPlannerService tests
 │   ├── phase7.test.ts        # DestinationDiscoveryEngine unit & e2e tests
 │   ├── phase8.test.ts        # WeatherProvider & itinerary integration tests
-│   └── phase9.test.ts        # AI Copilot 12 tools, authorization & scenario tests
+│   ├── phase9.test.ts        # AI Copilot 12 tools, authorization & scenario tests
+│   └── phase10.test.ts       # Phase 10 pgvector RAG, prompt injection & citation tests
 ├── supabase/
 │   └── migrations/
 │       ├── 20241001000000_initial_schema.sql
 │       ├── 20241002000000_core_travel_data.sql
 │       ├── 20241003000000_budget_and_expenses.sql
 │       ├── 20241004000000_time_and_itineraries.sql
-│       └── 20241005000000_weather_snapshots.sql
+│       ├── 20241005000000_weather_snapshots.sql
+│       └── 20241006000000_knowledge_rag.sql
 ├── package.json              # Project dependencies & scripts
 ├── tailwind.config.ts        # Tailwind theme & token setup
 └── tsconfig.json             # TypeScript compiler settings

@@ -195,10 +195,42 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 10: Semantic Discovery & Vector Search
-- [ ] Embedding generation for curated points of interest (POIs).
-- [ ] pgvector cosine similarity search (`match_places` stored procedure).
-- [ ] Natural language search (e.g. "cafes with good wifi and quiet courtyard").
+## Phase 10: PostgreSQL + pgvector Travel RAG System (Completed)
+- [x] Zero Pinecone / Pure PostgreSQL + pgvector architecture utilizing free-tier Supabase primitives.
+- [x] Database tables and migrations:
+  - `public.knowledge_documents`: Stores parent documents, source attribution, categories, and destinations.
+  - `public.knowledge_chunks`: Stores semantic text windows and 768-dimensional normalized vector embeddings (`vector(768)`).
+  - Cosine distance index (`ivfflat` / vector_cosine_ops) and `match_knowledge_chunks` stored procedure.
+- [x] Document Ingestion Pipeline:
+  - Text cleaner: Normalizes unicode spaces, strips non-printable control codes and zero-width spaces.
+  - Semantic sliding-window chunker: Splits on natural sentences/paragraphs (~500 chars with 80 char overlap).
+  - 768-dimensional embedding generation: Uses Gemini `text-embedding-004` with unit-normalized semantic hash fallback for offline/test environments.
+- [x] Retrieval Engine:
+  - `searchKnowledge(query, filters)`: Fast cosine similarity search with destination and category filtering.
+  - Timestamp auditing: Updates `retrieved_at` upon chunk retrieval.
+- [x] Authoritative Knowledge Seed Dataset:
+  - Official travel advisories and regulatory guidelines from Goa Tourism/Drishti Marine, Ministry of Home Affairs, State Transport Authorities, Archaeological Survey of India (ASI), Indian Mountaineering Foundation, and National Tourist Helpline (1363).
+- [x] Prompt Injection Defense Layer:
+  - Detects and flags instruction overrides, role spoofing, secret exfiltration, and embedded script payloads.
+  - Sanitizes untrusted text and disarms malicious tokens.
+  - Formats retrieved chunks inside strict, non-executable XML boundary containers (`<retrieved_knowledge_base>`) with machine directives.
+- [x] Grounded RAG Q&A Flow (`askTravelAssistant`):
+  - Formulates grounded prompts strictly bounded by retrieved authoritative chunks.
+  - Generates verified, non-fabricated source citations (`title`, `source`, `destination`, `category`, `excerpt`, `similarity`).
+  - Invariant: Zero fabricated citations. When no documents match, the system transparently reports lack of records.
+- [x] Administration & Playground UI (`/admin/knowledge`):
+  - Real-time search, destination and category filters.
+  - Document ingestion form (Create / Edit / Delete).
+  - Chunk and embedding metadata inspection modal.
+  - One-click "Seed Authoritative Data" button.
+  - Live interactive RAG Playground to test questions, inspect similarity, and audit citations.
+- [x] REST API Endpoints:
+  - `GET /api/admin/knowledge` & `POST /api/admin/knowledge`
+  - `GET /api/admin/knowledge/[id]`, `PUT /api/admin/knowledge/[id]`, `DELETE /api/admin/knowledge/[id]`
+  - `POST /api/admin/knowledge/seed`
+  - `POST /api/rag/search`
+  - `POST /api/rag/chat`
+- [x] 14 unit & end-to-end tests in `test/phase10.test.ts` verifying cleaning, chunking, embeddings, cosine separation, retrieval, metadata filtering, prompt injection defense, non-fabrication of citations, and admin CRUD (126 tests total across all 10 phases).
 
 ---
 

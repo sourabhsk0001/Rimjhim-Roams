@@ -35,8 +35,12 @@ Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, Open
 - `/register`: User onboarding and account creation.
 - `/api/health`: Health monitoring and service availability status.
 - `/assistant`: **Phase 9 Global AI Travel Copilot Console** featuring interactive tool execution displays, quick prompts, and deterministic grounded answers.
+- `/admin/knowledge`: **Phase 10 Authoritative Travel RAG Console** with document ingestion, semantic chunk inspection, prompt injection testing, and live Q&A playground.
 - `/trips/[id]/assistant`: **Phase 9 Trip-Specific AI Copilot** with hydrated itinerary context, budget inspection, schedule rebalancing, and "Apply Changes" actions.
 - `/api/copilot/chat`: **Phase 9 AI Copilot Chat Endpoint** with session validation and multi-turn tool calling orchestration.
+- `/api/admin/knowledge`: **Phase 10 Knowledge Document Ingestion & Management REST Endpoint** (supports document search, creation, and chunk inspection).
+- `/api/rag/search`: **Phase 10 Vector Retrieval Endpoint** via `searchKnowledge(query, filters)` using PostgreSQL pgvector.
+- `/api/rag/chat`: **Phase 10 Grounded RAG Chat Endpoint** with prompt injection defense and verified source citations.
 - `/api/destinations`: REST endpoint for destinations with search and climate filters.
 - `/api/destinations/discover`: **Phase 7 Destination Discovery REST endpoint** (Origin + Budget + Duration + Profile + Preferences → Ranked feasible destinations).
 - `/api/destinations/nearby`: PostGIS spatial radius query endpoint (`lat`, `lng`, `radius`).
@@ -58,6 +62,17 @@ Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, Open
 - `/api/trips/[id]/weather`: REST endpoint for live/cached forecasts and weather snapshots.
 - `/api/trips/[id]/weather/integrate`: REST endpoint for weather-itinerary conflict resolution and updates.
 - `/profile`: Multi-section personal traveler identity, contact details, emergency contacts, and AI preference tuning.
+
+---
+
+## 📚 Travel RAG System (Phase 10)
+
+- **Pure PostgreSQL + pgvector**: Zero Pinecone or external vector stores. Operates entirely within Supabase free-tier PostgreSQL using `vector(768)` embeddings and IVFFlat cosine similarity indexes.
+- **Document Ingestion Pipeline**: Document $\rightarrow$ Clean (strips control codes & non-breaking spaces) $\rightarrow$ Chunk (sliding window ~500 chars with 80 char overlap) $\rightarrow$ Embed (Gemini `text-embedding-004` + deterministic unit-normalized fallback) $\rightarrow$ Store in `knowledge_documents` and `knowledge_chunks`.
+- **Grounded Semantic Retrieval**: `searchKnowledge(query, filters)` searches vector chunks with destination and category filtering (`safety`, `permits`, `transit`, `health`, etc.).
+- **Prompt Injection Defense**: Multi-pattern regex analyzer flags instruction overrides (`ignore previous instructions`), role spoofing (`[SYSTEM]`), and embedded script tags; retrieved text is framed inside non-executable XML delimiters (`<retrieved_knowledge_base>`).
+- **Verified Source Citations**: Invariant: Never fabricates sources. All citations (`title`, `source`, `destination`, `category`, `excerpt`, `similarity`) originate strictly from actual matched chunks. When no documents match, the system transparently reports lack of records.
+- **Admin Management Console (`/admin/knowledge`)**: Create, edit, and delete knowledge documents, audit chunks and token counts, one-click seed authoritative civil data, and test questions via the interactive RAG Playground.
 
 ---
 
