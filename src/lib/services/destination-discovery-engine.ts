@@ -18,6 +18,8 @@ import {
   addMinor,
 } from "@/lib/budget/money";
 import { getDestinationWeather } from "@/lib/geo/weather";
+import { travelMemoryService } from "@/lib/services/travel-memory-service";
+import { UserTravelMemoriesSummary } from "@/types/memories";
 
 // Coordinates for major Indian transit origin hubs
 const ORIGIN_COORDINATES: Record<string, { lat: number; lng: number }> = {
@@ -88,6 +90,11 @@ export class DestinationDiscoveryEngine {
       (d) => !originClean.includes(d.name.toLowerCase())
     );
 
+    // Retrieve authorized travel preferences (memories) if userId is provided
+    const userMemories = input.userId
+      ? await travelMemoryService.getUserMemoriesSummary(input.userId)
+      : null;
+
     const evaluatedResults: DiscoveredDestinationResult[] = [];
 
     for (const destination of candidateDestinations) {
@@ -104,7 +111,8 @@ export class DestinationDiscoveryEngine {
           originClean,
           destination,
           distanceKm,
-          budget
+          budget,
+          userMemories
         );
 
       // 2. Transport Cost using BudgetEngine
@@ -118,7 +126,13 @@ export class DestinationDiscoveryEngine {
       const nights = Math.max(1, durationDays - 1);
       const roomCount = travellerCount === 1 ? 1 : Math.ceil(travellerCount / 2);
       const hotels = await getDestinationHotels(destination.id);
-      const selectedHotel = this.pickCandidateHotel(hotels, budget, nights, roomCount);
+      const selectedHotel = this.pickCandidateHotel(
+        hotels,
+        budget,
+        nights,
+        roomCount,
+        userMemories
+      );
 
       const hotelCostRes = budgetEngine.calculateHotelCost({
         pricePerNight: selectedHotel.price_per_night,
@@ -204,7 +218,8 @@ export class DestinationDiscoveryEngine {
         destination,
         topAttractions,
         prefTokens,
-        travellerType
+        travellerType,
+        userMemories
       );
 
       // 11. Fetch live or fallback weather from Open-Meteo
@@ -292,12 +307,17 @@ export class DestinationDiscoveryEngine {
     origin: string,
     destination: Destination,
     distanceKm: number,
-    budget: number
+    budget: number,
+    userMemories?: UserTravelMemoriesSummary | null
   ): Promise<{
     approximateTravelTime: string;
     travelModeSummary: string;
     estimatedTransitFarePerPerson: number;
   }> {
+    const prefersTrain =
+      userMemories?.transitLikes.some((l) => l.includes("train")) ||
+      userMemories?.likes.some((l) => l.includes("train"));
+
     // 1. Check if direct catalog transport exists
     const { transport } = await getDestinationTransport(destination.id);
     const direct = transport.find(
@@ -311,7 +331,9 @@ export class DestinationDiscoveryEngine {
       const mins = direct.duration_minutes % 60;
       return {
         approximateTravelTime: `${hours}h ${mins > 0 ? `${mins}m` : ""} by ${direct.mode}`,
-        travelModeSummary: `${direct.provider} (${direct.mode.toUpperCase()})`,
+        travelModeSummary: `${direct.provider} (${direct.mode.toUpperCase()})${
+          prefersTrain && direct.mode === "train" ? " (saved preference: Train travel)" : ""
+        }`,
         estimatedTransitFarePerPerson: direct.price,
       };
     }
@@ -323,20 +345,24 @@ export class DestinationDiscoveryEngine {
       const fare = Math.max(450, Math.round(distanceKm * 2.2));
       return {
         approximateTravelTime: `~${hours}h by Express Train / Cab`,
-        travelModeSummary: "Express Train / Intercity Road",
+        travelModeSummary: prefersTrain
+          ? "Express Train (saved preference: Train travel)"
+          : "Express Train / Intercity Road",
         estimatedTransitFarePerPerson: fare,
       };
     }
 
     if (distanceKm <= 850) {
       // Medium distance: Overnight Rail / Regional Flight
-      const prefersRail = budget < 25000;
+      const prefersRail = prefersTrain || budget < 25000;
       if (prefersRail) {
         const hours = Math.round(distanceKm / 65);
         const fare = Math.round(distanceKm * 1.5);
         return {
           approximateTravelTime: `~${hours}h by Overnight Express Train`,
-          travelModeSummary: "Superfast Rail (3AC)",
+          travelModeSummary: prefersTrain
+            ? "Superfast Rail (3AC) (saved preference: Train travel)"
+            : "Superfast Rail (3AC)",
           estimatedTransitFarePerPerson: fare,
         };
       }
@@ -348,6 +374,15 @@ export class DestinationDiscoveryEngine {
     }
 
     // Long distance (> 850 km)
+    if (prefersTrain) {
+      const railHours = Math.round(distanceKm / 70);
+      return {
+        approximateTravelTime: `~${railHours}h by Long-Distance Rail`,
+        travelModeSummary: "Mail / Express Train (3AC) (saved preference: Train travel)",
+        estimatedTransitFarePerPerson: 1800,
+      };
+    }
+
     const prefersFlight = budget >= 25000;
     if (prefersFlight) {
       return {
@@ -369,14 +404,40 @@ export class DestinationDiscoveryEngine {
     hotels: Array<{ price_per_night: number; rating: number; id: string; name: string }>,
     budget: number,
     nights: number,
-    rooms: number
+    rooms: number,
+    userMemories?: UserTravelMemoriesSummary | null
   ) {
-    // Budget allocated to hotel is ~30-35% of total budget
-    const targetNightlyPerRoom = Math.max(600, Math.round((budget * 0.32) / (nights * rooms)));
+    const likesBudget =
+      userMemories?.hotelLikes.some((l) => l.includes("budget")) ||
+      userMemories?.likes.some((l) => l.includes("budget hotels") || l.includes("budget hotel"));
 
-    if (hotels && hotels.length > 0) {
-      // Find hotels within affordable reach (up to 1.6x of target per room)
-      const affordable = hotels.filter((h) => h.price_per_night <= targetNightlyPerRoom * 1.6);
+    const avoidsLuxury =
+      userMemories?.hotelAvoids.some((a) => a.includes("luxury")) ||
+      userMemories?.avoids.some((a) => a.includes("luxury hotels") || a.includes("luxury hotel"));
+
+    // Budget allocated to hotel is ~30-35% of total budget (scaled down if user prefers budget stays)
+    let targetNightlyPerRoom = Math.max(600, Math.round((budget * 0.32) / (nights * rooms)));
+    if (likesBudget) {
+      targetNightlyPerRoom = Math.min(targetNightlyPerRoom, 1500);
+    }
+
+    let candidatePool = [...hotels];
+    if (avoidsLuxury) {
+      const nonLuxury = candidatePool.filter(
+        (h) =>
+          h.price_per_night <= 3500 &&
+          !h.name.toLowerCase().includes("palace") &&
+          !h.name.toLowerCase().includes("luxury") &&
+          !h.name.toLowerCase().includes("resort & spa")
+      );
+      if (nonLuxury.length > 0) {
+        candidatePool = nonLuxury;
+      }
+    }
+
+    if (candidatePool.length > 0) {
+      // Find hotels within affordable reach
+      const affordable = candidatePool.filter((h) => h.price_per_night <= targetNightlyPerRoom * 1.6);
       if (affordable.length > 0) {
         return affordable.sort(
           (a, b) =>
@@ -384,8 +445,7 @@ export class DestinationDiscoveryEngine {
             Math.abs(b.price_per_night - targetNightlyPerRoom)
         )[0];
       }
-      // If none under 1.6x, but catalog cheapest is within 2.5x, pick cheapest
-      const cheapest = [...hotels].sort((a, b) => a.price_per_night - b.price_per_night)[0];
+      const cheapest = [...candidatePool].sort((a, b) => a.price_per_night - b.price_per_night)[0];
       if (cheapest.price_per_night <= targetNightlyPerRoom * 2.5) {
         return cheapest;
       }
@@ -395,7 +455,7 @@ export class DestinationDiscoveryEngine {
     return {
       id: "lodging-budget-stay",
       name: "Cozy Homestay & Budget Lodge",
-      price_per_night: Math.min(targetNightlyPerRoom, 1600),
+      price_per_night: Math.min(targetNightlyPerRoom, 1400),
       rating: 4.2,
     };
   }
@@ -404,7 +464,8 @@ export class DestinationDiscoveryEngine {
     destination: Destination,
     attractions: Array<{ name: string; category: string; description: string }>,
     prefTokens: string[],
-    travellerType: string
+    travellerType: string,
+    userMemories?: UserTravelMemoriesSummary | null
   ): { matchScore: number; matchReasons: string[] } {
     let score = 70; // baseline interest
     const reasons: string[] = [];
@@ -491,6 +552,54 @@ export class DestinationDiscoveryEngine {
       }
     }
 
+    // Evaluate user travel memories (Likes & Avoids)
+    if (userMemories) {
+      for (const like of userMemories.likes) {
+        if (like.includes("nature") || like.includes("mountain") || like.includes("hill")) {
+          if (
+            destText.includes("alpine") ||
+            destText.includes("himalayan") ||
+            destText.includes("hill") ||
+            destText.includes("tropical") ||
+            destText.includes("coastal") ||
+            attrText.includes("nature") ||
+            attrText.includes("waterfall")
+          ) {
+            score += 15;
+            const r = "Matches your saved preference: Nature";
+            if (!reasons.includes(r)) reasons.push(r);
+          }
+        }
+        if (like.includes("local food") || like.includes("food")) {
+          score += 10;
+          const r = "Matches your saved preference: Local food";
+          if (!reasons.includes(r)) reasons.push(r);
+        }
+        if (like.includes("budget hotel") || like.includes("budget")) {
+          const r = "Matches your saved preference: Budget hotels";
+          if (!reasons.includes(r)) reasons.push(r);
+        }
+        if (like.includes("train")) {
+          const r = "Matches your saved preference: Train travel";
+          if (!reasons.includes(r)) reasons.push(r);
+        }
+      }
+
+      for (const avoid of userMemories.avoids) {
+        if (avoid.includes("luxury")) {
+          const r = "Selected cost-effective stays (avoids luxury hotels)";
+          if (!reasons.includes(r)) reasons.push(r);
+        }
+        if (avoid.includes("overpacked")) {
+          const r = "Curated with relaxed pace (avoids overpacked itineraries)";
+          if (!reasons.includes(r)) reasons.push(r);
+        }
+        if (avoid.includes("crowd") && (destText.includes("bustling") || destText.includes("metropolitan"))) {
+          score -= 10;
+        }
+      }
+    }
+
     // Traveller type compatibility
     if (travellerType === "friends") {
       score += 4;
@@ -504,7 +613,7 @@ export class DestinationDiscoveryEngine {
 
     return {
       matchScore: Math.min(99, Math.max(50, score)),
-      matchReasons: reasons.length > 0 ? reasons.slice(0, 3) : ["Balanced cultural and scenic discovery"],
+      matchReasons: reasons.length > 0 ? reasons.slice(0, 4) : ["Balanced cultural and scenic discovery"],
     };
   }
 

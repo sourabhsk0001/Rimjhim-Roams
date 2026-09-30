@@ -24,6 +24,7 @@ import { calculateRoute, calculateDistance } from "@/lib/geo/routing";
 import { tripPlannerService } from "@/lib/services/trip-planner-service";
 import { replanEngine } from "@/lib/engines/replan-engine";
 import { safetyService } from "@/lib/services/safety-service";
+import { travelMemoryService } from "@/lib/services/travel-memory-service";
 import { DurationTier } from "@/types/time";
 
 // ==============================================================================
@@ -206,6 +207,22 @@ export const SAFETY_TOOL_DEFINITIONS: ToolDefinition[] = [
   },
 ];
 
+export const MEMORY_TOOL_DEFINITIONS: ToolDefinition[] = [
+  {
+    name: "get_travel_memories",
+    description: "Retrieve authorized travel memories and non-sensitive preferences (Likes and Avoids) for the current user.",
+    parameters: {
+      type: "object",
+      properties: {
+        category: {
+          type: "string",
+          description: "Optional category filter: destination, hotel, restaurant, transit, itinerary, or general",
+        },
+      },
+    },
+  },
+];
+
 // ==============================================================================
 // Deterministic Tool Execution Registry
 // ==============================================================================
@@ -259,6 +276,9 @@ export class ToolRegistry {
 
       case "get_safety_info":
         return this.getSafetyInfo(args, context);
+
+      case "get_travel_memories":
+        return this.getTravelMemories(args, context);
 
       default:
         throw new Error(`Unrecognized tool: ${name}`);
@@ -706,10 +726,17 @@ export class ToolRegistry {
   // ----------------------------------------------------------------------------
   private async getTripContext(args: Record<string, unknown>, context: CopilotContext) {
     const tripId = String(args.tripId || context.tripId || "");
+    const userMemories = await travelMemoryService.getUserMemoriesSummary(context.userId);
+
     if (!tripId) {
       return {
         hasActiveTrip: false,
         message: "No specific trip loaded. Global travel assistant mode.",
+        travelMemories: {
+          likes: userMemories.likes,
+          avoids: userMemories.avoids,
+          totalMemories: userMemories.totalMemories,
+        },
       };
     }
 
@@ -740,6 +767,11 @@ export class ToolRegistry {
       currentTemperature: weather.weather?.current.temperature ?? 25,
       weatherCondition: weather.weather?.current.condition ?? "Clear Sky",
       weatherConflictsCount: weather.conflicts?.length ?? 0,
+      travelMemories: {
+        likes: userMemories.likes,
+        avoids: userMemories.avoids,
+        totalMemories: userMemories.totalMemories,
+      },
     };
   }
 
@@ -836,6 +868,39 @@ export class ToolRegistry {
         source: r.source,
       })),
       disclaimer: safety.disclaimer,
+    };
+  }
+
+  // ----------------------------------------------------------------------------
+  // Tool 14: get_travel_memories
+  // ----------------------------------------------------------------------------
+  private async getTravelMemories(args: Record<string, unknown>, context: CopilotContext) {
+    if (!context.userId) {
+      throw new Error("Unauthorized: User session required to access travel memories.");
+    }
+
+    const memories = await travelMemoryService.getMemories(context.userId);
+    const category = typeof args.category === "string" ? args.category.toLowerCase().trim() : undefined;
+    const filtered = category
+      ? memories.filter((m) => m.category.toLowerCase() === category)
+      : memories;
+
+    const summary = await travelMemoryService.getUserMemoriesSummary(context.userId);
+
+    return {
+      userId: context.userId,
+      count: filtered.length,
+      memories: filtered.map((m) => ({
+        id: m.id,
+        type: m.type,
+        category: m.category,
+        keyword: m.keyword,
+        notes: m.notes,
+      })),
+      summary: {
+        likes: summary.likes,
+        avoids: summary.avoids,
+      },
     };
   }
 

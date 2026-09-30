@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   User,
   Shield,
@@ -11,6 +12,8 @@ import {
   Loader2,
   Phone,
   Globe,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
@@ -291,12 +294,34 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            {/* 3. Travel Preferences */}
+            {/* 3. Travel Memories (Likes & Avoids) */}
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+                    <Sparkles className="w-4 h-4" />
+                    <span>Travel Memories</span>
+                  </div>
+                  <Button variant="outline" size="sm" asChild className="gap-1.5 text-xs">
+                    <Link href="/memories">
+                      Manage Memories
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </Button>
+                </div>
+                <CardTitle className="text-xl">Your Travel Likes & Avoids</CardTitle>
+                <CardDescription>
+                  TripWise remembers non-sensitive tastes (e.g. Likes Nature, Prefers Budget Hotels, Avoids Luxury Hotels, Avoids Overpacked Itineraries) to steer AI planning automatically.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            {/* 4. Travel Preferences */}
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-2 text-primary font-semibold text-sm">
                   <Heart className="w-4 h-4" />
-                  <span>Travel Preferences</span>
+                  <span>Travel Calibration</span>
                 </div>
                 <CardTitle className="text-xl">AI Itinerary Calibration</CardTitle>
                 <CardDescription>

@@ -9,6 +9,7 @@ export interface DestinationDiscoveryInput {
   travellerCount: number;
   travellerType?: TravellerType;
   preferences?: string[] | string;
+  userId?: string;
 }
 
 export interface DiscoveredDestinationResult {

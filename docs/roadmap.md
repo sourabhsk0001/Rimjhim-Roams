@@ -365,8 +365,38 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 15: Production Polish, PWA Offline Support & Monitoring
+## Phase 15: Useful Non-Sensitive Travel Memories & Preference Intelligence (Completed)
+- [x] Database Schema & Migrations (`supabase/migrations/20241010000000_travel_memories.sql`):
+  - `public.travel_memories`: Table with `type` ('like', 'avoid'), `category` ('destination', 'hotel', 'restaurant', 'transit', 'itinerary', 'general'), `keyword`, `notes`, `is_active`, and RLS.
+  - Strict user-level RLS policies: Users can SELECT, INSERT, UPDATE, and DELETE only their own memories (`auth.uid() = user_id`).
+- [x] Domain Models (`src/types/memories.ts`):
+  - `MemoryType`, `MemoryCategory`, `TravelMemory`, `CreateMemoryInput`, `UpdateMemoryInput`, `UserTravelMemoriesSummary`, `MemoriesResponse`.
+- [x] Security & Sensitive Information Guardrail (`src/lib/services/travel-memory-service.ts`):
+  - Strict pattern matching blocking credit cards, passwords, secrets, API tokens, Aadhaar, PAN, SSN, and medical diagnosis records.
+  - Dedicated exception informing users that TripWise only records non-sensitive travel preferences.
+- [x] Service Layer (`src/lib/services/travel-memory-service.ts`):
+  - Full CRUD operations: `getMemories`, `getMemoryById`, `createMemory`, `updateMemory`, `deleteMemory`.
+  - Categorized summary extraction: `getUserMemoriesSummary`.
+- [x] 5 Core System Integrations:
+  1. **Destination Discovery**: Boosts match scores (+15 pts) for destinations matching saved likes (e.g. Nature); prioritizes rail travel for users with train preferences.
+  2. **Hotel Selection**: Honors budget hotel preferences and actively avoids luxury/resort markups.
+  3. **Restaurant Selection**: Prioritizes authentic regional cuisines (e.g. Goan seafood, Rajasthani thali) when user likes local food.
+  4. **Itinerary Planning**: Automatically forces relaxed pace (max 2 attractions/day) and relaxed duration tier when user avoids overpacked itineraries.
+  5. **AI Travel Copilot Context**: Injects authorized travel memories into `get_trip_context` and dedicated `get_travel_memories` tool with strict user isolation.
+- [x] REST API Endpoints:
+  - `GET /api/memories` & `POST /api/memories`
+  - `GET /api/memories/[id]`, `PATCH /api/memories/[id]`, `DELETE /api/memories/[id]`
+- [x] Frontend Experiences:
+  - Dedicated `/memories` page with Likes (emerald) and Avoids (rose) columns, category filters, quick-add suggestion chips, Add/Edit modal, and instant deletion.
+  - Added "Memories" navigation item with Heart icon in `src/components/navigation.tsx`.
+  - Added "Your Travel Likes & Avoids" card with direct management link in `/profile`.
+- [x] 11 comprehensive unit & integration tests in `test/phase15.test.ts` (189 tests total passing across all 15 phases).
+
+---
+
+## Phase 16: Production Polish, PWA Offline Support & Monitoring
 - [ ] Offline caching for emergency cards and destination safety data via Service Workers.
 - [ ] Multi-region CDN asset delivery and static optimization.
 - [ ] Continuous integration automated deployment pipeline.
+
 

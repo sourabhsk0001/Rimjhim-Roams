@@ -41,6 +41,8 @@ import { budgetEngine } from "@/lib/budget/engine";
 import { toMinorUnits, fromMinorUnits, formatCurrency } from "@/lib/budget/money";
 import { calculateRoute, calculateDistance } from "@/lib/geo/routing";
 import { getTripById } from "@/lib/services/trip-service";
+import { travelMemoryService } from "@/lib/services/travel-memory-service";
+import { UserTravelMemoriesSummary } from "@/types/memories";
 
 function isSupabaseLive(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -100,6 +102,11 @@ export class TripPlannerService {
     const currency = input.currency || "INR";
     const allocatedBudget = Math.max(1000, input.budget || 20000);
 
+    // Retrieve authorized travel memories for user
+    const userMemories = input.userId
+      ? await travelMemoryService.getUserMemoriesSummary(input.userId)
+      : null;
+
     steps.push({
       step: "finding_places",
       label: "Finding places",
@@ -116,7 +123,8 @@ export class TripPlannerService {
       allocatedBudget,
       durationDays,
       travellerCount,
-      currency
+      currency,
+      userMemories
     );
 
     steps.push({
@@ -135,7 +143,8 @@ export class TripPlannerService {
       durationDays,
       travelPace,
       travellerType,
-      input.preferences
+      input.preferences,
+      userMemories
     );
 
     // --------------------------------------------------------------------------
@@ -146,7 +155,8 @@ export class TripPlannerService {
       candidateRestaurants,
       durationDays,
       travellerCount,
-      input.preferences
+      input.preferences,
+      userMemories
     );
 
     // --------------------------------------------------------------------------
@@ -163,7 +173,8 @@ export class TripPlannerService {
       allocatedBudget,
       durationDays,
       travellerCount,
-      currency
+      currency,
+      userMemories
     );
 
     const outboundMode = "mode" in transportPlan.outbound ? transportPlan.outbound.mode : "intercity";
@@ -396,18 +407,44 @@ export class TripPlannerService {
     totalBudget: number,
     durationDays: number,
     travellerCount: number,
-    currency: string
+    currency: string,
+    userMemories?: UserTravelMemoriesSummary | null
   ): SelectedHotelPlan {
     const nights = Math.max(1, durationDays - 1);
     const roomCount =
       travellerCount === 1 ? 1 : Math.ceil(travellerCount / 2);
 
-    // Target ~30% of total budget for accommodation
-    const targetLodgingBudget = totalBudget * 0.3;
+    const likesBudget =
+      userMemories?.hotelLikes.some((l) => l.includes("budget")) ||
+      userMemories?.likes.some((l) => l.includes("budget hotel"));
+
+    const avoidsLuxury =
+      userMemories?.hotelAvoids.some((a) => a.includes("luxury")) ||
+      userMemories?.avoids.some((a) => a.includes("luxury hotel"));
+
+    // Target ~30% of total budget for accommodation, or lower if user prefers budget stays
+    let targetLodgingBudget = totalBudget * 0.3;
+    if (likesBudget) {
+      targetLodgingBudget = Math.min(targetLodgingBudget, 1800 * nights * roomCount);
+    }
     const targetPricePerNight = targetLodgingBudget / (nights * roomCount);
 
+    let candidates = [...hotels];
+    if (avoidsLuxury) {
+      const nonLuxury = candidates.filter(
+        (h) =>
+          h.price_per_night <= 3500 &&
+          !h.name.toLowerCase().includes("palace") &&
+          !h.name.toLowerCase().includes("luxury") &&
+          !h.name.toLowerCase().includes("resort & spa")
+      );
+      if (nonLuxury.length > 0) {
+        candidates = nonLuxury;
+      }
+    }
+
     // Sort candidate hotels by how close they are to target price, preferring higher rating
-    const sorted = [...hotels].sort((a, b) => {
+    const sorted = [...candidates].sort((a, b) => {
       const diffA = Math.abs(a.price_per_night - targetPricePerNight);
       const diffB = Math.abs(b.price_per_night - targetPricePerNight);
       if (Math.abs(diffA - diffB) < 1000) {
@@ -419,6 +456,16 @@ export class TripPlannerService {
     const selected = sorted[0] || DEMO_HOTELS[0];
     const totalCost = selected.price_per_night * nights * roomCount;
 
+    let reason = `Best balance of comfort (${selected.rating}★ rating) and budget efficiency.`;
+    if (likesBudget || avoidsLuxury) {
+      reason = `Selected budget-friendly lodging (${selected.name}) matching saved preferences (${[
+        likesBudget ? "Likes: Budget hotels" : null,
+        avoidsLuxury ? "Avoids: Luxury hotels" : null,
+      ]
+        .filter(Boolean)
+        .join(", ")}).`;
+    }
+
     return {
       selected,
       roomCount,
@@ -426,7 +473,7 @@ export class TripPlannerService {
       pricePerNight: selected.price_per_night,
       totalCost,
       totalCostFormatted: formatCurrency(totalCost, { currency }),
-      reason: `Best balance of comfort (${selected.rating}★ rating) and budget efficiency.`,
+      reason,
     };
   }
 
@@ -435,20 +482,33 @@ export class TripPlannerService {
     durationDays: number,
     pace: "relaxed" | "moderate" | "fast",
     travellerType: string,
-    preferences?: Record<string, unknown> | string[]
+    preferences?: Record<string, unknown> | string[],
+    userMemories?: UserTravelMemoriesSummary | null
   ): SelectedAttractionPlan[] {
-    const attractionsPerDay = pace === "relaxed" ? 2 : pace === "fast" ? 4 : 3;
+    const avoidsOverpacked =
+      userMemories?.itineraryAvoids.some((a) => a.includes("overpacked")) ||
+      userMemories?.avoids.some((a) => a.includes("overpacked"));
+
+    // If user avoids overpacked itineraries, force relaxed pace (max 2 attractions per day)
+    const effectivePace = avoidsOverpacked ? "relaxed" : pace;
+    const attractionsPerDay = effectivePace === "relaxed" ? 2 : effectivePace === "fast" ? 4 : 3;
     const totalNeeded = durationDays * attractionsPerDay;
 
     const durationTier: DurationTier =
-      pace === "relaxed" ? "Relaxed" : pace === "fast" ? "Quick" : "Normal";
+      effectivePace === "relaxed" ? "Relaxed" : effectivePace === "fast" ? "Quick" : "Normal";
 
-    // Extract preference keywords
+    // Extract preference keywords from explicit preferences and user memories
     const prefList = Array.isArray(preferences)
       ? preferences.map((p) => String(p).toLowerCase())
       : typeof preferences === "object" && preferences !== null
       ? Object.values(preferences).map((v) => String(v).toLowerCase())
       : [];
+
+    if (userMemories?.likes) {
+      for (const l of userMemories.likes) {
+        if (!prefList.includes(l)) prefList.push(l);
+      }
+    }
 
     // Score attractions based on preference match and ratings
     const scored = [...attractions].sort((a, b) => {
@@ -478,7 +538,7 @@ export class TripPlannerService {
         maximumVisitMinutes: attr.maximum_visit_minutes,
         durationTier,
         travellerType,
-        travelPace: pace,
+        travelPace: effectivePace,
       });
 
       const queueMinutes = timeEngine.calculateWaitingTime(
@@ -507,7 +567,8 @@ export class TripPlannerService {
     restaurants: Restaurant[],
     durationDays: number,
     travellerCount: number,
-    preferences?: Record<string, unknown> | string[]
+    preferences?: Record<string, unknown> | string[],
+    userMemories?: UserTravelMemoriesSummary | null
   ): SelectedMealPlan[] {
     const list = restaurants.length > 0 ? restaurants : DEMO_RESTAURANTS;
     const meals: SelectedMealPlan[] = [];
@@ -515,6 +576,10 @@ export class TripPlannerService {
     // Identify dietary preferences
     const prefStr = JSON.stringify(preferences || "").toLowerCase();
     const wantsVeg = prefStr.includes("veg") || prefStr.includes("vegetarian");
+
+    const likesLocalFood =
+      userMemories?.restaurantLikes.some((l) => l.includes("local food") || l.includes("local")) ||
+      userMemories?.likes.some((l) => l.includes("local food") || l.includes("local cuisine"));
 
     const filtered = list.filter((r) => {
       if (wantsVeg) {
@@ -525,7 +590,24 @@ export class TripPlannerService {
       return true;
     });
 
-    const pool = filtered.length >= 2 ? filtered : list;
+    let pool = filtered.length >= 2 ? filtered : list;
+    if (likesLocalFood) {
+      const localSpecialists = pool.filter(
+        (r) =>
+          !r.name.toLowerCase().includes("pizza") &&
+          !r.name.toLowerCase().includes("burger") &&
+          !r.name.toLowerCase().includes("continental") &&
+          (["traditional", "regional", "local", "thali", "seafood", "indian", "bengali", "rajasthani", "goan", "tibetan"].some((k) =>
+            r.cuisine.toLowerCase().includes(k)
+          ) ||
+            r.name.toLowerCase().includes("thali") ||
+            r.name.toLowerCase().includes("dhaba") ||
+            r.name.toLowerCase().includes("bhojanalaya"))
+      );
+      if (localSpecialists.length >= 2) {
+        pool = localSpecialists;
+      }
+    }
 
     for (let day = 1; day <= durationDays; day++) {
       const lunchRest = pool[(day * 2 - 2) % pool.length];
@@ -559,9 +641,14 @@ export class TripPlannerService {
     totalBudget: number,
     durationDays: number,
     travellerCount: number,
-    currency: string
+    currency: string,
+    userMemories?: UserTravelMemoriesSummary | null
   ): SelectedTransportPlan {
     const list = transportOptions.length > 0 ? transportOptions : DEMO_TRANSPORT;
+
+    const prefersTrain =
+      userMemories?.transitLikes.some((l) => l.includes("train")) ||
+      userMemories?.likes.some((l) => l.includes("train"));
 
     // Filter matching origin/destination or find best option
     const cleanOrigin = origin.toLowerCase().trim();
@@ -573,9 +660,13 @@ export class TripPlannerService {
 
     const candidates = matching.length > 0 ? matching : list;
 
-    // If budget is tight, pick train/bus; if generous, pick flight
-    const prefersBudgetTransit = totalBudget < 25000;
+    // If budget is tight or user explicitly prefers train travel, prioritize train/rail
+    const prefersBudgetTransit = totalBudget < 25000 || prefersTrain;
     const sorted = [...candidates].sort((a, b) => {
+      if (prefersTrain) {
+        if (a.mode === "train" && b.mode !== "train") return -1;
+        if (a.mode !== "train" && b.mode === "train") return 1;
+      }
       if (prefersBudgetTransit) {
         return a.price - b.price;
       }

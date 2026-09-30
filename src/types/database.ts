@@ -1007,6 +1007,40 @@ export interface Database {
           has_settled?: boolean;
         };
       };
+      travel_memories: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: "like" | "avoid";
+          category: "destination" | "hotel" | "restaurant" | "transit" | "itinerary" | "general";
+          keyword: string;
+          notes: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type: "like" | "avoid";
+          category: "destination" | "hotel" | "restaurant" | "transit" | "itinerary" | "general";
+          keyword: string;
+          notes?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          type?: "like" | "avoid";
+          category?: "destination" | "hotel" | "restaurant" | "transit" | "itinerary" | "general";
+          keyword?: string;
+          notes?: string | null;
+          is_active?: boolean;
+          updated_at?: string;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: {
