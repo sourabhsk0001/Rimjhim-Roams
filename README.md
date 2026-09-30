@@ -2,7 +2,7 @@
 
 > Production-ready, Vercel-deployable travel operating system built using free-tier cloud primitives.
 
-Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, OpenStreetMap / OSRM routing, Open-Meteo meteorological forecasts, and a deterministic non-LLM budget optimization engine to provide hyper-localized, cost-optimized travel itineraries.
+Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, OpenStreetMap / OSRM routing, Open-Meteo meteorological forecasts, a deterministic non-LLM budget optimization engine, and a physical-feasibility Time Intelligence Engine to provide hyper-localized, realistic travel itineraries.
 
 ---
 
@@ -15,6 +15,7 @@ Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, Open
 | **Styling** | Tailwind CSS & shadcn/ui components | Open Source |
 | **Database** | Supabase (PostgreSQL + PostGIS + pgvector) | Free Tier (500MB) |
 | **Authentication** | Supabase Auth + Session SSR Middleware | Free Tier |
+| **Time Intelligence** | Custom Feasibility Engine (`TimeEngine`) | Open Source Logic |
 | **Budget Engine** | Deterministic Integer Minor Units (`BudgetEngine`) | Non-LLM Custom Engine |
 | **AI Engine** | Google Gemini 1.5 Flash via `@google/generative-ai` | Free Tier (Google AI Studio) |
 | **Maps & Spatial** | PostGIS `geography(Point, 4326)`, Leaflet & OpenStreetMap | Free / Open Source |
@@ -38,31 +39,30 @@ Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, Open
 - `/api/destinations/[id]/*`: Endpoints for attractions, hotels, restaurants, and transit options.
 - `/api/geo/route`: Routing endpoint for on-demand waypoint route geometry, distance, and duration.
 
-### Protected Itinerary & Budget Routes (Secured by Next.js Middleware)
+### Protected Itinerary, Budget & Time Routes (Secured by Next.js Middleware)
 - `/dashboard`: Travel dashboard with upcoming & previous trips, quick stats, and empty states.
 - `/trips`: Searchable and filterable itinerary directory with status badges.
 - `/trips/new`: Itinerary planning form with duration calculation, budget & currency selectors, pace options, and automatic "destination discovery required" fallback.
 - `/trips/[id]`: Individual itinerary inspection, configuration review, and deletion management.
-- `/trips/[id]/budget`: **Phase 4 Interactive Budget & Optimization Dashboard** with category breakdowns, over-budget warnings, 4 optimization profiles, deterministic alternatives with live Accept/Reject trade-offs, and an expense ledger.
-- `/api/trips/[id]/budget`: REST endpoint for budget calculations, optimization profiles, and expense CRUD.
+- `/trips/[id]/budget`: **Phase 4 Interactive Budget Dashboard** with category breakdowns, over-budget warnings, 4 optimization profiles, and live expense ledger.
+- `/trips/[id]/itinerary`: **Phase 5 Time Intelligence Engine & Timeline Dashboard** with day selectors, discrete unmerged time blocks (visit, travel, queue, buffer), schedule feasibility validation, transit indicators, and **Optimize Day**.
+- `/api/trips/[id]/budget`: REST endpoint for budget calculations and expense CRUD.
+- `/api/trips/[id]/itinerary`: REST endpoint for itinerary days, items, and day optimization.
 - `/profile`: Multi-section personal traveler identity, contact details, emergency contacts, and AI preference tuning.
 
 ---
 
-## 💰 Deterministic Budget & Optimization Engine (Phase 4)
+## ⏱️ Time Intelligence Engine (Phase 5)
 
-- **Strict Non-LLM Determinism**: All monetary values, cost breakdowns, and over-budget differences are computed deterministically with zero LLM hallucination risk.
-- **Integer Minor Units Precision**: Calculations run in integer minor units (1 INR = 100 paise) preventing IEEE-754 floating-point errors (`0.1 + 0.2 = 0.3`).
-- **All 8 Standard Categories Supported**: `transport`, `hotel`, `food`, `local_transport`, `activities`, `shopping`, `emergency_buffer`, `other`.
-- **4 Optimization Profiles**:
-  1. `Budget Saver`: Aggressively trims costs via verified budget stays, train/bus alternatives, and free scenic/cultural spots.
-  2. `Time Saver`: Minimizes commute overhead via route clustering and rapid transit.
-  3. `Experience Maximizer`: Protects premier culinary and bucket-list activities.
-  4. `Balanced`: Pragmatic midpoint balancing cost, speed, and leisure.
-- **Rule-Based Alternatives with Trade-Offs**:
-  - Cheaper hotel, cheaper transport, different transport mode, cheaper dining, remove low-priority activity, replace activity, optimize local route.
-  - Interactive **Accept** / **Reject** buttons that dynamically adjust category costs, recalculate totals, and eliminate deficits in real time.
-- **Expense Tracking Ledger**: Travelers can log actual on-the-ground expenditures by category, tracking live expenses against the allocated cap.
+- **Discrete, Unmerged Time Allocation**: Every itinerary item strictly separates `visit_time`, `travel_time`, `waiting_time`, and `buffer_time` to prevent schedule collapse.
+- **Feasibility Rules**:
+  - `attraction_closed`: Detects visits scheduled outside opening and closing hours.
+  - `insufficient_time`: Detects visits shorter than the required minimum threshold.
+  - `overlapping_activities`: Detects chronological collisions between consecutive activities.
+  - `impossible_travel`: Detects gaps smaller than the required transit time between locations.
+  - `excessive_daily_schedule`: Warns on waking hour exhaustion or extended active spans without meals/rest.
+- **Duration Tiers**: Supports `Quick`, `Normal`, and `Relaxed` durations adjusted by travel pace, traveller type, weather, and sunset viewpoints.
+- **Optimize Day**: Automatically resolves opening hour conflicts, reorders sights by geographic proximity, inserts meal/rest blocks, and eliminates impossible transit conditions.
 
 ---
 
@@ -94,6 +94,7 @@ Execute the migrations in order in your Supabase SQL Editor:
 1. [`supabase/migrations/20241001000000_initial_schema.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241001000000_initial_schema.sql): Sets up user profiles, travel preferences, trips, trip members, RLS policies, and triggers.
 2. [`supabase/migrations/20241002000000_core_travel_data.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241002000000_core_travel_data.sql): Sets up destinations, attractions, hotels, restaurants, transport, taxis, reviews, spatial indexes, and the `find_nearby_attractions` PostGIS function.
 3. [`supabase/migrations/20241003000000_budget_and_expenses.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241003000000_budget_and_expenses.sql): Sets up `price_snapshots` and `expenses` tables with RLS policies and indexes.
+4. [`supabase/migrations/20241004000000_time_and_itineraries.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241004000000_time_and_itineraries.sql): Sets up `itineraries`, `itinerary_items`, and `route_segments` tables with RLS policies.
 
 ### 5. Running the Development Server
 ```bash
@@ -103,7 +104,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 6. Validation & Quality Checks
 ```bash
-# Run full automated test suite (50 tests: auth, trip CRUD, spatial search, catalog, routing, budget engine)
+# Run full automated test suite (65 tests across all 5 phases)
 npm test
 
 # Run TypeScript strict typecheck

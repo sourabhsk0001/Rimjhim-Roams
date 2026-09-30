@@ -104,6 +104,12 @@ export default function TripDetailPage() {
 
           {trip && (
             <div className="flex items-center gap-2">
+              <Button size="sm" asChild variant="outline" className="gap-1.5 border-purple-300 text-purple-700 hover:bg-purple-50">
+                <Link href={`/trips/${trip.id}/itinerary`}>
+                  <Clock className="w-4 h-4" />
+                  Time & Itinerary
+                </Link>
+              </Button>
               <Button size="sm" asChild className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
                 <Link href={`/trips/${trip.id}/budget`}>
                   <Wallet className="w-4 h-4" />

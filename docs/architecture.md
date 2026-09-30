@@ -10,6 +10,14 @@ flowchart TD
         NextApp --> Tailwind[Tailwind CSS & shadcn/ui]
         NextApp --> LeafletMap[Dynamic Leaflet + OSM Map Canvas]
         NextApp --> BudgetUI[Budget & Optimization Dashboard]
+        NextApp --> ItineraryUI[Time Intelligence & Timeline Dashboard]
+    end
+
+    subgraph Time Intelligence Layer
+        NextApp --> TimeEngine[TimeEngine]
+        TimeEngine --> TimeSlots[Strictly Discrete Time Fields: visit, travel, waiting, buffer]
+        TimeEngine --> ScheduleValidator[Feasibility & Overlap Validator]
+        TimeEngine --> DayOptimizer[Deterministic Day Optimizer]
     end
 
     subgraph Deterministic Financial & Budget Layer
@@ -35,6 +43,8 @@ flowchart TD
         NextApp --> SupabaseSSR[Supabase Client / SSR]
         SupabaseSSR <--> Postgres[(Supabase PostgreSQL)]
         Postgres --> PostGIS[(PostGIS Spatial Index)]
+        Postgres --> Itineraries[(Itineraries & Items)]
+        Postgres --> RouteSegments[(Route Segments)]
         Postgres --> PriceSnapshots[(Price Snapshots)]
         Postgres --> Expenses[(Expenses Ledger)]
         Postgres --> PgVector[(pgvector Embeddings)]
@@ -51,14 +61,13 @@ flowchart TD
    - Open-Meteo (Free weather API with no key required)
    - OpenStreetMap / OSRM (Free public tiles and routing engine)
    - Vercel (Hobby tier edge & serverless deployments)
-2. **Deterministic Financial Operations (Non-LLM)**:
-   - All budget arithmetic, cost estimates, category breakdowns, remaining amounts, and over-budget detections are strictly deterministic.
-   - All monetary calculations are performed in integer minor units (e.g. paise: 1 INR = 100 paise) to prevent floating-point representation drift (`0.1 + 0.2 != 0.3`).
-3. **Resilient Geospatial & Spatial Queries**:
-   - Routing service gracefully degrades to Haversine great-circle calculations with mode-adjusted speeds if OSRM is unreachable or times out.
-   - PostGIS indexes enable sub-millisecond radius searches.
+2. **Time Intelligence & Physical Feasibility**:
+   - Every scheduled item maintains discrete: `visit_minutes`, `travel_minutes`, `waiting_minutes`, `buffer_minutes`.
+   - These 4 components are NEVER merged internally, preventing impossible itineraries, hidden travel bottlenecks, and schedule collapse.
+3. **Deterministic Financial Operations (Non-LLM)**:
+   - All budget arithmetic, category allocations, and optimization proposals run deterministically in integer minor units (1 INR = 100 paise).
 4. **Clean Server/Client Boundaries**:
-   - Leaflet interacts directly with `window` and the DOM. All map components are isolated behind a dynamic client-only boundary (`next/dynamic` with `{ ssr: false }`).
+   - Leaflet interacts directly with `window` and the DOM behind client-only wrappers (`next/dynamic` with `{ ssr: false }`).
 
 ---
 
@@ -78,14 +87,15 @@ Rimjhim Roams/
 │   │   │   ├── geo/          # OSRM routing proxy (/api/geo/route)
 │   │   │   ├── health/       # Health monitoring endpoint
 │   │   │   ├── profile/      # User profile & preferences
-│   │   │   └── trips/        # AI trip synthesis, CRUD & /budget endpoints
+│   │   │   └── trips/        # AI trip synthesis, CRUD, /budget, /itinerary
 │   │   ├── dashboard/        # Authenticated user dashboard
 │   │   ├── explore/          # Destination catalog & interactive maps
 │   │   ├── profile/          # User preferences editor
 │   │   ├── trips/            # Trip management & itinerary creation
 │   │   │   └── [id]/
 │   │   │       ├── budget/   # Phase 4 Budget & Optimization Engine UI
-│   │   │       └── page.tsx  # Trip overview & itinerary inspection
+│   │   │       ├── itinerary/# Phase 5 Time Intelligence Timeline UI
+│   │   │       └── page.tsx  # Trip overview & action hub
 │   │   ├── globals.css       # Tailwind CSS & Leaflet tile styles
 │   │   ├── layout.tsx        # Root HTML layout and metadata
 │   │   └── page.tsx          # Landing & discovery interface
@@ -94,16 +104,14 @@ Rimjhim Roams/
 │   │   └── ui/               # shadcn/ui reusable design system tokens
 │   ├── lib/
 │   │   ├── budget/           # BudgetEngine, money precision & optimizer
-│   │   │   ├── engine.ts     # Core 9 calculation functions
-│   │   │   ├── money.ts      # Integer minor units conversions & math
-│   │   │   └── optimizer.ts  # 4 profiles & deterministic alternatives
-│   │   ├── gemini/           # Gemini AI API integration
+│   │   ├── time/             # TimeEngine, duration calculation & validation
 │   │   ├── geo/              # RoutingProvider, OSRM & Open-Meteo
-│   │   ├── services/         # Travel data, trip & budget services
+│   │   ├── services/         # Travel, trip, budget, and itinerary services
 │   │   ├── supabase/         # SSR & Browser Supabase clients
 │   │   └── utils.ts          # Styling & formatting utilities
 │   └── types/
-│       ├── budget.ts         # Budget domain, alternative, and expense types
+│       ├── budget.ts         # Budget & financial domain types
+│       ├── time.ts           # Time intelligence, itinerary & validation types
 │       ├── database.ts       # Supabase PostGIS + pgvector schema
 │       └── travel.ts         # Domain models (Trips, Itineraries, Routes)
 ├── test/
@@ -111,12 +119,14 @@ Rimjhim Roams/
 │   ├── phase1.test.ts        # Auth & Trip CRUD unit tests
 │   ├── phase2.test.ts        # Travel catalog & PostGIS tests
 │   ├── phase3.test.ts        # RoutingProvider & geospatial tests
-│   └── phase4.test.ts        # BudgetEngine & optimization tests
+│   ├── phase4.test.ts        # BudgetEngine & optimization tests
+│   └── phase5.test.ts        # TimeEngine & itinerary tests
 ├── supabase/
 │   └── migrations/
 │       ├── 20241001000000_initial_schema.sql
 │       ├── 20241002000000_core_travel_data.sql
-│       └── 20241003000000_budget_and_expenses.sql
+│       ├── 20241003000000_budget_and_expenses.sql
+│       └── 20241004000000_time_and_itineraries.sql
 ├── package.json              # Project dependencies & scripts
 ├── tailwind.config.ts        # Tailwind theme & token setup
 └── tsconfig.json             # TypeScript compiler settings
@@ -124,25 +134,18 @@ Rimjhim Roams/
 
 ---
 
-## 3. BudgetEngine & Financial Precision
+## 3. Time Intelligence Engine Architecture
 
-### Integer Minor Units Architecture
-- All currency operations represent money as integer minor units (`minorUnits: number`, scale = 100).
-- For example, ₹20,000 is stored and computed as `2000000` paise.
-- Major currency formatting and conversions (`toMinorUnits`, `fromMinorUnits`, `formatCurrency`) are encapsulated in `src/lib/budget/money.ts`.
+### Non-Combined Time Components
+Every schedule block records:
+1. `visit_minutes`: Genuine dwell/exploration time inside the POI.
+2. `travel_minutes`: Transit duration from the preceding coordinate.
+3. `waiting_minutes`: Queuing and ticket line delays based on peak hours.
+4. `buffer_minutes`: Traffic and transition contingency pad.
 
-### Budget Categories
-1. `transport`: Inter-city travel (airfares, trains, long-distance buses).
-2. `hotel`: Lodging across trip nights and room count.
-3. `food`: Dining and daily meals per person.
-4. `local_transport`: Intra-city transit (cabs, auto-rickshaws, metro).
-5. `activities`: Admissions, park tickets, and guided tours.
-6. `shopping`: Retail and souvenir allowances.
-7. `emergency_buffer`: Dedicated contingency fund (typically 5% of budget).
-8. `other`: Incidentals and miscellaneous expenses.
-
-### 4 Optimization Profiles
-- **Budget Saver**: Maximizes financial savings by substituting budget hotels, express trains/buses, and free attractions.
-- **Time Saver**: Prioritizes fast transit and geographic route clustering to minimize travel fatigue.
-- **Experience Maximizer**: Preserves top-tier culinary experiences and signature attractions while adjusting transit or accommodations.
-- **Balanced**: Pragmatic balance of comfort, time, and budget adherence.
+### Feasibility Rules Enforced
+- **Attraction Closed**: Blocks scheduled outside operational hours.
+- **Insufficient Time**: Visits allocated fewer than minimum viable minutes.
+- **Overlapping Activities**: Collision detection between consecutive item windows.
+- **Impossible Travel**: Transit requirements exceeding the allocated inter-stop gap.
+- **Excessive Daily Schedule**: Waking hours exhaustion or extended periods (>9h) without rest/meals.
