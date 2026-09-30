@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -49,6 +49,22 @@ export default function NewTripPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Prepopulate from URL parameters (e.g. from Destination Discovery Engine)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get("origin")) setOrigin(sp.get("origin")!);
+      if (sp.get("destination")) setDestination(sp.get("destination")!);
+      if (sp.get("budget")) setBudget(sp.get("budget")!);
+      if (sp.get("currency")) setCurrency(sp.get("currency")!);
+      if (sp.get("duration")) setDurationDays(Number(sp.get("duration")));
+      if (sp.get("travellers")) setTravellerCount(Number(sp.get("travellers")));
+      if (sp.get("travellerType")) setTravellerType(sp.get("travellerType") as TravellerType);
+      if (sp.get("startDate")) setStartDate(sp.get("startDate")!);
+      if (sp.get("endDate")) setEndDate(sp.get("endDate")!);
+    }
+  }, []);
 
   // Automatically compute duration when start and end dates change
   const handleStartDateChange = (val: string) => {
@@ -217,13 +233,16 @@ export default function NewTripPage() {
                       <Compass className="w-4 h-4 text-muted-foreground" />
                       Destination (Optional)
                     </span>
-                    <span className="text-xs text-muted-foreground font-normal">
-                      Leave empty for discovery
-                    </span>
+                    <Link
+                      href="/#discovery-planner"
+                      className="text-xs text-primary hover:underline font-medium"
+                    >
+                      Don&apos;t know? Find where to go →
+                    </Link>
                   </Label>
                   <Input
                     id="destination"
-                    placeholder="e.g. Kyoto, Japan or leave blank"
+                    placeholder="e.g. Goa, Jaipur, Darjeeling or leave blank"
                     value={destination}
                     onChange={(e) => setDestination(e.target.value)}
                     disabled={loading}

@@ -19,6 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { DestinationDiscoveryWidget } from "@/components/discovery/destination-discovery-widget";
 
 export default function Home() {
   return (
@@ -42,27 +43,29 @@ export default function Home() {
 
           <nav className="flex items-center gap-4">
             <Link
-              href="#architecture"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              href="/explore"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block"
             >
-              Architecture
+              Explore Catalog
             </Link>
             <Link
-              href="#features"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              href="/trips"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block"
             >
-              Features
+              My Trips
             </Link>
-            <Button size="sm" className="gap-2">
-              <Sparkles className="w-4 h-4" /> Plan a Trip
+            <Button size="sm" asChild className="gap-2">
+              <Link href="#discovery-planner">
+                <Compass className="w-4 h-4" /> Find Where to Go
+              </Link>
             </Button>
           </nav>
         </div>
       </header>
 
       {/* Hero Section */}
-      <main className="flex-1">
-        <section className="py-20 px-4 text-center max-w-5xl mx-auto space-y-6">
+      <main className="flex-1 space-y-12">
+        <section className="pt-16 pb-8 px-4 text-center max-w-5xl mx-auto space-y-6">
           <Badge variant="secondary" className="px-3 py-1 text-sm gap-1.5">
             <Zap className="w-3.5 h-3.5 text-amber-500" />
             Production-Grade & Free-Tier Native
@@ -76,19 +79,26 @@ export default function Home() {
           </h1>
 
           <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-            Rimjhim Roams combines Gemini AI reasoning with geospatial PostGIS
-            indexing, OSRM routing, and Open-Meteo live intelligence to build
-            frictionless, hyper-localized travel itineraries.
+            Don&apos;t know where to go? Tell us your departure city and budget cap.
+            TripWise calculates real transit, lodging, and activities to discover
+            every destination you can feasibly travel.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-            <Button size="lg" className="gap-2 shadow-lg">
-              Explore Demo Itineraries <ArrowRight className="w-4 h-4" />
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+            <Button size="lg" className="gap-2 shadow-lg" asChild>
+              <Link href="#discovery-planner">
+                <Compass className="w-5 h-5 text-amber-300" /> FIND WHERE I SHOULD GO
+              </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link href="#architecture">View Architecture</Link>
+              <Link href="/trips">View My Trips</Link>
             </Button>
           </div>
+        </section>
+
+        {/* Phase 7: Destination Discovery Interactive Planner Section */}
+        <section className="container mx-auto px-4 max-w-6xl">
+          <DestinationDiscoveryWidget />
         </section>
 
         {/* Feature Grid */}

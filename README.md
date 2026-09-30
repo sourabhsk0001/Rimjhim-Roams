@@ -28,13 +28,14 @@ Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, Open
 ## 🧭 Application Routes
 
 ### Public & Discovery Routes
-- `/`: Landing page highlighting architecture, feature cards, and demo plans.
+- `/`: Landing page highlighting architecture, feature cards, and the **Phase 7 "FIND WHERE I SHOULD GO" interactive destination discovery engine**.
 - `/explore`: Searchable catalog of 8 core Indian destinations with climate filters and explicit DEMO badges.
 - `/explore/destinations/[id]`: Destination travel guide featuring attractions, hotels, dining, transit, PostGIS radius search, and an interactive Leaflet route map.
 - `/login`: Secure authentication portal with redirect preservation.
 - `/register`: User onboarding and account creation.
 - `/api/health`: Health monitoring and service availability status.
 - `/api/destinations`: REST endpoint for destinations with search and climate filters.
+- `/api/destinations/discover`: **Phase 7 Destination Discovery REST endpoint** (Origin + Budget + Duration + Profile + Preferences → Ranked feasible destinations).
 - `/api/destinations/nearby`: PostGIS spatial radius query endpoint (`lat`, `lng`, `radius`).
 - `/api/destinations/[id]/*`: Endpoints for attractions, hotels, restaurants, and transit options.
 - `/api/geo/route`: Routing endpoint for on-demand waypoint route geometry, distance, and duration.
@@ -125,7 +126,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 6. Validation & Quality Checks
 ```bash
-# Run full automated test suite (76 tests across all 6 phases)
+# Run full automated test suite (82 tests across all 7 phases)
 npm test
 
 # Run TypeScript strict typecheck

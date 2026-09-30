@@ -11,7 +11,10 @@ export async function getDestinationWeather(
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto`;
 
   try {
-    const res = await fetch(url, { next: { revalidate: 3600 } });
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(1500),
+      next: { revalidate: 3600 },
+    });
     if (!res.ok) {
       throw new Error(`Open-Meteo returned status ${res.status}`);
     }
@@ -35,8 +38,8 @@ export async function getDestinationWeather(
       precipitationProbability: daily.precipitation_probability_max?.[0] ?? 0,
       dailyForecast,
     };
-  } catch (error) {
-    console.error("Failed to fetch weather from Open-Meteo:", error);
+  } catch {
+    // Graceful offline/timeout fallback with standard seasonal climatology
     return {
       location: locationName,
       currentTemp: 22,

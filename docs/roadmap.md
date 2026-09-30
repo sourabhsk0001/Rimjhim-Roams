@@ -109,7 +109,30 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 7: AI Itinerary Synthesis Engine (Next Phase)
+## Phase 7: Destination Discovery Engine (Completed)
+- [x] Created `DestinationDiscoveryEngine` pipeline allowing users to discover feasible travel destinations without knowing where to go in advance.
+- [x] Multi-stage discovery pipeline:
+  - Input: Origin + Budget + Duration + Traveller profile + Preferences
+  - Filters out origin departure hub from candidate destinations
+  - Estimates intercity transport fares (direct catalog or distance-based transit physics)
+  - Evaluates accommodations dynamically matching target lodging budget
+  - Calculates Food, Local Transport, Activities, and Emergency Buffer using deterministic `BudgetEngine`
+  - Infeasibility filtering (eliminates cost infeasible destinations exceeding budget ceiling or impossible transit-to-duration ratios)
+  - Thematic preference matching & scoring (Nature, Adventure, Heritage, Beaches, Food)
+  - Fetches Open-Meteo live or seasonal climatological weather forecasts with resilient timeout protection
+- [x] Detailed destination response schema:
+  - `destination`, `estimatedTotalCost`, `transportCost`, `hotelCost`, `foodCost`, `activitiesCost`, `localTransportCost`, `emergencyBufferCost`, `recommendedDays`, `approximateTravelTime`, `travelModeSummary`, `majorAttractions`, `weather`, and explicit `DEMO ESTIMATE / INDICATIVE PRICING` disclaimer.
+- [x] REST API endpoint: `POST /api/destinations/discover`.
+- [x] Interactive Frontend Widget:
+  - "FIND WHERE I SHOULD GO" interactive planner on Home page (`src/app/page.tsx`)
+  - Departure city, budget counter, duration stepper, traveller/group selector, and preference chips
+  - Result cards with match score badges, budget surplus/deficit pills, weather indicators, cost breakdown drawers, and deep links to `/trips/new`
+- [x] Pre-populated trip creation link via `/trips/new?origin=...&destination=...&budget=...`.
+- [x] 6 unit & end-to-end tests validating prompt scenario (Kolkata, ₹20,000, 5 Days, 3 Friends, Nature + Adventure), BudgetEngine arithmetic integrity, origin filtering, budget constraint filtering, and preference scoring (82 tests total across all 7 phases).
+
+---
+
+## Phase 8: AI Itinerary Synthesis Engine (Next Phase)
 - [ ] Structured Prompt engineering with Gemini 1.5 Flash using JSON Schema output mode.
 - [ ] Feeding deterministic TimeEngine, RoutingProvider, and BudgetEngine bounds into Gemini prompts.
 - [ ] Thematic narrative generation and cultural contextualization within strict physical limits.
@@ -117,21 +140,14 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 7: Weather Forecast & Environmental Intelligence
-- [ ] Open-Meteo meteorological integration (7-day forecast, temperature, rain probability).
-- [ ] Destination weather widgets tied to travel dates and GPS coordinates.
-- [ ] Weather-informed attraction scheduling recommendations (indoor vs outdoor activities).
-
----
-
-## Phase 8: Semantic Discovery & Vector Search
+## Phase 9: Semantic Discovery & Vector Search
 - [ ] Embedding generation for curated points of interest (POIs).
 - [ ] pgvector cosine similarity search (`match_places` stored procedure).
 - [ ] Natural language search (e.g. "cafes with good wifi and quiet courtyard").
 
 ---
 
-## Phase 9: Production Polish & Vercel Deployment
+## Phase 10: Production Polish & Vercel Deployment
 - [ ] Edge caching and Incremental Static Regeneration (ISR) for popular travel guides.
 - [ ] End-to-end testing and lighthouse performance optimization.
 - [ ] Vercel one-click deployment verification and continuous integration setup.

@@ -83,11 +83,11 @@ Rimjhim Roams/
 │   ├── app/                  # Next.js App Router
 │   │   ├── api/
 │   │   │   ├── auth/         # Login, register, logout handlers
-│   │   │   ├── destinations/ # Catalog & PostGIS radius queries
+│   │   │   ├── destinations/ # Catalog, PostGIS radius queries & discovery (/discover)
 │   │   │   ├── geo/          # OSRM routing proxy (/api/geo/route)
 │   │   │   ├── health/       # Health monitoring endpoint
 │   │   │   ├── profile/      # User profile & preferences
-│   │   │   └── trips/        # AI trip synthesis, CRUD, /budget, /itinerary
+│   │   │   └── trips/        # AI trip synthesis, CRUD, /budget, /itinerary, /plan
 │   │   ├── dashboard/        # Authenticated user dashboard
 │   │   ├── explore/          # Destination catalog & interactive maps
 │   │   ├── profile/          # User preferences editor
@@ -95,23 +95,26 @@ Rimjhim Roams/
 │   │   │   └── [id]/
 │   │   │       ├── budget/   # Phase 4 Budget & Optimization Engine UI
 │   │   │       ├── itinerary/# Phase 5 Time Intelligence Timeline UI
-│   │   │       └── page.tsx  # Trip overview & action hub
+│   │   │       └── page.tsx  # Phase 6 Complete Trip Planner Hub
 │   │   ├── globals.css       # Tailwind CSS & Leaflet tile styles
 │   │   ├── layout.tsx        # Root HTML layout and metadata
-│   │   └── page.tsx          # Landing & discovery interface
+│   │   └── page.tsx          # Landing & Phase 7 "FIND WHERE I SHOULD GO" Discovery UI
 │   ├── components/
+│   │   ├── discovery/        # Destination Discovery interactive widget
 │   │   ├── map/              # Reusable Leaflet interactive map components
 │   │   └── ui/               # shadcn/ui reusable design system tokens
 │   ├── lib/
 │   │   ├── budget/           # BudgetEngine, money precision & optimizer
 │   │   ├── time/             # TimeEngine, duration calculation & validation
 │   │   ├── geo/              # RoutingProvider, OSRM & Open-Meteo
-│   │   ├── services/         # Travel, trip, budget, and itinerary services
+│   │   ├── services/         # TravelData, Trip, Budget, Itinerary, Planner, & DestinationDiscovery services
 │   │   ├── supabase/         # SSR & Browser Supabase clients
 │   │   └── utils.ts          # Styling & formatting utilities
 │   └── types/
 │       ├── budget.ts         # Budget & financial domain types
 │       ├── time.ts           # Time intelligence, itinerary & validation types
+│       ├── discovery.ts      # Destination discovery query & result types
+│       ├── planner.ts        # Phase 6 Complete trip planner types
 │       ├── database.ts       # Supabase PostGIS + pgvector schema
 │       └── travel.ts         # Domain models (Trips, Itineraries, Routes)
 ├── test/
@@ -120,7 +123,9 @@ Rimjhim Roams/
 │   ├── phase2.test.ts        # Travel catalog & PostGIS tests
 │   ├── phase3.test.ts        # RoutingProvider & geospatial tests
 │   ├── phase4.test.ts        # BudgetEngine & optimization tests
-│   └── phase5.test.ts        # TimeEngine & itinerary tests
+│   ├── phase5.test.ts        # TimeEngine & itinerary tests
+│   ├── phase6.test.ts        # Complete TripPlannerService tests
+│   └── phase7.test.ts        # DestinationDiscoveryEngine unit & e2e tests
 ├── supabase/
 │   └── migrations/
 │       ├── 20241001000000_initial_schema.sql
