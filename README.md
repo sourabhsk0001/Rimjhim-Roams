@@ -48,7 +48,28 @@ Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, Open
 - `/trips/[id]/itinerary`: **Phase 5 Time Intelligence Engine & Timeline Dashboard** with day selectors, discrete unmerged time blocks (visit, travel, queue, buffer), schedule feasibility validation, transit indicators, and **Optimize Day**.
 - `/api/trips/[id]/budget`: REST endpoint for budget calculations and expense CRUD.
 - `/api/trips/[id]/itinerary`: REST endpoint for itinerary days, items, and day optimization.
+- `/api/trips/[id]/plan`: REST endpoint for generating and retrieving complete deterministic trip plans.
 - `/profile`: Multi-section personal traveler identity, contact details, emergency contacts, and AI preference tuning.
+
+---
+
+## 🧭 Connected Complete Trip Planner (Phase 6)
+
+- **TripPlannerService Pipeline**: Connects catalog destinations, hotels, attractions, dining, transit, routing, time intelligence, and budget engine into a single deterministic 10-stage execution pipeline.
+- **Deterministic End-to-End Orchestration**:
+  1. Resolves destination from catalog or spatial proximity.
+  2. Selects suitable hotels matching party size, nights, and target lodging budget.
+  3. Curation of attractions with duration tiers (`Quick`, `Normal`, `Relaxed`), queue waiting, and opening hours checks.
+  4. Curates lunch and dinner dining matching dietary preferences.
+  5. Selects intercity round-trip transit and local mobility mode.
+  6. Calculates geospatial routes on OpenStreetMap and transit duration.
+  7. Assembles day schedules with strictly discrete `visit_time`, `travel_time`, `waiting_time`, and `buffer_time`.
+  8. Calculates minor-unit accurate budget across all 8 required categories.
+  9. Deterministic optimization when budget is exceeded (cheaper lodging, transit, and authentic bistro dining alternatives).
+  10. Persists structured plan into database and cache.
+- **Interactive Progress & Views**:
+  - Live animated 6-stage tracker: *Finding places → Finding hotel → Calculating transport → Optimizing route → Calculating budget → Building itinerary*.
+  - Comprehensive 8-part UI: Overview hero, interactive Leaflet map canvas, day schedule timeline with discrete blocks, budget progress bar with 8 category cards, hotel details, transit passes, dining schedule, and attractions catalog.
 
 ---
 
@@ -104,7 +125,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 6. Validation & Quality Checks
 ```bash
-# Run full automated test suite (65 tests across all 5 phases)
+# Run full automated test suite (76 tests across all 6 phases)
 npm test
 
 # Run TypeScript strict typecheck

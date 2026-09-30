@@ -657,16 +657,34 @@ export class TimeEngine {
         minutesToTime(arrivalMins)
       );
 
-      const visitMins = sight.visit_minutes || 60;
+      let visitMins = sight.visit_minutes || 60;
       const bufferMins = this.calculateBuffer(travelMins, visitMins);
 
       const startMins = arrivalMins + waitMins;
-      const endMins = startMins + visitMins;
+      let endMins = startMins + visitMins;
+
+      // Closing hours check: ensure visit ends before closing time
+      if (sight.closing_time) {
+        const closeMins = timeToMinutes(sight.closing_time);
+        if (startMins >= closeMins) {
+          changesMade.push(
+            `Rescheduled ${sight.title} as arrival (${minutesToTime(startMins)}) is after closing time (${sight.closing_time}).`
+          );
+          continue;
+        } else if (endMins > closeMins) {
+          visitMins = Math.max(15, closeMins - startMins);
+          endMins = startMins + visitMins;
+          changesMade.push(
+            `Adjusted visit duration for ${sight.title} to ${visitMins}m to finish before closing (${sight.closing_time}).`
+          );
+        }
+      }
 
       reconstructed.push({
         ...sight,
         start_time: minutesToTime(startMins),
         end_time: minutesToTime(endMins),
+        visit_minutes: visitMins,
         travel_minutes: travelMins,
         waiting_minutes: waitMins,
         buffer_minutes: bufferMins,

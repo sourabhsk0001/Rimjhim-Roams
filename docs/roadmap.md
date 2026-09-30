@@ -87,10 +87,32 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 6: AI Itinerary Synthesis Engine (Next Phase)
+## Phase 6: Connected Deterministic Trip Planner (Completed)
+- [x] Created `TripPlannerService` connecting catalog data, routing, time intelligence, and budget engine into one unified deterministic planning pipeline.
+- [x] End-to-end 10-stage planning pipeline:
+  - Trip requirements resolution → Destination verification
+  - Candidate hotels selection & scoring based on group size, nights, and target lodging budget
+  - Candidate attractions selection respecting pace (`relaxed`, `moderate`, `fast`), duration tiers, and queue congestion
+  - Candidate restaurants selection for lunches and dinners respecting dietary preferences
+  - Transport selection (outbound, return, and local mobility)
+  - Geospatial clustering & routing
+  - Time calculation with strict discrete unmerged fields (`visit_minutes`, `travel_minutes`, `waiting_minutes`, `buffer_minutes`), opening/closing hours verification, and physical feasibility validation
+  - Deterministic budget calculation across 8 categories (minor-unit precision)
+  - Automatic deterministic optimization when budget is exceeded (hotel, transit, dining, and local transit alternatives)
+  - Complete itinerary assembly and persistence to database and in-memory cache
+- [x] REST API endpoint: `POST /api/trips/[id]/plan` and `GET /api/trips/[id]/plan`.
+- [x] Frontend trip experience on `/trips/[id]`:
+  - "Generate My Complete Trip" action button
+  - Animated 6-stage progress tracker: Finding places → Finding hotel → Calculating transport → Optimizing route → Calculating budget → Building itinerary
+  - 8-part comprehensive trip view: Overview, Interactive Leaflet Map, Day Timeline, Budget, Hotels, Transport, Food, Attractions
+- [x] 11 comprehensive unit & end-to-end tests for the complete planning pipeline (76 tests total).
+
+---
+
+## Phase 7: AI Itinerary Synthesis Engine (Next Phase)
 - [ ] Structured Prompt engineering with Gemini 1.5 Flash using JSON Schema output mode.
-- [ ] Multi-day itinerary synthesis clustering activities by neighborhood to minimize travel fatigue.
-- [ ] Feeding TimeEngine and BudgetEngine constraints directly into Gemini synthesis prompts.
+- [ ] Feeding deterministic TimeEngine, RoutingProvider, and BudgetEngine bounds into Gemini prompts.
+- [ ] Thematic narrative generation and cultural contextualization within strict physical limits.
 - [ ] Streaming response support for low perceived latency.
 
 ---
