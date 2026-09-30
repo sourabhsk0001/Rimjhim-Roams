@@ -264,7 +264,39 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 12: Production Polish & Performance Optimization
+## Phase 12: Collaborative Trips, Group Voting & Expense Splitting
+- [x] Database Schema & Migrations (`supabase/migrations/20241007000000_collaboration_and_splitting.sql`):
+  - `public.trip_members`: Roles (`owner`, `editor`, `viewer`) with RLS authorization.
+  - `public.trip_invitations`: Secure email invitation tokens with 7-day expiration and accept/decline statuses.
+  - `public.group_polls` & `public.group_votes`: Group decision polls (e.g. Beach, Trek, Museum) and member voting with live tallies.
+  - `public.expenses`: Updated with `paid_by` and `split_type` (`equal`, `custom`, `percentage`).
+  - `public.expense_participants`: Granular member share tracking in integer minor currency units.
+- [x] Deterministic Settlement Engine (`src/lib/engines/settlement-engine.ts`):
+  - Equal split: Integer minor unit distribution with deterministic remainder penny allocation ensuring $\sum \text{shares} \equiv \text{total}$.
+  - Custom split: Validates exact allocation against total amount.
+  - Percentage split: $100\%$ sum validation with rounding error reconciliation to the primary shareholder.
+  - Minimal Cash Flow Debt Simplification: Solves multi-party debts with the theoretical minimum number of transactions (e.g., Hotel ₹6,000 paid by A split equally $\implies$ B owes A ₹2,000; C owes A ₹2,000).
+- [x] Collaboration Services:
+  - `CollaborationService` (`src/lib/services/collaboration-service.ts`): Membership management, role enforcement, and tokenized invitations.
+  - `GroupPollService` (`src/lib/services/group-poll-service.ts`): Poll creation, member voting, vote switching, and winner determination.
+  - `ExpenseSplittingService` (`src/lib/services/expense-splitting-service.ts`): Shared expense creation, participant tracking, and settlement calculation.
+- [x] REST API Endpoints:
+  - `GET /api/trips/[id]/members` & `POST /api/trips/[id]/members`
+  - `PATCH /api/trips/[id]/members/[memberId]` & `DELETE /api/trips/[id]/members/[memberId]`
+  - `POST /api/trips/invitations/[token]/accept`
+  - `GET /api/trips/[id]/polls` & `POST /api/trips/[id]/polls`
+  - `POST /api/trips/[id]/polls/[pollId]/vote`
+  - `GET /api/trips/[id]/expenses/split` & `POST /api/trips/[id]/expenses/split`
+  - `DELETE /api/trips/[id]/expenses/split/[expenseId]`
+  - `GET /api/trips/[id]/expenses/settlement`
+- [x] Interactive Frontend Pages:
+  - `/trips/[tripId]/group`: Member roster, role indicators, invite modal, and group voting cards with live progress bars and winner badges.
+  - `/trips/[tripId]/expenses`: Shared expense ledger, Equal/Custom/Percentage split modal, and visual "Who Owes Whom" debt settlement cards.
+- [x] 15 comprehensive unit & integration tests in `test/phase12.test.ts` (152 tests total passing across all 12 phases).
+
+---
+
+## Phase 13: Production Polish & Performance Optimization
 - [ ] Edge caching and Incremental Static Regeneration (ISR) for popular travel guides.
 - [ ] End-to-end testing and lighthouse performance optimization.
 - [ ] Vercel one-click deployment verification and continuous integration setup.

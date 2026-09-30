@@ -26,6 +26,8 @@ import {
   Navigation as NavIcon,
   CloudSun,
   Bot,
+  Vote,
+  Scale,
 } from "lucide-react";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
@@ -295,8 +297,22 @@ export default function TripDetailPage() {
               </Button>
 
               <Button size="sm" asChild variant="outline" className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
+                <Link href={`/trips/${trip.id}/group`}>
+                  <Users className="w-4 h-4 text-indigo-600" />
+                  Group & Polls
+                </Link>
+              </Button>
+
+              <Button size="sm" asChild variant="outline" className="gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50">
+                <Link href={`/trips/${trip.id}/expenses`}>
+                  <Scale className="w-4 h-4 text-emerald-600" />
+                  Split & Expenses
+                </Link>
+              </Button>
+
+              <Button size="sm" asChild variant="outline" className="gap-1.5 border-purple-300 text-purple-700 hover:bg-purple-50">
                 <Link href={`/trips/${trip.id}/assistant`}>
-                  <Bot className="w-4 h-4 text-indigo-600" />
+                  <Bot className="w-4 h-4 text-purple-600" />
                   AI Copilot
                 </Link>
               </Button>

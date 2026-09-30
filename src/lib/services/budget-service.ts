@@ -263,6 +263,8 @@ export async function addTripExpense(
       id,
       trip_id: tripId,
       user_id: userId,
+      paid_by: userId,
+      split_type: "equal",
       category: expense.category,
       title: expense.title.trim(),
       amount_minor_units: amountMinor,

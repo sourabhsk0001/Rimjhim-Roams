@@ -235,3 +235,27 @@ User Delay / GPS Location / New Time
 - **Separated Time Quotas**: `visit_minutes`, `travel_minutes`, `waiting_minutes`, and `buffer_minutes` are never combined into a single ambiguous number.
 - **Explainable Change Rationale**: Every modification in `result.changes` contains a human-readable `reason` citing the exact cause (weather window, closing time, delay compression, or schedule overrun).
 - **Floating-Point Immunity**: Budget delta calculations use integer minor currency units to ensure zero arithmetic drift.
+
+---
+
+## 5. Collaborative Trips & Deterministic Debt Settlement Architecture
+
+### Minimal Cash Flow Algorithm
+To resolve debts across group members without circular transactions, TripWise uses a greedy two-pointer reconciliation algorithm on net member balances:
+
+$$\text{Net Balance}(u) = \sum \text{Paid By}(u) - \sum \text{Share Allocated to}(u)$$
+
+$$\sum_{u \in \text{Members}} \text{Net Balance}(u) \equiv 0$$
+
+1. Partition members into **Debtors** ($\text{Net} < 0$) and **Creditors** ($\text{Net} > 0$).
+2. Sort Debtors descending by magnitude of debt; sort Creditors descending by magnitude of credit.
+3. Iteratively settle the maximum debtor against the maximum creditor:
+   $$\text{Transfer Amount} = \min(|\text{Debtor Balance}|, \text{Creditor Balance})$$
+4. Record transfer: `Debtor owes Creditor Transfer Amount`.
+5. Decrement balances and advance pointers until all net balances reach zero.
+6. Guarantees the theoretical minimum number of transactions ($N - 1$ maximum for $N$ participants).
+
+### Group Voting Architecture
+- Polls support multi-option consensus (e.g. Beach, Trek, Museum).
+- Real-time vote tallying dynamically isolates single-vote constraints per member while allowing live vote switching.
+- RLS and service authorization ensure only trip members can participate.

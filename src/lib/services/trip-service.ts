@@ -1,6 +1,7 @@
 import { createClient as createServerSupabase } from "@/lib/supabase/server";
 import { Database } from "@/types/database";
 import { TripInputData, validateTripInput } from "@/lib/validation/trip";
+import { memoryTripMembers } from "./collaboration-service";
 
 export type TripRow = Database["public"]["Tables"]["trips"]["Row"];
 
@@ -69,8 +70,13 @@ export async function getUserTrips(userId: string): Promise<{
 }> {
   if (!isSupabaseLive()) {
     const today = new Date().toISOString().split("T")[0];
+    const memberTripIds = new Set(
+      Array.from(memoryTripMembers.values())
+        .filter((m) => m.user_id === userId)
+        .map((m) => m.trip_id)
+    );
     const userTrips = Array.from(memoryTrips.values()).filter(
-      (t) => t.user_id === userId
+      (t) => t.user_id === userId || memberTripIds.has(t.id)
     );
     const upcoming = userTrips
       .filter((t) => t.start_date >= today)
@@ -113,8 +119,11 @@ export async function getTripById(
   if (!isSupabaseLive()) {
     const trip = memoryTrips.get(tripId) || null;
     if (!trip) return { trip: null, isAuthorized: false };
-    const isAuthorized = trip.user_id === userId;
-    return { trip: isAuthorized ? trip : null, isAuthorized };
+    const isOwner = trip.user_id === userId;
+    const isMember = isOwner || Array.from(memoryTripMembers.values()).some(
+      (m) => m.trip_id === tripId && m.user_id === userId
+    );
+    return { trip: isMember ? trip : null, isAuthorized: isMember };
   }
 
   try {

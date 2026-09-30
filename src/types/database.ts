@@ -573,6 +573,8 @@ export interface Database {
           id: string;
           trip_id: string;
           user_id: string | null;
+          paid_by: string | null;
+          split_type: "equal" | "custom" | "percentage";
           category:
             | "transport"
             | "hotel"
@@ -595,6 +597,8 @@ export interface Database {
           id?: string;
           trip_id: string;
           user_id?: string | null;
+          paid_by?: string | null;
+          split_type?: "equal" | "custom" | "percentage";
           category:
             | "transport"
             | "hotel"
@@ -617,6 +621,8 @@ export interface Database {
           id?: string;
           trip_id?: string;
           user_id?: string | null;
+          paid_by?: string | null;
+          split_type?: "equal" | "custom" | "percentage";
           category?:
             | "transport"
             | "hotel"
@@ -866,6 +872,139 @@ export interface Database {
           metadata?: Json;
           retrieved_at?: string | null;
           updated_at?: string;
+        };
+      };
+      trip_invitations: {
+        Row: {
+          id: string;
+          trip_id: string;
+          inviter_id: string;
+          invitee_email: string;
+          invitee_user_id: string | null;
+          role: MemberRole;
+          status: "pending" | "accepted" | "declined" | "cancelled";
+          token: string;
+          expires_at: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          trip_id: string;
+          inviter_id: string;
+          invitee_email: string;
+          invitee_user_id?: string | null;
+          role?: MemberRole;
+          status?: "pending" | "accepted" | "declined" | "cancelled";
+          token: string;
+          expires_at: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          trip_id?: string;
+          inviter_id?: string;
+          invitee_email?: string;
+          invitee_user_id?: string | null;
+          role?: MemberRole;
+          status?: "pending" | "accepted" | "declined" | "cancelled";
+          token?: string;
+          expires_at?: string;
+          updated_at?: string;
+        };
+      };
+      group_polls: {
+        Row: {
+          id: string;
+          trip_id: string;
+          creator_id: string;
+          title: string;
+          description: string | null;
+          options: Json;
+          status: "active" | "closed";
+          deadline: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          trip_id: string;
+          creator_id: string;
+          title: string;
+          description?: string | null;
+          options?: Json;
+          status?: "active" | "closed";
+          deadline?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          trip_id?: string;
+          creator_id?: string;
+          title?: string;
+          description?: string | null;
+          options?: Json;
+          status?: "active" | "closed";
+          deadline?: string | null;
+          updated_at?: string;
+        };
+      };
+      group_votes: {
+        Row: {
+          id: string;
+          poll_id: string;
+          trip_id: string;
+          user_id: string;
+          option_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          poll_id: string;
+          trip_id: string;
+          user_id: string;
+          option_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          poll_id?: string;
+          trip_id?: string;
+          user_id?: string;
+          option_id?: string;
+        };
+      };
+      expense_participants: {
+        Row: {
+          id: string;
+          expense_id: string;
+          trip_id: string;
+          user_id: string;
+          share_amount_minor_units: number;
+          share_percentage: number | null;
+          has_settled: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          expense_id: string;
+          trip_id: string;
+          user_id: string;
+          share_amount_minor_units: number;
+          share_percentage?: number | null;
+          has_settled?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          expense_id?: string;
+          trip_id?: string;
+          user_id?: string;
+          share_amount_minor_units?: number;
+          share_percentage?: number | null;
+          has_settled?: boolean;
         };
       };
     };
