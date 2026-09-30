@@ -359,7 +359,7 @@ async function loadItineraryDaysFromStore(
   }
 }
 
-async function persistOptimizedItems(
+export async function persistOptimizedItems(
   itineraryId: string,
   tripId: string,
   items: ItineraryItem[]

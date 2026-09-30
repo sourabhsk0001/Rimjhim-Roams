@@ -132,7 +132,38 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 8: AI Itinerary Synthesis Engine (Next Phase)
+## Phase 8: Weather Intelligence & Itinerary Integration (Completed)
+- [x] Integrated real-time, forecast, and historical weather intelligence using Open-Meteo free API with robust fallback resilience.
+- [x] Created `WeatherProvider` interface and `OpenMeteoWeatherProvider` implementation:
+  - `getCurrentWeather(latitude, longitude)`
+  - `getForecast(latitude, longitude, days)`
+  - `getHistoricalDataIfAvailable(latitude, longitude, startDate, endDate)`
+  - Explicit confidence tiers: `high_confidence` (0-2d), `moderate_confidence` (3-7d), and `seasonal_guidance` (>7d).
+  - Unsafe weather claims guard with prominent probability-based advisory disclaimers.
+  - Non-throwing timeout protection (`AbortSignal.timeout(2500)`) with safe climatological fallback.
+- [x] Created `WeatherCacheManager` and `WeatherService`:
+  - TTL-based memory caching (30m current, 2h forecast, 24h historical).
+  - Database table and migration: `20241005000000_weather_snapshots.sql` with RLS.
+  - `storeWeatherSnapshot()` and `getWeatherSnapshots()`.
+- [x] Weather-Itinerary Conflict Detection & Resolution Engine:
+  - Detects outdoor activities scheduled during rainy or adverse conditions ($\ge 50\%$ precipitation probability or heavy precipitation).
+  - **Strategy 1 (Time Reschedule)**: Shifts outdoor activity to a dry daytime window on the same day (e.g. *Rain at 3 PM &rarr; Move beach from 3 PM to 5 PM*).
+  - **Strategy 2 (Indoor Replacement)**: Replaces outdoor activities with indoor cultural/museum attractions when rain is continuous.
+  - Dry-run preview vs persistent itinerary updates.
+- [x] REST API endpoints:
+  - `GET /api/trips/[id]/weather`: Live/cached forecast, weather snapshots, and detected conflicts.
+  - `POST /api/trips/[id]/weather/integrate`: Resolves itinerary weather conflicts (supports `{ dryRun: boolean }`).
+- [x] Interactive Frontend Experience:
+  - `/trips/[id]/weather`: Dedicated weather dashboard displaying current temperature, feels-like, condition, rain probability, wind, humidity, and UV index.
+  - Multi-day forecast cards with confidence tier badges.
+  - Hourly forecast timeline with rain risk coloring.
+  - **Itinerary Weather Shield**: Live conflict inspection with side-by-side fix recommendations and "Apply Weather Fixes" button.
+  - Direct tab navigation between Overview, Time & Itinerary, Budget & Ledger, and Weather & Forecast.
+- [x] 9 unit & end-to-end tests verifying provider methods, fallback resilience, caching, snapshot persistence, and prompt conflict resolution scenarios (91 tests total across all 8 phases).
+
+---
+
+## Phase 9: AI Itinerary Synthesis Engine (Next Phase)
 - [ ] Structured Prompt engineering with Gemini 1.5 Flash using JSON Schema output mode.
 - [ ] Feeding deterministic TimeEngine, RoutingProvider, and BudgetEngine bounds into Gemini prompts.
 - [ ] Thematic narrative generation and cultural contextualization within strict physical limits.
@@ -140,14 +171,14 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 9: Semantic Discovery & Vector Search
+## Phase 10: Semantic Discovery & Vector Search
 - [ ] Embedding generation for curated points of interest (POIs).
 - [ ] pgvector cosine similarity search (`match_places` stored procedure).
 - [ ] Natural language search (e.g. "cafes with good wifi and quiet courtyard").
 
 ---
 
-## Phase 10: Production Polish & Vercel Deployment
+## Phase 11: Production Polish & Vercel Deployment
 - [ ] Edge caching and Incremental Static Regeneration (ISR) for popular travel guides.
 - [ ] End-to-end testing and lighthouse performance optimization.
 - [ ] Vercel one-click deployment verification and continuous integration setup.

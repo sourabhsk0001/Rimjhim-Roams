@@ -47,9 +47,12 @@ Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, Open
 - `/trips/[id]`: Individual itinerary inspection, configuration review, and deletion management.
 - `/trips/[id]/budget`: **Phase 4 Interactive Budget Dashboard** with category breakdowns, over-budget warnings, 4 optimization profiles, and live expense ledger.
 - `/trips/[id]/itinerary`: **Phase 5 Time Intelligence Engine & Timeline Dashboard** with day selectors, discrete unmerged time blocks (visit, travel, queue, buffer), schedule feasibility validation, transit indicators, and **Optimize Day**.
+- `/trips/[id]/weather`: **Phase 8 Weather Intelligence & Itinerary Shield Dashboard** with current conditions, multi-day forecast, hourly timeline, and automatic conflict detection & resolution (reschedules outdoor activities or swaps with indoor attractions).
 - `/api/trips/[id]/budget`: REST endpoint for budget calculations and expense CRUD.
 - `/api/trips/[id]/itinerary`: REST endpoint for itinerary days, items, and day optimization.
 - `/api/trips/[id]/plan`: REST endpoint for generating and retrieving complete deterministic trip plans.
+- `/api/trips/[id]/weather`: REST endpoint for live/cached forecasts and weather snapshots.
+- `/api/trips/[id]/weather/integrate`: REST endpoint for weather-itinerary conflict resolution and updates.
 - `/profile`: Multi-section personal traveler identity, contact details, emergency contacts, and AI preference tuning.
 
 ---
@@ -117,6 +120,7 @@ Execute the migrations in order in your Supabase SQL Editor:
 2. [`supabase/migrations/20241002000000_core_travel_data.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241002000000_core_travel_data.sql): Sets up destinations, attractions, hotels, restaurants, transport, taxis, reviews, spatial indexes, and the `find_nearby_attractions` PostGIS function.
 3. [`supabase/migrations/20241003000000_budget_and_expenses.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241003000000_budget_and_expenses.sql): Sets up `price_snapshots` and `expenses` tables with RLS policies and indexes.
 4. [`supabase/migrations/20241004000000_time_and_itineraries.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241004000000_time_and_itineraries.sql): Sets up `itineraries`, `itinerary_items`, and `route_segments` tables with RLS policies.
+5. [`supabase/migrations/20241005000000_weather_snapshots.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241005000000_weather_snapshots.sql): Sets up `weather_snapshots` table with RLS policies and indexes.
 
 ### 5. Running the Development Server
 ```bash
@@ -126,7 +130,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 6. Validation & Quality Checks
 ```bash
-# Run full automated test suite (82 tests across all 7 phases)
+# Run full automated test suite (91 tests across all 8 phases)
 npm test
 
 # Run TypeScript strict typecheck

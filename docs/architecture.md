@@ -87,7 +87,7 @@ Rimjhim Roams/
 │   │   │   ├── geo/          # OSRM routing proxy (/api/geo/route)
 │   │   │   ├── health/       # Health monitoring endpoint
 │   │   │   ├── profile/      # User profile & preferences
-│   │   │   └── trips/        # AI trip synthesis, CRUD, /budget, /itinerary, /plan
+│   │   │   └── trips/        # AI trip synthesis, CRUD, /budget, /itinerary, /plan, /weather
 │   │   ├── dashboard/        # Authenticated user dashboard
 │   │   ├── explore/          # Destination catalog & interactive maps
 │   │   ├── profile/          # User preferences editor
@@ -95,6 +95,7 @@ Rimjhim Roams/
 │   │   │   └── [id]/
 │   │   │       ├── budget/   # Phase 4 Budget & Optimization Engine UI
 │   │   │       ├── itinerary/# Phase 5 Time Intelligence Timeline UI
+│   │   │       ├── weather/  # Phase 8 Weather Intelligence & Conflict Shield UI
 │   │   │       └── page.tsx  # Phase 6 Complete Trip Planner Hub
 │   │   ├── globals.css       # Tailwind CSS & Leaflet tile styles
 │   │   ├── layout.tsx        # Root HTML layout and metadata
@@ -107,7 +108,8 @@ Rimjhim Roams/
 │   │   ├── budget/           # BudgetEngine, money precision & optimizer
 │   │   ├── time/             # TimeEngine, duration calculation & validation
 │   │   ├── geo/              # RoutingProvider, OSRM & Open-Meteo
-│   │   ├── services/         # TravelData, Trip, Budget, Itinerary, Planner, & DestinationDiscovery services
+│   │   ├── weather/          # WeatherProvider, Open-Meteo & WeatherCacheManager
+│   │   ├── services/         # TravelData, Trip, Budget, Itinerary, Planner, Discovery & Weather services
 │   │   ├── supabase/         # SSR & Browser Supabase clients
 │   │   └── utils.ts          # Styling & formatting utilities
 │   └── types/
@@ -115,6 +117,7 @@ Rimjhim Roams/
 │       ├── time.ts           # Time intelligence, itinerary & validation types
 │       ├── discovery.ts      # Destination discovery query & result types
 │       ├── planner.ts        # Phase 6 Complete trip planner types
+│       ├── weather.ts        # Phase 8 Weather domain, forecast & conflict types
 │       ├── database.ts       # Supabase PostGIS + pgvector schema
 │       └── travel.ts         # Domain models (Trips, Itineraries, Routes)
 ├── test/
@@ -125,13 +128,15 @@ Rimjhim Roams/
 │   ├── phase4.test.ts        # BudgetEngine & optimization tests
 │   ├── phase5.test.ts        # TimeEngine & itinerary tests
 │   ├── phase6.test.ts        # Complete TripPlannerService tests
-│   └── phase7.test.ts        # DestinationDiscoveryEngine unit & e2e tests
+│   ├── phase7.test.ts        # DestinationDiscoveryEngine unit & e2e tests
+│   └── phase8.test.ts        # WeatherProvider & itinerary integration tests
 ├── supabase/
 │   └── migrations/
 │       ├── 20241001000000_initial_schema.sql
 │       ├── 20241002000000_core_travel_data.sql
 │       ├── 20241003000000_budget_and_expenses.sql
-│       └── 20241004000000_time_and_itineraries.sql
+│       ├── 20241004000000_time_and_itineraries.sql
+│       └── 20241005000000_weather_snapshots.sql
 ├── package.json              # Project dependencies & scripts
 ├── tailwind.config.ts        # Tailwind theme & token setup
 └── tsconfig.json             # TypeScript compiler settings

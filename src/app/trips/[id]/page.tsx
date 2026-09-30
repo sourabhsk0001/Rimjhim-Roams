@@ -24,6 +24,7 @@ import {
   ChevronRight,
   TrendingDown,
   Navigation as NavIcon,
+  CloudSun,
 } from "lucide-react";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
@@ -282,6 +283,13 @@ export default function TripDetailPage() {
                 <Link href={`/trips/${trip.id}/budget`}>
                   <Wallet className="w-4 h-4" />
                   Budget & Ledger
+                </Link>
+              </Button>
+
+              <Button size="sm" asChild variant="outline" className="gap-1.5 border-sky-300 text-sky-700 hover:bg-sky-50">
+                <Link href={`/trips/${trip.id}/weather`}>
+                  <CloudSun className="w-4 h-4" />
+                  Weather & Forecast
                 </Link>
               </Button>
 
