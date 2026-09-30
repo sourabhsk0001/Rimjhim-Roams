@@ -23,6 +23,7 @@ import { timeEngine } from "@/lib/time/engine";
 import { calculateRoute, calculateDistance } from "@/lib/geo/routing";
 import { tripPlannerService } from "@/lib/services/trip-planner-service";
 import { replanEngine } from "@/lib/engines/replan-engine";
+import { safetyService } from "@/lib/services/safety-service";
 import { DurationTier } from "@/types/time";
 
 // ==============================================================================
@@ -191,6 +192,20 @@ export const COPILOT_TOOL_DEFINITIONS: ToolDefinition[] = [
   },
 ];
 
+export const SAFETY_TOOL_DEFINITIONS: ToolDefinition[] = [
+  {
+    name: "get_safety_info",
+    description: "Retrieve verified emergency numbers, 24/7 hospitals, police stations, travel advisories, and local statutory rules for a destination or trip.",
+    parameters: {
+      type: "object",
+      properties: {
+        destination: { type: "string", description: "Destination city or region (e.g. 'Goa', 'Jaipur', 'Manali')" },
+        tripId: { type: "string", description: "Optional authorized trip ID to include hotel and personalized SOS card" },
+      },
+    },
+  },
+];
+
 // ==============================================================================
 // Deterministic Tool Execution Registry
 // ==============================================================================
@@ -241,6 +256,9 @@ export class ToolRegistry {
 
       case "get_trip_context":
         return this.getTripContext(args, context);
+
+      case "get_safety_info":
+        return this.getSafetyInfo(args, context);
 
       default:
         throw new Error(`Unrecognized tool: ${name}`);
@@ -722,6 +740,102 @@ export class ToolRegistry {
       currentTemperature: weather.weather?.current.temperature ?? 25,
       weatherCondition: weather.weather?.current.condition ?? "Clear Sky",
       weatherConflictsCount: weather.conflicts?.length ?? 0,
+    };
+  }
+
+  // ----------------------------------------------------------------------------
+  // Tool 13: get_safety_info
+  // ----------------------------------------------------------------------------
+  private async getSafetyInfo(args: Record<string, unknown>, context: CopilotContext) {
+    const tripId = typeof args.tripId === "string" ? args.tripId : context.tripId;
+    let destination = typeof args.destination === "string" ? args.destination : undefined;
+
+    if (tripId) {
+      const tripRes = await safetyService.getTripSafetyCenter(tripId, context.userId);
+      if (tripRes.authorized && tripRes.safetyCenter) {
+        return {
+          destination: tripRes.safetyCenter.destination,
+          tripId,
+          emergencyNumbers: tripRes.safetyCenter.emergencyNumbers.map((e) => ({
+            name: e.name,
+            number: e.number,
+            category: e.category,
+            source: e.source,
+          })),
+          hospitals: tripRes.safetyCenter.hospitals.slice(0, 3).map((h) => ({
+            name: h.name,
+            phone: h.phone,
+            has24x7Emergency: h.has24x7Emergency,
+            address: h.address,
+            source: h.source,
+          })),
+          policeStations: tripRes.safetyCenter.policeStations.slice(0, 3).map((p) => ({
+            name: p.name,
+            phone: p.phone,
+            address: p.address,
+            source: p.source,
+          })),
+          travelAdvisories: tripRes.safetyCenter.travelAdvisories.map((a) => ({
+            title: a.title,
+            content: a.content,
+            severity: a.severity,
+            source: a.source,
+          })),
+          localRules: tripRes.safetyCenter.localRules.map((r) => ({
+            topic: r.topic,
+            rule: r.rule,
+            penalty: r.penalty,
+            source: r.source,
+          })),
+          emergencyCard: tripRes.emergencyCard ? {
+            shareableSummaryText: tripRes.emergencyCard.shareableSummaryText,
+            hotelName: tripRes.emergencyCard.hotelName,
+            emergencyHelpline: tripRes.emergencyCard.emergencyHelpline,
+          } : undefined,
+          disclaimer: tripRes.safetyCenter.disclaimer,
+        };
+      }
+    }
+
+    if (!destination) {
+      destination = "Goa";
+    }
+
+    const safety = await safetyService.getDestinationSafetyInfo(destination);
+    return {
+      destination: safety.destination,
+      emergencyNumbers: safety.emergencyNumbers.map((e) => ({
+        name: e.name,
+        number: e.number,
+        category: e.category,
+        source: e.source,
+      })),
+      hospitals: safety.hospitals.slice(0, 3).map((h) => ({
+        name: h.name,
+        phone: h.phone,
+        has24x7Emergency: h.has24x7Emergency,
+        address: h.address,
+        source: h.source,
+      })),
+      policeStations: safety.policeStations.slice(0, 3).map((p) => ({
+        name: p.name,
+        phone: p.phone,
+        address: p.address,
+        source: p.source,
+      })),
+      travelAdvisories: safety.travelAdvisories.map((a) => ({
+        title: a.title,
+        content: a.content,
+        severity: a.severity,
+        source: a.source,
+      })),
+      localRules: safety.localRules.map((r) => ({
+        topic: r.topic,
+        rule: r.rule,
+        penalty: r.penalty,
+        source: r.source,
+      })),
+      disclaimer: safety.disclaimer,
     };
   }
 

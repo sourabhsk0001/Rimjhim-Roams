@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test test/health.test.mjs test/phase1.test.ts test/phase2.test.ts test/phase3.test.ts test/phase4.test.ts test/phase5.test.ts test/phase6.test.ts test/phase7.test.ts test/phase8.test.ts test/phase9.test.ts test/phase10.test.ts test/phase11.test.ts test/phase12.test.ts"
+    "test": "tsx --test test/health.test.mjs test/phase1.test.ts test/phase2.test.ts test/phase3.test.ts test/phase4.test.ts test/phase5.test.ts test/phase6.test.ts test/phase7.test.ts test/phase8.test.ts test/phase9.test.ts test/phase10.test.ts test/phase11.test.ts test/phase12.test.ts test/phase13.test.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

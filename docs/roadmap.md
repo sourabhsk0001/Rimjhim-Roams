@@ -296,7 +296,39 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 13: Production Polish & Performance Optimization
-- [ ] Edge caching and Incremental Static Regeneration (ISR) for popular travel guides.
-- [ ] End-to-end testing and lighthouse performance optimization.
-- [ ] Vercel one-click deployment verification and continuous integration setup.
+## Phase 13: Source-Backed Safety Center & Emergency Mode
+- [x] Database Schema & Migration (`supabase/migrations/20241008000000_safety_center.sql`):
+  - `public.safety_facilities`: Stores hospitals, trauma centers, and police stations with coordinates, direct phones, categories, and verified sources.
+  - `public.safety_advisories`: Stores official advisories, transport disruptions, and statutory local rules with citations and penalties.
+  - Public read RLS for open civic safety data with authenticated administration policies.
+- [x] Strict Safety Invariants:
+  - **No arbitrary safety scores**: Zero synthetic numeric or letter ratings.
+  - **No fabricated alerts**: Real meteorological and transport notices only; defaults to verified "No active alerts reported".
+  - **No false emergency dispatch claims**: Direct one-tap citizen dialing to 112/108/100/1363 and structured SOS sharing; no fake server dispatch claims.
+  - **Explicit user geolocation permission**: Location is never requested automatically on mount; triggered exclusively on explicit user button click.
+  - **Metadata integrity**: Every record includes `source` and `retrieved_at` timestamp.
+- [x] Services & Engines (`src/lib/services/safety-service.ts`):
+  - `SafetyService`: Curation of verified national emergency helplines (ERSS 112, EMRI 108, Police 100, Fire 101, Tourist Helpline 1363, Women Helpline 1091) and destination registries for all 8 core destinations.
+  - Haversine proximity engine (`calculateHaversineKm`): Computes distances from user live coordinates to medical/police facilities and sorts nearest first.
+  - Trip Emergency Card generation: Combines hotel reservations, traveler count, helplines, nearest trauma center, nearest police post, and live Google Maps GPS pin into a shareable SOS text block.
+  - Graceful fallback for unlisted destinations: Provides nationwide ERSS 112 helplines, standard ASI monument preservation rules, and verified notice that local hospital records are unverified.
+- [x] REST API Endpoints:
+  - `GET /api/trips/[id]/safety`: Authorized member access with optional `latitude` and `longitude` query params for proximity sorting and SOS card hydration.
+  - `GET /api/safety/destinations/[destination]`: Public lookup for destination safety directories and local rules.
+- [x] AI Travel Copilot Integration (`src/lib/ai/tools/registry.ts`):
+  - `get_safety_info` tool definition and dispatcher for querying emergency numbers, 24/7 hospitals, local statutory rules, and personalized trip SOS cards.
+- [x] Frontend Safety Center & Emergency Mode (`src/app/trips/[id]/safety/page.tsx`):
+  - Emergency SOS view with high-contrast alert design, one-tap calling buttons (`112`, `108`, `100`, `1363`, `1091`).
+  - Nearest 24/7 hospital and police cards with direct phone dialers and Google Maps directions.
+  - Explicit GPS permission button with accuracy feedback and live coordinates mapping.
+  - One-tap "Copy SOS Info" and Web Share API integration for instant WhatsApp / SMS sharing.
+  - Tabbed directories: Helplines, Hospitals, Police, Weather Alerts, Travel Advisories, Transport Disruptions, and Local Rules (with statutory citations and penalties).
+  - Navigation link added to trip details header (`/trips/[id]/safety`).
+- [x] 12 comprehensive unit and integration tests in `test/phase13.test.ts` (164 tests total passing across all 13 phases).
+
+---
+
+## Phase 14: Production Polish, PWA Offline Support & Monitoring
+- [ ] Offline caching for emergency cards and destination safety data via Service Workers.
+- [ ] Multi-region CDN asset delivery and static optimization.
+- [ ] Continuous integration automated deployment pipeline.

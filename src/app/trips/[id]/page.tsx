@@ -28,6 +28,7 @@ import {
   Bot,
   Vote,
   Scale,
+  ShieldAlert,
 } from "lucide-react";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
@@ -314,6 +315,13 @@ export default function TripDetailPage() {
                 <Link href={`/trips/${trip.id}/assistant`}>
                   <Bot className="w-4 h-4 text-purple-600" />
                   AI Copilot
+                </Link>
+              </Button>
+
+              <Button size="sm" asChild variant="outline" className="gap-1.5 border-rose-300 text-rose-700 hover:bg-rose-50 font-medium">
+                <Link href={`/trips/${trip.id}/safety`}>
+                  <ShieldAlert className="w-4 h-4 text-rose-600" />
+                  Safety & SOS
                 </Link>
               </Button>
 
