@@ -6,7 +6,10 @@ import { memoryTripMembers } from "./collaboration-service";
 export type TripRow = Database["public"]["Tables"]["trips"]["Row"];
 
 // Fallback in-memory store for local testing without active Supabase credentials
-const memoryTrips: Map<string, TripRow> = new Map();
+const memoryTrips: Map<string, TripRow> =
+  (globalThis as unknown as { __memoryTrips?: Map<string, TripRow> }).__memoryTrips ||
+  new Map<string, TripRow>();
+(globalThis as unknown as { __memoryTrips?: Map<string, TripRow> }).__memoryTrips = memoryTrips;
 
 function isSupabaseLive(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

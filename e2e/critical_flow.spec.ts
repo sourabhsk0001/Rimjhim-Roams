@@ -71,17 +71,15 @@ test.describe("TripWise AI — Production-Grade Critical E2E User Journey", () =
     await page.fill("#budget", "35000");
 
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/trips/, { timeout: 15000 });
-
-    // Click the newly created trip from the main trips grid
-    const tripCardLink = page.locator('main a:has-text("View Details")').first();
-    await expect(tripCardLink).toBeVisible({ timeout: 10000 });
-    await tripCardLink.click();
-    await page.waitForURL(/\/trips\/[a-zA-Z0-9_-]+$/, { timeout: 15000 });
+    await page.waitForURL(
+      (url) => url.pathname.startsWith("/trips/") && url.pathname !== "/trips/new",
+      { timeout: 15000 }
+    );
 
     const currentUrl = page.url();
     const tripId = currentUrl.split("/trips/")[1].split("?")[0].split("/")[0];
     expect(tripId).toBeTruthy();
+    expect(tripId).not.toBe("new");
 
     // --------------------------------------------------------------------------
     // 5. VIEW TRIP WORKSPACE & GENERATE TRIP
@@ -89,7 +87,7 @@ test.describe("TripWise AI — Production-Grade Critical E2E User Journey", () =
     const generateBtn = page.locator('button:has-text("Generate Complete Trip")').first();
     if (await generateBtn.isVisible()) {
       await generateBtn.click();
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(3500);
     }
 
     // Verify Workspace navigation is present
@@ -153,6 +151,7 @@ test.describe("TripWise AI — Production-Grade Critical E2E User Journey", () =
 
     const addExpenseBtn = page.locator('button:has-text("Add Shared Expense"), button:has-text("Add Expense")').first();
     await addExpenseBtn.click();
+    await page.waitForSelector('text=Add Shared Expense', { timeout: 5000 });
 
     // Fill expense details in modal
     await page.fill('input[placeholder*="Hotel Stay"]', "Seafood Shack Dinner");

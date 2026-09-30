@@ -14,7 +14,10 @@ import { collaborationService } from "./collaboration-service";
 import { formatCurrency } from "@/lib/budget/money";
 
 // In-memory fallback stores
-export const memoryExpenses: Map<string, TripSplitExpense> = new Map();
+export const memoryExpenses: Map<string, TripSplitExpense> =
+  (globalThis as unknown as { __memoryExpenses?: Map<string, TripSplitExpense> }).__memoryExpenses ||
+  new Map<string, TripSplitExpense>();
+(globalThis as unknown as { __memoryExpenses?: Map<string, TripSplitExpense> }).__memoryExpenses = memoryExpenses;
 
 function isSupabaseLive(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

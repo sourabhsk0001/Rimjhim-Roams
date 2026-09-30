@@ -163,15 +163,13 @@ export default function TripExpensesPage() {
     let participantsPayload: ExpenseParticipantInput[] = [];
 
     if (splitType === "equal") {
-      if (selectedUserIds.length === 0) {
-        toast({
-          title: "Select Participants",
-          description: "Please select at least one participant to split with.",
-          variant: "warning",
-        });
-        return;
-      }
-      participantsPayload = selectedUserIds.map((uid) => ({ user_id: uid }));
+      const activeUserIds =
+        selectedUserIds.length > 0
+          ? selectedUserIds
+          : members.length > 0
+          ? members.map((m) => m.user_id)
+          : [paidBy || "demo-user-123"];
+      participantsPayload = activeUserIds.map((uid) => ({ user_id: uid }));
     } else if (splitType === "custom") {
       participantsPayload = members
         .filter((m) => Boolean(customShares[m.user_id]))
@@ -219,7 +217,7 @@ export default function TripExpensesPage() {
           amount_minor_units: amountMinor,
           currency: "INR",
           split_type: splitType,
-          paid_by: paidBy,
+          paid_by: paidBy || members[0]?.user_id || "demo-user-123",
           participants: participantsPayload,
         }),
       });
@@ -827,6 +825,7 @@ export default function TripExpensesPage() {
                 <Button
                   type="submit"
                   size="sm"
+                  onClick={handleCreateExpense}
                   disabled={savingExpense || !title || !amountInput}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 >

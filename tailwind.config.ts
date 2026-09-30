@@ -56,6 +56,19 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        serif: ["'Instrument Serif'", "Georgia", "serif"],
+        sans: ["Inter", "system-ui", "sans-serif"],
+      },
+      keyframes: {
+        "fade-rise": {
+          "0%": { opacity: "0", transform: "translateY(24px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        "fade-rise": "fade-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+      },
     },
   },
   plugins: [],

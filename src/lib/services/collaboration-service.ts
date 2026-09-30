@@ -11,8 +11,15 @@ import {
 import { getTripById } from "@/lib/services/trip-service";
 
 // In-memory fallback stores for test and offline environments
-export const memoryTripMembers: Map<string, TripMember> = new Map();
-export const memoryTripInvitations: Map<string, TripInvitation> = new Map();
+export const memoryTripMembers: Map<string, TripMember> =
+  (globalThis as unknown as { __memoryTripMembers?: Map<string, TripMember> }).__memoryTripMembers ||
+  new Map<string, TripMember>();
+(globalThis as unknown as { __memoryTripMembers?: Map<string, TripMember> }).__memoryTripMembers = memoryTripMembers;
+
+export const memoryTripInvitations: Map<string, TripInvitation> =
+  (globalThis as unknown as { __memoryTripInvitations?: Map<string, TripInvitation> }).__memoryTripInvitations ||
+  new Map<string, TripInvitation>();
+(globalThis as unknown as { __memoryTripInvitations?: Map<string, TripInvitation> }).__memoryTripInvitations = memoryTripInvitations;
 
 function isSupabaseLive(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

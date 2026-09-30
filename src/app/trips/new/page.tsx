@@ -153,10 +153,8 @@ export default function NewTripPage() {
       }
 
       setSuccess(true);
-      setTimeout(() => {
-        router.push("/trips");
-        router.refresh();
-      }, 1000);
+      const targetUrl = data.trip?.id ? `/trips/${data.trip.id}` : "/trips";
+      router.push(targetUrl);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred.");
     } finally {
