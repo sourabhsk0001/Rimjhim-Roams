@@ -86,43 +86,46 @@ export default function TripsPage() {
   }, [searchTerm, statusFilter, allTrips]);
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="flex-1 container mx-auto px-4 py-8 space-y-6">
+      <main className="flex-1 container mx-auto px-4 py-8 space-y-6 animate-fade-rise">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">My Trips</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="font-instrument text-4xl sm:text-5xl font-normal tracking-[-1.5px] text-[#0f172a] leading-none">
+              My Trips
+            </h1>
+            <p className="text-[17px] text-[hsl(215,25%,32%)] mt-2 font-normal">
               Browse, filter, and manage all your travel itineraries in one place.
             </p>
           </div>
-          <Button asChild size="lg" className="gap-2 shadow">
-            <Link href="/trips/new">
-              <PlusCircle className="w-5 h-5" />
-              Plan New Trip
-            </Link>
-          </Button>
+          <Link
+            href="/trips/new"
+            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-black text-white text-sm font-medium shadow-sm hover:scale-[1.03] active:scale-[0.98] transition-transform duration-200 w-fit"
+          >
+            <PlusCircle className="w-4 h-4" />
+            Plan New Trip
+          </Link>
         </div>
 
         {/* Search and Filters */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 bg-card p-4 rounded-xl border">
+        <div className="flex flex-col sm:flex-row items-center gap-3 bg-white p-3 sm:p-4 rounded-2xl border border-slate-200/80 shadow-xs">
           <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
             <Input
               placeholder="Search by origin or destination..."
-              className="pl-9"
+              className="pl-9 rounded-full border-slate-200 text-sm focus-visible:ring-black"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Filter className="w-4 h-4 text-muted-foreground" />
+            <Filter className="w-4 h-4 text-slate-500" />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="flex h-9 rounded-full border border-slate-200 bg-white px-4 py-1 text-xs font-medium text-slate-700 shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
             >
               <option value="all">All Statuses</option>
               <option value="planning">Planning</option>
@@ -182,72 +185,68 @@ export default function TripsPage() {
                 trip.destination === "destination discovery required";
 
               return (
-                <Card
+                <div
                   key={trip.id}
-                  className="flex flex-col h-full hover:shadow-md transition-shadow"
+                  className="flex flex-col h-full rounded-2xl border border-slate-200/80 bg-white hover:shadow-md transition-all duration-300 p-6 space-y-4"
                 >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <Badge
-                        variant={
-                          trip.status === "completed"
-                            ? "secondary"
-                            : isDiscovery
-                            ? "outline"
-                            : "default"
-                        }
-                      >
-                        {isDiscovery ? "Discovery Required" : trip.status}
-                      </Badge>
-                      <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        {trip.duration_days}{" "}
-                        {trip.duration_days === 1 ? "day" : "days"}
-                      </span>
-                    </div>
+                  <div className="flex items-start justify-between gap-2">
+                    <span
+                      className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
+                        trip.status === "completed"
+                          ? "bg-slate-100 text-slate-700"
+                          : isDiscovery
+                          ? "bg-amber-50 text-amber-800 border border-amber-200"
+                          : "bg-black text-white"
+                      }`}
+                    >
+                      {isDiscovery ? "Discovery Required" : trip.status}
+                    </span>
+                    <span className="text-xs font-medium text-[hsl(215,25%,32%)] flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      {trip.duration_days}{" "}
+                      {trip.duration_days === 1 ? "day" : "days"}
+                    </span>
+                  </div>
 
-                    <CardTitle className="text-lg mt-2 line-clamp-1">
+                  <div>
+                    <h3 className="font-instrument text-2xl font-normal text-[#0f172a] line-clamp-1">
                       {isDiscovery
                         ? `Discovery from ${trip.origin}`
                         : `${trip.origin} → ${trip.destination}`}
-                    </CardTitle>
-                    <CardDescription className="flex items-center gap-1.5 text-xs">
-                      <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
+                    </h3>
+                    <p className="flex items-center gap-1.5 text-xs text-[hsl(215,25%,32%)] mt-1">
+                      <MapPin className="w-3.5 h-3.5" />
                       <span>Origin: {trip.origin}</span>
-                    </CardDescription>
-                  </CardHeader>
+                    </p>
+                  </div>
 
-                  <CardContent className="flex-1 space-y-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2 text-xs">
-                      <Calendar className="w-3.5 h-3.5" />
+                  <div className="flex-1 space-y-2 text-xs text-[hsl(215,25%,32%)] pt-1">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
                       <span>
                         {trip.start_date} to {trip.end_date}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs pt-1">
-                      <span className="flex items-center gap-1 font-medium text-foreground">
-                        <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="flex items-center gap-1 font-medium text-slate-900">
+                        <DollarSign className="w-3.5 h-3.5 text-slate-400" />
                         {trip.budget.toLocaleString()} {trip.currency}
                       </span>
-                      <span className="capitalize">{trip.travel_pace} pace</span>
+                      <span className="capitalize text-slate-600">{trip.travel_pace} pace</span>
                     </div>
-                  </CardContent>
+                  </div>
 
-                  <CardFooter className="pt-2 border-t">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      asChild
-                      className="w-full justify-between"
+                  <div className="pt-3 border-t border-slate-100">
+                    <Link
+                      href={`/trips/${trip.id}`}
+                      className="inline-flex items-center justify-between w-full text-xs font-medium text-black hover:text-slate-600 transition-colors py-1 group"
                     >
-                      <Link href={`/trips/${trip.id}`}>
-                        View Details
-                        <ArrowRight className="w-4 h-4 ml-1" />
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
+                      <span>View Details</span>
+                      <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </div>
+                </div>
               );
             })}
           </div>

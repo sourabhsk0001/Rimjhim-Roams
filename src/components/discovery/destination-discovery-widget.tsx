@@ -150,17 +150,17 @@ export function DestinationDiscoveryWidget() {
   return (
     <div className="w-full space-y-8" id="discovery-planner">
       {/* Input Discovery Form Card */}
-      <Card className="border-2 border-primary/20 shadow-xl overflow-hidden bg-card/95 backdrop-blur">
-        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-6 sm:p-8">
+      <Card className="border border-slate-200/80 shadow-sm rounded-2xl overflow-hidden bg-white/95 backdrop-blur">
+        <div className="bg-gradient-to-br from-[#071324] via-[#0f172a] to-[#1e293b] text-white p-6 sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="space-y-1">
-              <Badge className="bg-white/20 text-white border-none uppercase tracking-wider text-xs">
+              <Badge className="bg-white/20 text-white border-none uppercase tracking-wider text-xs rounded-full">
                 TripWise Discovery Engine
               </Badge>
-              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              <h2 className="font-instrument text-3xl sm:text-4xl font-normal tracking-[-1.5px] text-white">
                 Don&apos;t Know Where to Go? Let AI Calculate It.
               </h2>
-              <p className="text-blue-100 text-sm max-w-2xl">
+              <p className="text-slate-300 text-sm max-w-2xl font-normal">
                 Enter your departure city, budget cap, and trip length. We calculate real transit, lodging, meals, and activities across candidate destinations to show you everywhere you can feasibly travel.
               </p>
             </div>
@@ -333,12 +333,12 @@ export function DestinationDiscoveryWidget() {
                 type="submit"
                 size="lg"
                 disabled={loading}
-                className="w-full sm:w-auto px-10 h-13 text-base font-bold gap-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg tracking-wide uppercase"
+                className="w-full sm:w-auto px-10 h-12 text-sm font-medium gap-2.5 bg-black hover:bg-black/90 text-white rounded-full shadow-sm hover:scale-[1.03] transition-all"
               >
                 {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
                 ) : (
-                  <Compass className="w-5 h-5 text-amber-300" />
+                  <Compass className="w-4 h-4 text-white" />
                 )}
                 FIND WHERE I SHOULD GO
               </Button>
@@ -384,7 +384,7 @@ export function DestinationDiscoveryWidget() {
               {results.map((item, idx) => (
                 <Card
                   key={item.destination.id}
-                  className="overflow-hidden flex flex-col hover:border-primary/50 transition-all shadow-md group"
+                  className="overflow-hidden flex flex-col rounded-2xl border border-slate-200/80 hover:border-slate-400 transition-all shadow-sm group bg-white/90"
                 >
                   {/* Hero Header with Climate & Score */}
                   <div className="relative h-44 w-full bg-muted overflow-hidden">
@@ -397,7 +397,7 @@ export function DestinationDiscoveryWidget() {
                         sizes="(max-width: 768px) 100vw, 33vw"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-tr from-blue-900 to-indigo-700 flex items-center justify-center text-white font-bold">
+                      <div className="w-full h-full bg-gradient-to-tr from-[#071324] to-[#1e293b] flex items-center justify-center text-white font-bold">
                         {item.destination.name}
                       </div>
                     )}
@@ -405,19 +405,19 @@ export function DestinationDiscoveryWidget() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
                     <div className="absolute top-3 left-3 flex gap-1.5">
-                      <Badge className="bg-emerald-600 text-white font-bold text-xs border-none shadow-sm">
+                      <Badge className="bg-emerald-600 text-white font-bold text-xs border-none shadow-sm rounded-full">
                         {item.matchScore}% Match
                       </Badge>
-                      <Badge className="bg-black/60 backdrop-blur text-white text-[10px] border-none">
+                      <Badge className="bg-black/60 backdrop-blur text-white text-[10px] border-none rounded-full">
                         {item.destination.climate}
                       </Badge>
                     </div>
 
                     <div className="absolute bottom-3 left-3 right-3 text-white">
-                      <h4 className="text-2xl font-bold tracking-tight">
+                      <h4 className="font-instrument text-2xl font-normal tracking-[-0.5px]">
                         {item.destination.name}
                       </h4>
-                      <p className="text-xs text-blue-100 flex items-center gap-1">
+                      <p className="text-xs text-slate-200 flex items-center gap-1 font-normal">
                         <MapPin className="w-3 h-3 text-amber-300" />
                         <span>{item.destination.state_province}, {item.destination.country}</span>
                       </p>
@@ -526,7 +526,7 @@ export function DestinationDiscoveryWidget() {
                   <CardFooter className="p-4 pt-0">
                     <Button
                       onClick={() => handlePlanDestination(item)}
-                      className="w-full gap-2 font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow"
+                      className="w-full gap-2 font-medium bg-black hover:bg-black/90 text-white rounded-full shadow-sm hover:scale-[1.02] transition-transform text-xs"
                     >
                       <span>View Plan & Customize</span>
                       <ArrowRight className="w-4 h-4" />

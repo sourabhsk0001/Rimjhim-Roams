@@ -223,32 +223,38 @@ export default function MemoriesPage() {
   const avoidsList = filteredMemories.filter((m) => m.type === "avoid");
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="container mx-auto px-4 py-8 max-w-5xl">
+      <main className="container mx-auto px-4 py-8 max-w-5xl animate-fade-rise">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <div className="flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-primary" />
-              <h1 className="text-3xl font-bold tracking-tight">Travel Memories</h1>
+              <Sparkles className="w-5 h-5 text-slate-700" />
+              <h1 className="font-instrument text-4xl sm:text-5xl font-normal tracking-[-1.5px] text-[#0f172a] leading-none">
+                Travel Memories
+              </h1>
             </div>
-            <p className="text-muted-foreground mt-1 text-sm md:text-base">
+            <p className="text-[17px] text-[hsl(215,25%,32%)] font-normal mt-2 leading-relaxed">
               TripWise remembers your useful non-sensitive travel preferences to automatically tailor destination discovery, hotels, restaurants, itineraries, and AI advice.
             </p>
           </div>
-          <Button onClick={handleOpenCreate} className="gap-2 shadow-sm shrink-0">
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-black text-white text-xs sm:text-sm font-medium shadow-xs hover:scale-[1.03] active:scale-[0.98] transition-transform shrink-0 w-fit"
+          >
             <Plus className="w-4 h-4" />
             Add Travel Preference
-          </Button>
+          </button>
         </div>
 
         {/* Privacy Guard Notice */}
-        <div className="mb-6 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-950 dark:text-emerald-200 flex items-start gap-3">
+        <div className="mb-6 rounded-2xl border border-emerald-500/20 bg-emerald-50/60 p-4 text-emerald-950 flex items-start gap-3">
           <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
           <div className="text-xs md:text-sm leading-relaxed">
-            <strong className="font-semibold block text-emerald-900 dark:text-emerald-100 mb-0.5">
+            <strong className="font-semibold block text-emerald-900 mb-0.5">
               Strict Non-Sensitive Privacy Guarantee
             </strong>
             TripWise only stores personal travel tastes (such as dining, transit choices, lodging comfort, and pacing). Sensitive data (passwords, card numbers, government IDs, and medical records) are strictly prevented and rejected. You maintain total control and can view, edit, or delete any memory at any time.

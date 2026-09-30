@@ -175,33 +175,33 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
   };
 
   return (
-    <div className="flex flex-col h-[750px] max-h-[85vh] bg-background border rounded-2xl shadow-sm overflow-hidden">
+    <div className="flex flex-col h-[750px] max-h-[85vh] bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">
       {/* Copilot Header */}
-      <div className="px-5 py-3.5 border-b bg-card flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-slate-100 bg-white flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-sm">
-            <Sparkles className="w-5 h-5 text-amber-300" />
+          <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-white shadow-xs">
+            <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-sm tracking-tight text-foreground">
+              <h3 className="font-instrument text-2xl font-normal text-[#0f172a] tracking-tight leading-none">
                 TripWise AI Travel Copilot
               </h3>
-              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300">
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                 Deterministic Engine
               </span>
             </div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-              <Zap className="w-3 h-3 text-emerald-500" />
+            <p className="text-xs text-[hsl(215,25%,32%)] flex items-center gap-1.5 mt-1 font-normal">
+              <Zap className="w-3 h-3 text-emerald-600" />
               Zero calculation drift • Grounded in PostGIS & Weather APIs
             </p>
           </div>
         </div>
 
         {tripId && (
-          <div className="hidden sm:flex items-center gap-2 text-xs bg-muted/60 px-3 py-1.5 rounded-lg border">
-            <span className="text-muted-foreground">Active Trip:</span>
-            <span className="font-semibold text-foreground">
+          <div className="hidden sm:flex items-center gap-2 text-xs bg-slate-50 px-3.5 py-1.5 rounded-full border border-slate-200/80">
+            <span className="text-[hsl(215,25%,32%)]">Active Trip:</span>
+            <span className="font-medium text-[#0f172a]">
               {tripSummary ? `${tripSummary.origin} → ${tripSummary.destination}` : "Loaded"}
             </span>
           </div>
@@ -454,7 +454,7 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
                 type="button"
                 onClick={() => handleSend(action)}
                 disabled={loading}
-                className="text-xs bg-card hover:bg-muted border px-2.5 py-1 rounded-full text-foreground/80 hover:text-foreground transition-colors truncate max-w-[260px]"
+                className="text-xs bg-white hover:bg-slate-100 border border-slate-200 px-3 py-1 rounded-full text-slate-700 hover:text-black transition-all truncate max-w-[260px] shadow-xs hover:scale-[1.02]"
               >
                 {action}
               </button>
@@ -463,13 +463,13 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
         )}
 
       {/* Input Form */}
-      <div className="p-3 sm:p-4 border-t bg-card">
+      <div className="p-3 sm:p-4 border-t border-slate-100 bg-white">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleSend();
           }}
-          className="flex items-end gap-2"
+          className="flex items-end gap-2.5"
         >
           <div className="flex-1 relative">
             <textarea
@@ -483,21 +483,21 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
               }
               rows={2}
               disabled={loading}
-              className="w-full resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50"
+              className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black disabled:opacity-50 transition-all font-sans"
             />
           </div>
 
-          <Button
+          <button
             type="submit"
             disabled={!input.trim() || loading}
-            className="h-10 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-sm"
+            className="h-10 px-5 rounded-full bg-black text-white hover:scale-[1.03] active:scale-[0.98] transition-all shadow-xs disabled:opacity-40 disabled:hover:scale-100 flex items-center justify-center"
           >
             {loading ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
             ) : (
               <Send className="w-4 h-4" />
             )}
-          </Button>
+          </button>
         </form>
 
         <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground px-1">

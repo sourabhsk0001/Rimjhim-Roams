@@ -240,36 +240,36 @@ export default function TripPackingPage() {
       : categoriesOrder.filter((c) => c === activeCategoryFilter);
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl space-y-6">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl space-y-6 animate-fade-rise">
         {/* Top Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <Button variant="ghost" size="sm" asChild className="gap-1.5 text-muted-foreground">
-            <Link href={`/trips/${tripId}`}>
-              <ArrowLeft className="w-4 h-4" /> Back to Trip Details
-            </Link>
-          </Button>
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
+          <Link
+            href={`/trips/${tripId}`}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(215,25%,32%)] hover:text-black transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Trip Details
+          </Link>
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
               onClick={handleRegenerate}
               disabled={regenerating}
-              className="gap-1.5 border-slate-300 text-slate-700"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-slate-300 bg-white text-xs sm:text-sm font-medium text-slate-900 shadow-xs hover:bg-slate-50 hover:scale-[1.03] transition-all disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${regenerating ? "animate-spin" : ""}`} />
               Regenerate Checklist
-            </Button>
-            <Button
-              size="sm"
+            </button>
+            <button
+              type="button"
               onClick={() => setShowAddModal(true)}
-              className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-black text-white text-xs sm:text-sm font-medium shadow-xs hover:scale-[1.03] active:scale-[0.98] transition-transform"
             >
-              <Plus className="w-4 h-4" /> Add Item
-            </Button>
+              <Plus className="w-3.5 h-3.5" /> Add Item
+            </button>
           </div>
         </div>
 
@@ -302,10 +302,10 @@ export default function TripPackingPage() {
                       <Luggage className="w-5 h-5" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl font-bold">
+                      <CardTitle className="font-instrument text-3xl font-normal text-[#0f172a]">
                         Packing Intelligence: {summary?.factorsUsed.destination}
                       </CardTitle>
-                      <CardDescription className="text-xs">
+                      <CardDescription className="text-xs text-[hsl(215,25%,32%)] font-normal mt-0.5">
                         Adaptive packing generated from {summary?.factorsUsed.duration} days of travel,
                         weather data, and scheduled itinerary activities.
                       </CardDescription>

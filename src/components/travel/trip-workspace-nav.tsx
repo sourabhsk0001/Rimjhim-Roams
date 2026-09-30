@@ -43,9 +43,9 @@ export function TripWorkspaceNav({ tripId, className }: TripWorkspaceNavProps) {
   return (
     <nav
       aria-label="Trip workspace sections"
-      className={`w-full overflow-x-auto no-scrollbar py-2 -my-2 border-b bg-card/60 backdrop-blur-sm sticky top-16 z-30 ${className || ""}`}
+      className={`w-full overflow-x-auto no-scrollbar py-2.5 border-b border-slate-200/80 bg-white/90 backdrop-blur-md sticky top-16 z-30 ${className || ""}`}
     >
-      <div className="flex items-center gap-1.5 min-w-max px-1">
+      <div className="flex items-center gap-1.5 min-w-max px-2 container mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = item.exact
@@ -56,13 +56,13 @@ export function TripWorkspaceNav({ tripId, className }: TripWorkspaceNavProps) {
             <Link
               key={item.id}
               href={item.href}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${
                 isActive
-                  ? "bg-primary text-primary-foreground font-semibold shadow-sm"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-black text-white shadow-xs font-medium scale-[1.02]"
+                  : "text-[hsl(215,25%,32%)] hover:bg-slate-100 hover:text-[#0f172a]"
               }`}
             >
-              <Icon className="w-3.5 h-3.5 shrink-0" />
+              <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-white" : "text-slate-500"}`} />
               <span>{item.label}</span>
             </Link>
           );

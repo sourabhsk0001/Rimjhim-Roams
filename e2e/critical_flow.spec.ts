@@ -161,6 +161,6 @@ test.describe("TripWise AI — Production-Grade Critical E2E User Journey", () =
     await saveExpenseBtn.click();
 
     // Verify expense card appears in the ledger
-    await expect(page.locator("text=Seafood Shack Dinner")).toBeVisible({ timeout: 15000 });
+    await expect(page.locator("text=Seafood Shack Dinner").first()).toBeVisible({ timeout: 15000 });
   });
 });

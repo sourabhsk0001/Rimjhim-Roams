@@ -155,13 +155,15 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl space-y-6">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl space-y-6 animate-fade-rise">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Traveller Profile</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="font-instrument text-4xl sm:text-5xl font-normal tracking-[-1.5px] text-[#0f172a] leading-none">
+            Traveller Profile
+          </h1>
+          <p className="text-[17px] text-[hsl(215,25%,32%)] font-normal mt-2 leading-relaxed">
             Manage your personal traveler identity and AI itinerary calibration preferences.
           </p>
         </div>
@@ -390,15 +392,19 @@ export default function ProfilePage() {
                 </div>
               </CardContent>
 
-              <CardFooter className="flex justify-end pt-4 border-t">
-                <Button type="submit" disabled={saving} className="gap-2">
+              <CardFooter className="flex justify-end pt-4 border-t border-slate-100">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-black text-white text-xs sm:text-sm font-medium shadow-xs hover:scale-[1.03] active:scale-[0.98] transition-transform disabled:opacity-50"
+                >
                   {saving ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <Save className="w-4 h-4" />
                   )}
                   {saving ? "Saving Changes..." : "Save Preferences"}
-                </Button>
+                </button>
               </CardFooter>
             </Card>
           </form>

@@ -66,24 +66,28 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
-      <div className="w-full max-w-md space-y-6">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50/50 font-sans">
+      <div className="w-full max-w-md space-y-6 animate-fade-rise">
         <div className="text-center space-y-2">
           <Link href="/" className="inline-flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-md transition-transform group-hover:scale-105">
-              <Compass className="w-6 h-6" />
+            <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-white shadow-xs transition-transform group-hover:scale-105">
+              <Compass className="w-4 h-4" />
             </div>
-            <span className="font-bold text-2xl tracking-tight">Rimjhim Roams</span>
+            <span className="font-instrument text-3xl font-normal tracking-tight text-[#0f172a]">
+              Rimjhim Roams<sup className="text-xs font-sans text-slate-500 font-normal ml-0.5">®</sup>
+            </span>
           </Link>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-[hsl(215,25%,32%)] font-normal">
             Create an account to build AI-guided travel itineraries
           </p>
         </div>
 
-        <Card className="shadow-lg border-muted">
-          <CardHeader>
-            <CardTitle>Create an Account</CardTitle>
-            <CardDescription>
+        <Card className="rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+          <CardHeader className="space-y-1 pb-4">
+            <CardTitle className="font-instrument text-3xl font-normal text-[#0f172a]">
+              Create an Account
+            </CardTitle>
+            <CardDescription className="text-xs text-[hsl(215,25%,32%)] font-normal">
               Start designing your dream adventures today
             </CardDescription>
           </CardHeader>
@@ -96,15 +100,15 @@ export default function RegisterPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
+                <Label htmlFor="fullName" className="text-xs font-medium text-slate-700">Full Name</Label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
+                  <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                   <Input
                     id="fullName"
                     type="text"
                     placeholder="Sourabh Kumar"
                     required
-                    className="pl-9"
+                    className="pl-9 rounded-full border-slate-200 text-sm focus-visible:ring-black"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     disabled={loading}
@@ -113,15 +117,15 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email" className="text-xs font-medium text-slate-700">Email Address</Label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                   <Input
                     id="email"
                     type="email"
                     placeholder="traveler@example.com"
                     required
-                    className="pl-9"
+                    className="pl-9 rounded-full border-slate-200 text-sm focus-visible:ring-black"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={loading}
@@ -130,15 +134,15 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-xs font-medium text-slate-700">Password</Label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                   <Input
                     id="password"
                     type="password"
                     placeholder="••••••••"
                     required
-                    className="pl-9"
+                    className="pl-9 rounded-full border-slate-200 text-sm focus-visible:ring-black"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
@@ -147,15 +151,15 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword" className="text-xs font-medium text-slate-700">Confirm Password</Label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                   <Input
                     id="confirmPassword"
                     type="password"
                     placeholder="••••••••"
                     required
-                    className="pl-9"
+                    className="pl-9 rounded-full border-slate-200 text-sm focus-visible:ring-black"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     disabled={loading}
@@ -164,17 +168,21 @@ export default function RegisterPage() {
               </div>
             </CardContent>
 
-            <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" className="w-full gap-2" disabled={loading}>
+            <CardFooter className="flex flex-col space-y-4 pt-2">
+              <button
+                type="submit"
+                className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-full bg-black text-white text-sm font-medium shadow-xs hover:scale-[1.03] active:scale-[0.98] transition-transform disabled:opacity-50"
+                disabled={loading}
+              >
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                 {loading ? "Creating account..." : "Sign Up"}
-              </Button>
+              </button>
 
-              <p className="text-center text-xs text-muted-foreground">
+              <p className="text-center text-xs text-[hsl(215,25%,32%)]">
                 Already have an account?{" "}
                 <Link
                   href="/login"
-                  className="font-medium text-primary hover:underline"
+                  className="font-medium text-black hover:underline"
                 >
                   Sign in
                 </Link>

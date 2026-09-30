@@ -281,48 +281,48 @@ export default function TripExpensesPage() {
   const currentUserBalance = settlement?.balances.find((b) => b.user_id === currentUserId);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="container max-w-5xl mx-auto px-4 py-8 space-y-8">
+      <main className="container max-w-5xl mx-auto px-4 py-8 space-y-6 animate-fade-rise">
         {/* Navigation & Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3 text-sm text-muted-foreground mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-6">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-3 text-xs text-[hsl(215,25%,32%)] mb-1">
               <Link
                 href={`/trips/${tripId}`}
-                className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                className="inline-flex items-center gap-1 hover:text-black transition-colors"
               >
-                <ArrowLeft className="w-4 h-4" /> Trip Details
+                <ArrowLeft className="w-3.5 h-3.5" /> Trip Details
               </Link>
               <span>•</span>
               <Link
                 href={`/trips/${tripId}/group`}
-                className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 font-medium"
+                className="inline-flex items-center gap-1 text-slate-700 hover:text-black font-medium"
               >
                 <Users className="w-3.5 h-3.5" /> Group & Polls
               </Link>
             </div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-extrabold tracking-tight">
+              <h1 className="font-instrument text-4xl sm:text-5xl font-normal tracking-[-1.5px] text-[#0f172a] leading-none">
                 Expense Splitting & Debt Settlement
               </h1>
-              <Badge variant="outline" className="text-xs uppercase bg-emerald-50 text-emerald-700 border-emerald-300">
+              <span className="text-[10px] uppercase font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                 Phase 12
-              </Badge>
+              </span>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-[17px] text-[hsl(215,25%,32%)] font-normal mt-1">
               Fair, deterministic travel accounting: track who paid, split equally or custom, and compute exact settlements with zero arithmetic drift.
             </p>
           </div>
 
-          <Button
-            size="sm"
+          <button
+            type="button"
             onClick={handleOpenAddModal}
-            className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-black text-white text-xs sm:text-sm font-medium shadow-xs hover:scale-[1.03] active:scale-[0.98] transition-transform"
           >
-            <Plus className="w-4 h-4" /> Add Shared Expense
-          </Button>
+            <Plus className="w-3.5 h-3.5" /> Add Shared Expense
+          </button>
         </div>
 
         {error && (

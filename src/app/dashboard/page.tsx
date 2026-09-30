@@ -63,24 +63,27 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="flex-1 container mx-auto px-4 py-8 space-y-8">
+      <main className="flex-1 container mx-auto px-4 py-8 space-y-8 animate-fade-rise">
         {/* Welcome Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Travel Dashboard</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="font-instrument text-4xl sm:text-5xl font-normal tracking-[-1.5px] text-[#0f172a] leading-none">
+              Travel Dashboard
+            </h1>
+            <p className="text-[17px] text-[hsl(215,25%,32%)] mt-2 font-normal">
               Manage your itineraries, explore destinations, and plan your next journey.
             </p>
           </div>
-          <Button asChild size="lg" className="gap-2 shadow">
-            <Link href="/trips/new">
-              <PlusCircle className="w-5 h-5" />
-              Create Trip
-            </Link>
-          </Button>
+          <Link
+            href="/trips/new"
+            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-black text-white text-sm font-medium shadow-sm hover:scale-[1.03] active:scale-[0.98] transition-transform duration-200 w-fit"
+          >
+            <PlusCircle className="w-4 h-4" />
+            Create Trip
+          </Link>
         </div>
 
         {/* Error State */}
@@ -122,81 +125,76 @@ export default function DashboardPage() {
         ) : (
           <>
             {/* Overview Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription>Upcoming Journeys</CardDescription>
-                  <CardTitle className="text-3xl font-bold text-primary">
-                    {upcoming.length}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-muted-foreground">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              <div className="p-6 rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+                <span className="text-xs uppercase font-medium tracking-wider text-[hsl(215,25%,32%)]">Upcoming Journeys</span>
+                <div className="font-instrument text-4xl font-normal text-[#0f172a] mt-2">
+                  {upcoming.length}
+                </div>
+                <p className="text-xs text-[hsl(215,25%,32%)] mt-1">
                   Trips scheduled for departure
-                </CardContent>
-              </Card>
+                </p>
+              </div>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription>Past Adventures</CardDescription>
-                  <CardTitle className="text-3xl font-bold">
-                    {previous.length}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-muted-foreground">
+              <div className="p-6 rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+                <span className="text-xs uppercase font-medium tracking-wider text-[hsl(215,25%,32%)]">Past Adventures</span>
+                <div className="font-instrument text-4xl font-normal text-[#0f172a] mt-2">
+                  {previous.length}
+                </div>
+                <p className="text-xs text-[hsl(215,25%,32%)] mt-1">
                   Completed itineraries recorded
-                </CardContent>
-              </Card>
+                </p>
+              </div>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription>Total Itineraries</CardDescription>
-                  <CardTitle className="text-3xl font-bold">
-                    {upcoming.length + previous.length}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-muted-foreground">
+              <div className="p-6 rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+                <span className="text-xs uppercase font-medium tracking-wider text-[hsl(215,25%,32%)]">Total Itineraries</span>
+                <div className="font-instrument text-4xl font-normal text-[#0f172a] mt-2">
+                  {upcoming.length + previous.length}
+                </div>
+                <p className="text-xs text-[hsl(215,25%,32%)] mt-1">
                   Overall journey portfolio
-                </CardContent>
-              </Card>
+                </p>
+              </div>
             </div>
 
             {/* Upcoming Trips Section */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
-                  <PlaneTakeoff className="w-5 h-5 text-primary" />
+                <h2 className="font-instrument text-3xl font-normal tracking-tight text-[#0f172a] flex items-center gap-2.5">
+                  <PlaneTakeoff className="w-5 h-5 text-slate-700" />
                   Upcoming Trips
                 </h2>
                 {upcoming.length > 0 && (
                   <Link
                     href="/trips"
-                    className="text-sm font-medium text-primary hover:underline"
+                    className="text-xs font-medium text-[hsl(215,25%,32%)] hover:text-[#0f172a] hover:underline"
                   >
-                    View all
+                    View all trips →
                   </Link>
                 )}
               </div>
 
               {upcoming.length === 0 ? (
                 /* Empty State */
-                <Card className="border-dashed p-8 text-center space-y-4 bg-card/50">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 text-primary mx-auto flex items-center justify-center">
+                <div className="border border-dashed border-slate-200 rounded-2xl p-10 text-center space-y-4 bg-white/50">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-800 mx-auto flex items-center justify-center">
                     <Compass className="w-6 h-6" />
                   </div>
                   <div className="max-w-md mx-auto space-y-1">
-                    <h3 className="font-semibold text-lg">No upcoming trips</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="font-instrument text-2xl text-[#0f172a]">No upcoming trips</h3>
+                    <p className="text-sm text-[hsl(215,25%,32%)]">
                       You haven&apos;t scheduled any upcoming adventures yet. Begin
-                      by creating your first travel itinerary!
+                      by creating your first travel itinerary.
                     </p>
                   </div>
-                  <Button asChild className="gap-2">
-                    <Link href="/trips/new">
-                      <PlusCircle className="w-4 h-4" />
-                      Plan Your Next Trip
-                    </Link>
-                  </Button>
-                </Card>
+                  <Link
+                    href="/trips/new"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-black text-white text-sm font-medium shadow-xs hover:scale-[1.03] transition-transform duration-200"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    Plan Your Next Trip
+                  </Link>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {upcoming.map((trip) => (
@@ -209,18 +207,18 @@ export default function DashboardPage() {
             {/* Previous Trips Section */}
             <div className="space-y-4 pt-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-muted-foreground" />
+                <h2 className="font-instrument text-3xl font-normal tracking-tight text-[#0f172a] flex items-center gap-2.5">
+                  <Clock className="w-5 h-5 text-slate-500" />
                   Previous Trips
                 </h2>
               </div>
 
               {previous.length === 0 ? (
-                <Card className="border-dashed p-6 text-center bg-card/50">
-                  <p className="text-sm text-muted-foreground">
+                <div className="border border-dashed border-slate-200 rounded-2xl p-8 text-center bg-white/50">
+                  <p className="text-sm text-[hsl(215,25%,32%)]">
                     No completed trips recorded yet.
                   </p>
-                </Card>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {previous.map((trip) => (
@@ -240,62 +238,63 @@ function TripCard({ trip, isPast }: { trip: TripRow; isPast?: boolean }) {
   const isDiscovery = trip.destination === "destination discovery required";
 
   return (
-    <Card className="flex flex-col h-full hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <Badge
-            variant={
-              isPast
-                ? "secondary"
-                : isDiscovery
-                ? "outline"
-                : "default"
-            }
-          >
-            {isPast ? "Completed" : isDiscovery ? "Discovery Required" : trip.status}
-          </Badge>
-          <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5" />
-            {trip.duration_days} {trip.duration_days === 1 ? "day" : "days"}
-          </span>
-        </div>
+    <div className="flex flex-col h-full rounded-2xl border border-slate-200/80 bg-white hover:shadow-md transition-all duration-300 p-6 space-y-4">
+      <div className="flex items-start justify-between gap-2">
+        <span
+          className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
+            isPast
+              ? "bg-slate-100 text-slate-700"
+              : isDiscovery
+              ? "bg-amber-50 text-amber-800 border border-amber-200"
+              : "bg-black text-white"
+          }`}
+        >
+          {isPast ? "Completed" : isDiscovery ? "Discovery Required" : trip.status}
+        </span>
+        <span className="text-xs font-medium text-[hsl(215,25%,32%)] flex items-center gap-1">
+          <Clock className="w-3.5 h-3.5" />
+          {trip.duration_days} {trip.duration_days === 1 ? "day" : "days"}
+        </span>
+      </div>
 
-        <CardTitle className="text-lg mt-2 line-clamp-1">
+      <div>
+        <h3 className="font-instrument text-2xl font-normal text-[#0f172a] line-clamp-1">
           {trip.destination === "destination discovery required"
             ? `From ${trip.origin}`
             : `${trip.origin} → ${trip.destination}`}
-        </CardTitle>
-        <CardDescription className="flex items-center gap-1.5 text-xs">
-          <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
+        </h3>
+        <p className="flex items-center gap-1.5 text-xs text-[hsl(215,25%,32%)] mt-1">
+          <MapPin className="w-3.5 h-3.5" />
           <span>Origin: {trip.origin}</span>
-        </CardDescription>
-      </CardHeader>
+        </p>
+      </div>
 
-      <CardContent className="flex-1 space-y-2 text-sm text-muted-foreground">
-        <div className="flex items-center gap-2 text-xs">
-          <Calendar className="w-3.5 h-3.5" />
+      <div className="flex-1 space-y-2 text-xs text-[hsl(215,25%,32%)] pt-1">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-3.5 h-3.5 text-slate-400" />
           <span>
             {trip.start_date} to {trip.end_date}
           </span>
         </div>
 
-        <div className="flex items-center justify-between text-xs pt-1">
-          <span className="flex items-center gap-1">
-            <DollarSign className="w-3.5 h-3.5" />
+        <div className="flex items-center justify-between pt-1">
+          <span className="flex items-center gap-1 font-medium text-slate-900">
+            <DollarSign className="w-3.5 h-3.5 text-slate-400" />
             {trip.budget.toLocaleString()} {trip.currency}
           </span>
-          <span className="capitalize">{trip.travel_pace} pace</span>
+          <span className="capitalize text-slate-600">{trip.travel_pace} pace</span>
         </div>
-      </CardContent>
+      </div>
 
-      <CardFooter className="pt-2 border-t">
-        <Button variant="ghost" size="sm" asChild className="w-full justify-between">
-          <Link href={`/trips/${trip.id}`}>
-            View Itinerary Details
-            <ArrowRight className="w-4 h-4 ml-1" />
-          </Link>
-        </Button>
-      </CardFooter>
-    </Card>
+      <div className="pt-3 border-t border-slate-100">
+        <Link
+          href={`/trips/${trip.id}`}
+          className="inline-flex items-center justify-between w-full text-xs font-medium text-black hover:text-slate-600 transition-colors py-1 group"
+        >
+          <span>View Itinerary Details</span>
+          <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
+        </Link>
+      </div>
+    </div>
   );
 }

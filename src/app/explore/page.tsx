@@ -58,57 +58,61 @@ export default function ExplorePage() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="flex-1 container mx-auto px-4 py-8 space-y-6">
+      <main className="flex-1 container mx-auto px-4 py-8 space-y-6 animate-fade-rise">
         {/* Header & Demo Disclaimer */}
         <div className="space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-3xl font-bold tracking-tight">Explore Destinations</h1>
+              <div className="flex items-center gap-3 mb-1">
+                <h1 className="font-instrument text-4xl sm:text-5xl font-normal tracking-[-1.5px] text-[#0f172a] leading-none">
+                  Explore Destinations
+                </h1>
                 <DemoBadge />
               </div>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-[17px] text-[hsl(215,25%,32%)] mt-2 font-normal">
                 Discover verified Indian destinations, regional attractions, accommodations, and transit corridors.
               </p>
             </div>
           </div>
 
-          <Alert className="bg-amber-500/10 border-amber-500/20 text-amber-800 dark:text-amber-300">
-            <Info className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-            <AlertTitle className="text-xs font-bold uppercase tracking-wider">
-              Phase 2 Core Travel Data Notice
-            </AlertTitle>
-            <AlertDescription className="text-xs">
-              All attraction tickets, hotel rates, and transit schedules shown in this catalog are seeded
-              <strong> DEMO DATA</strong> for architecture evaluation. No live booking APIs are fabricated.
-            </AlertDescription>
-          </Alert>
+          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 text-xs flex items-start gap-2.5">
+            <Info className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-semibold uppercase tracking-wider text-[11px] block">
+                Phase 2 Core Travel Data Notice
+              </span>
+              <span>
+                All attraction tickets, hotel rates, and transit schedules shown in this catalog are seeded
+                <strong> DEMO DATA</strong> for architecture evaluation. No live booking APIs are fabricated.
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Search & Filters */}
         <form
           onSubmit={handleSearchSubmit}
-          className="flex flex-col sm:flex-row items-center gap-4 bg-card p-4 rounded-xl border shadow-sm"
+          className="flex flex-col sm:flex-row items-center gap-3 bg-white p-3 sm:p-4 rounded-2xl border border-slate-200/80 shadow-xs"
         >
           <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
             <Input
               placeholder="Search by city, state, or region (e.g. Goa, Jaipur, Bengal)..."
-              className="pl-9"
+              className="pl-9 rounded-full border-slate-200 text-sm focus-visible:ring-black"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Filter className="w-4 h-4 text-muted-foreground" />
+            <Filter className="w-4 h-4 text-slate-500" />
             <select
               value={climate}
               onChange={(e) => setClimate(e.target.value)}
-              className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="flex h-9 rounded-full border border-slate-200 bg-white px-4 py-1 text-xs font-medium text-slate-700 shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
             >
               <option value="all">All Climates</option>
               <option value="tropical">Tropical</option>

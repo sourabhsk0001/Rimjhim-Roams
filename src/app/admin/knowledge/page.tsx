@@ -220,46 +220,45 @@ export default function AdminKnowledgePage() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl space-y-8">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl space-y-8 animate-fade-rise">
         {/* Header Banner */}
-        <div className="bg-card border rounded-2xl p-6 sm:p-8 shadow-sm flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-1.5 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 dark:bg-emerald-950/60 dark:border-emerald-800 dark:text-emerald-300 text-xs font-semibold">
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-xs flex flex-wrap items-center justify-between gap-4">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold">
               <Database className="w-3.5 h-3.5" />
-              <span>Phase 10: PostgreSQL + pgvector RAG System</span>
+              <span>PostgreSQL + pgvector RAG System</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            <h1 className="font-instrument text-4xl sm:text-5xl font-normal tracking-[-1.5px] text-[#0f172a] leading-none">
               Authoritative Travel Knowledge Base
             </h1>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-[17px] text-[hsl(215,25%,32%)] font-normal leading-relaxed mt-2">
               Ingest, chunk, embed, and query authoritative civil guidelines, safety protocols, and travel permits.
               Includes semantic search with cosine distance and strict protection against prompt injection.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={handleSeedAuthoritative}
               disabled={seeding}
-              className="gap-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-300 bg-white text-xs sm:text-sm font-medium text-slate-900 shadow-xs hover:bg-slate-50 hover:scale-[1.03] transition-all disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${seeding ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${seeding ? "animate-spin" : ""}`} />
               {seeding ? "Ingesting..." : "Seed Authoritative Data"}
-            </Button>
+            </button>
 
-            <Button
-              size="sm"
+            <button
+              type="button"
               onClick={handleOpenCreate}
-              className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-sm"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-black text-white text-xs sm:text-sm font-medium shadow-xs hover:scale-[1.03] active:scale-[0.98] transition-transform"
             >
               <Plus className="w-4 h-4" />
               Add Knowledge Document
-            </Button>
+            </button>
           </div>
         </div>
 

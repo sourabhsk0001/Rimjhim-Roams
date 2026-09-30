@@ -304,70 +304,68 @@ export default function TripItineraryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="container max-w-5xl mx-auto px-4 py-8 space-y-8">
+      <main className="container max-w-5xl mx-auto px-4 py-8 space-y-6 animate-fade-rise">
         {/* Navigation & Title Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3 text-sm text-muted-foreground mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-6">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-3 text-xs text-[hsl(215,25%,32%)] mb-1">
               <Link
                 href={`/trips/${tripId}`}
-                className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                className="inline-flex items-center gap-1 hover:text-black transition-colors"
               >
-                <ArrowLeft className="w-4 h-4" /> Trip Details
+                <ArrowLeft className="w-3.5 h-3.5" /> Trip Details
               </Link>
               <span>•</span>
               <Link
                 href={`/trips/${tripId}/budget`}
-                className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-medium"
+                className="inline-flex items-center gap-1 text-slate-700 hover:text-black font-medium"
               >
                 <Wallet className="w-3.5 h-3.5" /> Budget Engine
               </Link>
             </div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-extrabold tracking-tight">
+              <h1 className="font-instrument text-4xl sm:text-5xl font-normal tracking-[-1.5px] text-[#0f172a] leading-none">
                 Time Intelligence Engine
               </h1>
-              <Badge variant="outline" className="text-xs uppercase bg-purple-50 text-purple-700 border-purple-300">
+              <span className="text-[10px] uppercase font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                 Phase 5 Active
-              </Badge>
+              </span>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-[17px] text-[hsl(215,25%,32%)] font-normal mt-1">
               Guarantees physical feasibility: separate visit, travel, waiting, and buffer allocations preventing impossible itineraries.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={() => setShowAddModal(true)}
-              className="gap-1.5 text-xs h-9 rounded-xl"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 hover:scale-[1.03] transition-all"
             >
               <Plus className="w-3.5 h-3.5" /> Add Block
-            </Button>
+            </button>
 
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={() => setShowReplanModal(true)}
-              className="gap-2 text-xs h-9 border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-950/40 shadow-xs rounded-xl"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-slate-300 bg-white text-xs font-medium text-slate-900 hover:bg-slate-100 hover:scale-[1.03] transition-all shadow-xs"
             >
-              <Clock className="w-3.5 h-3.5 text-purple-600" />
+              <Clock className="w-3.5 h-3.5 text-slate-700" />
               Re-plan My Day
-            </Button>
+            </button>
 
-            <Button
-              size="sm"
+            <button
+              type="button"
               onClick={handleOptimizeDay}
               disabled={optimizing || loading}
-              className="gap-2 text-xs h-9 bg-purple-600 hover:bg-purple-700 text-white shadow-sm rounded-xl"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-black text-white text-xs font-medium hover:scale-[1.03] active:scale-[0.98] transition-all shadow-xs disabled:opacity-50"
             >
               <Sparkles className={`w-3.5 h-3.5 ${optimizing ? "animate-spin" : ""}`} />
               {optimizing ? "Optimizing..." : "Optimize Day"}
-            </Button>
+            </button>
           </div>
         </div>
 
@@ -376,15 +374,15 @@ export default function TripItineraryPage() {
 
         {/* Day Selector Tabs */}
         {days.length > 0 && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200/80">
             {days.map((d) => (
               <button
                 key={d.id}
                 onClick={() => setSelectedDayNumber(d.day_number)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2 ${
+                className={`px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 ${
                   selectedDayNumber === d.day_number
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-muted/60 text-muted-foreground hover:text-foreground"
+                    ? "bg-black text-white shadow-xs scale-[1.02]"
+                    : "bg-slate-100 text-[hsl(215,25%,32%)] hover:bg-slate-200/70 hover:text-black"
                 }`}
               >
                 <Calendar className="w-3.5 h-3.5" />

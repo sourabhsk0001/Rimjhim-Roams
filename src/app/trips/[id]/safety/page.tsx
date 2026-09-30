@@ -191,32 +191,32 @@ export default function TripSafetyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl space-y-6">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl space-y-6 animate-fade-rise">
         {/* Top Header & Actions */}
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <Button variant="ghost" size="sm" asChild className="gap-1.5 text-muted-foreground">
-            <Link href={`/trips/${tripId}`}>
-              <ArrowLeft className="w-4 h-4" /> Back to Trip Details
-            </Link>
-          </Button>
+          <Link
+            href={`/trips/${tripId}`}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(215,25%,32%)] hover:text-black transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Trip Details
+          </Link>
 
           <div className="flex items-center gap-3">
-            <Button
-              variant={emergencyMode ? "destructive" : "outline"}
-              size="sm"
+            <button
+              type="button"
               onClick={() => setEmergencyMode(!emergencyMode)}
-              className={
+              className={`inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs sm:text-sm font-medium shadow-xs transition-transform hover:scale-[1.03] ${
                 emergencyMode
-                  ? "bg-red-600 hover:bg-red-700 text-white font-bold gap-2 animate-pulse"
-                  : "border-red-300 text-red-700 hover:bg-red-50 font-semibold gap-2"
-              }
+                  ? "bg-red-600 hover:bg-red-700 text-white animate-pulse"
+                  : "border border-red-300 bg-white text-red-700 hover:bg-red-50"
+              }`}
             >
               <ShieldAlert className="w-4 h-4 text-red-500" />
               {emergencyMode ? "Exit Emergency Mode" : "Activate Emergency Mode"}
-            </Button>
+            </button>
           </div>
         </div>
 
@@ -263,16 +263,16 @@ export default function TripSafetyPage() {
             {/* Destination Title & Timestamps */}
             <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-4">
               <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                <div className="flex items-center gap-3">
+                  <h1 className="font-instrument text-4xl sm:text-5xl font-normal tracking-[-1.5px] text-[#0f172a] leading-none">
                     Safety Center: {safetyCenter.destination}
                   </h1>
-                  <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50">
+                  <span className="text-[10px] uppercase font-semibold px-2.5 py-0.5 rounded-full border border-emerald-300 text-emerald-700 bg-emerald-50">
                     Source-Backed
-                  </Badge>
+                  </span>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5" />
+                <p className="text-xs text-[hsl(215,25%,32%)] mt-2 flex items-center gap-2">
+                  <Clock className="w-3.5 h-3.5 text-slate-400" />
                   Last verified: {new Date(safetyCenter.retrieved_at).toLocaleString()}
                 </p>
               </div>

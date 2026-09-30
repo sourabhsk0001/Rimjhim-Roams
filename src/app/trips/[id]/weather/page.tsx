@@ -151,36 +151,38 @@ export default function TripWeatherPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 animate-fade-rise">
         {/* Navigation & Action Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <Button variant="ghost" size="sm" asChild className="gap-1.5 text-muted-foreground">
-            <Link href={`/trips/${tripId}`}>
-              <ArrowLeft className="w-4 h-4" /> Back to Trip Overview
-            </Link>
-          </Button>
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
+          <Link
+            href={`/trips/${tripId}`}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(215,25%,32%)] hover:text-black transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Trip Overview
+          </Link>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button size="sm" asChild variant="outline" className="gap-1.5 border-purple-300 text-purple-700 hover:bg-purple-50">
-              <Link href={`/trips/${tripId}/itinerary`}>
-                <Clock className="w-4 h-4" />
-                Time & Itinerary
-              </Link>
-            </Button>
+            <Link
+              href={`/trips/${tripId}/itinerary`}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 hover:scale-[1.03] transition-all"
+            >
+              <Clock className="w-3.5 h-3.5 text-slate-500" />
+              Time & Itinerary
+            </Link>
 
-            <Button size="sm" asChild variant="outline" className="gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50">
-              <Link href={`/trips/${tripId}/budget`}>
-                <Wallet className="w-4 h-4" />
-                Budget & Ledger
-              </Link>
-            </Button>
+            <Link
+              href={`/trips/${tripId}/budget`}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 hover:scale-[1.03] transition-all"
+            >
+              <Wallet className="w-3.5 h-3.5 text-slate-500" />
+              Budget & Ledger
+            </Link>
 
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={async () => {
                 await fetchWeatherData();
                 toast({
@@ -190,11 +192,11 @@ export default function TripWeatherPage() {
                 });
               }}
               disabled={loading}
-              className="gap-1.5 rounded-xl"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-slate-300 bg-white text-xs font-medium text-slate-900 shadow-xs hover:bg-slate-50 hover:scale-[1.03] transition-all disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
               Refresh
-            </Button>
+            </button>
           </div>
         </div>
 

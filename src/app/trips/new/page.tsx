@@ -163,26 +163,29 @@ export default function NewTripPage() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-3xl space-y-6">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-3xl space-y-6 animate-fade-rise">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild className="gap-1 text-muted-foreground">
-            <Link href="/dashboard">
-              <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-            </Link>
-          </Button>
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(215,25%,32%)] hover:text-[#0f172a] transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+          </Link>
         </div>
 
-        <Card className="shadow-lg border-muted">
-          <CardHeader>
-            <div className="flex items-center gap-2 text-primary text-sm font-semibold">
-              <Compass className="w-4 h-4" />
-              <span>Phase 1 Travel Architecture</span>
+        <Card className="rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+          <CardHeader className="space-y-1.5 pb-6 border-b border-slate-100">
+            <div className="flex items-center gap-2 text-slate-500 text-xs uppercase tracking-wider font-medium">
+              <Compass className="w-3.5 h-3.5" />
+              <span>Itinerary Generator</span>
             </div>
-            <CardTitle className="text-2xl">Plan a New Journey</CardTitle>
-            <CardDescription>
+            <CardTitle className="font-instrument text-3xl sm:text-4xl font-normal text-[#0f172a] tracking-tight">
+              Plan a New Journey
+            </CardTitle>
+            <CardDescription className="text-sm text-[hsl(215,25%,32%)] font-normal">
               Configure origin, dates, budget, and travel preferences. If you
               leave the destination blank, the system marks it as &quot;destination
               discovery required&quot;.
@@ -428,14 +431,21 @@ export default function NewTripPage() {
               </div>
             </CardContent>
 
-            <CardFooter className="flex items-center justify-between border-t pt-4">
-              <Button variant="outline" type="button" asChild disabled={loading}>
-                <Link href="/dashboard">Cancel</Link>
-              </Button>
-              <Button type="submit" className="gap-2" disabled={loading}>
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            <CardFooter className="flex items-center justify-between border-t border-slate-100 pt-6">
+              <Link
+                href="/dashboard"
+                className="px-5 py-2 rounded-full border border-slate-200 text-xs font-medium text-slate-600 hover:text-black hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </Link>
+              <button
+                type="submit"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-black text-white text-xs sm:text-sm font-medium shadow-xs hover:scale-[1.03] active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
+              >
+                {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 {loading ? "Saving Trip..." : "Create Itinerary Plan"}
-              </Button>
+              </button>
             </CardFooter>
           </form>
         </Card>

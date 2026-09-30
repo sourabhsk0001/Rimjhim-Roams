@@ -300,44 +300,44 @@ export default function TripDetailPage() {
   }, [plan, activeDay, selectedItemId]);
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="flex-1 container mx-auto px-4 py-6 max-w-6xl space-y-6">
+      <main className="flex-1 container mx-auto px-4 py-6 max-w-6xl space-y-6 animate-fade-rise">
         {/* Top Back & Header Actions */}
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <Button variant="ghost" size="sm" asChild className="gap-1.5 text-muted-foreground hover:text-foreground">
-            <Link href="/trips">
-              <ArrowLeft className="w-4 h-4" /> Back to My Trips
-            </Link>
-          </Button>
+          <Link
+            href="/trips"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(215,25%,32%)] hover:text-[#0f172a] transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to My Trips
+          </Link>
 
           {trip && (
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
                 onClick={handleGenerateTrip}
                 disabled={isGenerating}
-                className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md font-semibold rounded-xl"
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-black text-white text-xs sm:text-sm font-medium shadow-xs hover:scale-[1.03] active:scale-[0.98] transition-transform disabled:opacity-50"
               >
                 {isGenerating ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 ) : (
-                  <Sparkles className="w-4 h-4 text-amber-300" />
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                 )}
                 {plan ? "Regenerate Plan" : "Generate Complete Trip"}
-              </Button>
+              </button>
 
-              <Button
-                variant="outline"
-                size="sm"
+              <button
+                type="button"
                 onClick={() => setShowDeleteModal(true)}
                 disabled={deleting}
-                className="text-destructive hover:bg-destructive/10 border-destructive/30 gap-1.5 rounded-xl"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-red-200 text-xs sm:text-sm font-medium text-red-600 hover:bg-red-50 hover:scale-[1.03] transition-all"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5" />
                 Delete
-              </Button>
+              </button>
             </div>
           )}
         </div>
@@ -423,92 +423,90 @@ export default function TripDetailPage() {
             )}
 
             {/* 1. Trip Hero Header with Strong Visual Hierarchy */}
-            <Card className="overflow-hidden shadow-xl border-border/80 rounded-3xl">
-              <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 text-white p-6 sm:p-8">
-                <div className="flex flex-wrap items-start justify-between gap-6">
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge className="bg-white/20 hover:bg-white/30 text-white border-none uppercase tracking-wider text-xs font-semibold px-2.5 py-0.5 rounded-lg">
-                        {plan ? "Complete Plan Ready" : trip.status}
-                      </Badge>
-                      <Badge className="bg-emerald-400/20 text-emerald-200 border-none text-xs font-medium px-2.5 py-0.5 rounded-lg flex items-center gap-1">
-                        <ShieldCheck className="w-3.5 h-3.5" /> Deterministic Engine
-                      </Badge>
-                    </div>
-
-                    <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
-                      {trip.origin} → {plan ? plan.destination.name : trip.destination}
-                    </h1>
-
-                    <p className="text-blue-100 flex items-center gap-2 text-sm">
-                      <MapPin className="w-4 h-4 text-amber-300 shrink-0" />
-                      <span>
-                        {plan ? `${plan.destination.name}, ${plan.destination.state_province}, ${plan.destination.country}` : trip.destination}
-                      </span>
-                      {plan?.destination.climate && (
-                        <>
-                          <span>•</span>
-                          <span className="font-medium text-amber-200">{plan.destination.climate}</span>
-                        </>
-                      )}
-                    </p>
-                  </div>
-
-                  {/* Financial Status Box */}
-                  <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-right min-w-[200px] shadow-inner">
-                    <span className="text-[11px] text-blue-200 uppercase tracking-wider font-semibold">
-                      {plan ? "Total Plan Cost" : "Budget Cap"}
+            <div className="overflow-hidden shadow-sm border border-slate-200/80 rounded-3xl bg-gradient-to-br from-[#071324] via-[#0f172a] to-[#1e293b] text-white p-6 sm:p-8">
+              <div className="flex flex-wrap items-start justify-between gap-6">
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="bg-white/10 text-white uppercase tracking-wider text-[10px] font-semibold px-3 py-1 rounded-full border border-white/15">
+                      {plan ? "Complete Plan Ready" : trip.status}
                     </span>
-                    <div className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-                      ₹{(plan ? plan.budget.totalCost : trip.budget).toLocaleString()}
-                    </div>
-                    {plan && (
-                      <div className="text-xs mt-1 flex items-center justify-end gap-1 font-semibold">
-                        {plan.budget.isOverBudget ? (
-                          <span className="text-rose-300 flex items-center gap-1">
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                            ₹{(plan.budget.totalCost - plan.budget.allocatedBudget).toLocaleString()} Over Budget
-                          </span>
-                        ) : (
-                          <span className="text-emerald-300 flex items-center gap-1">
-                            <TrendingDown className="w-3.5 h-3.5" />
-                            ₹{plan.budget.remainingBudget.toLocaleString()} Surplus
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    <span className="bg-emerald-500/20 text-emerald-300 text-[11px] font-medium px-3 py-1 rounded-full flex items-center gap-1 border border-emerald-500/30">
+                      <ShieldCheck className="w-3 h-3" /> Deterministic Engine
+                    </span>
                   </div>
+
+                  <h1 className="font-instrument text-4xl sm:text-6xl font-normal tracking-[-1.5px] leading-tight text-white">
+                    {trip.origin} → {plan ? plan.destination.name : trip.destination}
+                  </h1>
+
+                  <p className="text-slate-300 flex items-center gap-2 text-sm">
+                    <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                    <span>
+                      {plan ? `${plan.destination.name}, ${plan.destination.state_province}, ${plan.destination.country}` : trip.destination}
+                    </span>
+                    {plan?.destination.climate && (
+                      <>
+                        <span>•</span>
+                        <span className="font-medium text-slate-200">{plan.destination.climate}</span>
+                      </>
+                    )}
+                  </p>
                 </div>
 
-                {/* Key Trip Parameters Strip */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/15">
-                  <div className="space-y-1">
-                    <span className="text-xs text-blue-200 flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" /> Dates
-                    </span>
-                    <p className="text-sm font-semibold">{trip.start_date} to {trip.end_date}</p>
+                {/* Financial Status Box */}
+                <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10 text-right min-w-[200px]">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold block">
+                    {plan ? "Total Plan Cost" : "Budget Cap"}
+                  </span>
+                  <div className="font-instrument text-4xl sm:text-5xl font-normal text-white tracking-tight mt-1">
+                    ₹{(plan ? plan.budget.totalCost : trip.budget).toLocaleString()}
                   </div>
-                  <div className="space-y-1">
-                    <span className="text-xs text-blue-200 flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" /> Duration
-                    </span>
-                    <p className="text-sm font-semibold">{trip.duration_days} Days ({Math.max(1, trip.duration_days - 1)} Nights)</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-xs text-blue-200 flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5" /> Party
-                    </span>
-                    <p className="text-sm font-semibold capitalize">{trip.traveller_count} ({trip.traveller_type})</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-xs text-blue-200 flex items-center gap-1">
-                      <Compass className="w-3.5 h-3.5" /> Travel Pace
-                    </span>
-                    <p className="text-sm font-semibold capitalize">{trip.travel_pace} Pace</p>
-                  </div>
+                  {plan && (
+                    <div className="text-xs mt-1.5 flex items-center justify-end gap-1 font-medium">
+                      {plan.budget.isOverBudget ? (
+                        <span className="text-rose-300 flex items-center gap-1">
+                          <AlertTriangle className="w-3.5 h-3.5" />
+                          ₹{(plan.budget.totalCost - plan.budget.allocatedBudget).toLocaleString()} Over Budget
+                        </span>
+                      ) : (
+                        <span className="text-emerald-300 flex items-center gap-1">
+                          <TrendingDown className="w-3.5 h-3.5" />
+                          ₹{plan.budget.remainingBudget.toLocaleString()} Surplus
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-            </Card>
+
+              {/* Key Trip Parameters Strip */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/15">
+                <div className="space-y-1">
+                  <span className="text-xs text-blue-200 flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5" /> Dates
+                  </span>
+                  <p className="text-sm font-semibold">{trip.start_date} to {trip.end_date}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs text-blue-200 flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5" /> Duration
+                  </span>
+                  <p className="text-sm font-semibold">{trip.duration_days} Days ({Math.max(1, trip.duration_days - 1)} Nights)</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs text-blue-200 flex items-center gap-1">
+                    <Users className="w-3.5 h-3.5" /> Party
+                  </span>
+                  <p className="text-sm font-semibold capitalize">{trip.traveller_count} ({trip.traveller_type})</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs text-blue-200 flex items-center gap-1">
+                    <Compass className="w-3.5 h-3.5" /> Travel Pace
+                  </span>
+                  <p className="text-sm font-semibold capitalize">{trip.travel_pace} Pace</p>
+                </div>
+              </div>
+            </div>
 
             {/* Segmented Module Navigation Bar */}
             <TripWorkspaceNav tripId={trip.id} />

@@ -288,37 +288,36 @@ export default function TripBudgetPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="container max-w-6xl mx-auto px-4 py-8 space-y-8">
+      <main className="container max-w-6xl mx-auto px-4 py-8 space-y-6 animate-fade-rise">
         {/* Navigation & Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6">
-          <div className="space-y-1">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-6">
+          <div className="space-y-1.5">
             <Link
               href={`/trips/${tripId}`}
-              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
+              className="inline-flex items-center gap-1.5 text-xs text-[hsl(215,25%,32%)] hover:text-black transition-colors mb-1"
             >
-              <ArrowLeft className="w-4 h-4" /> Back to Itinerary Details
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to Itinerary Details
             </Link>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-extrabold tracking-tight">
+              <h1 className="font-instrument text-4xl sm:text-5xl font-normal tracking-[-1.5px] text-[#0f172a] leading-none">
                 Budget & Optimization Engine
               </h1>
-              <Badge variant="outline" className="text-xs uppercase bg-emerald-50 text-emerald-700 border-emerald-300">
+              <span className="text-[10px] uppercase font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                 Phase 4 Deterministic
-              </Badge>
+              </span>
             </div>
             {budgetData && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-[17px] text-[hsl(215,25%,32%)] font-normal mt-1">
                 {budgetData.origin} → {budgetData.destination} • {budgetData.durationDays} days • {budgetData.travellerCount} travelers
               </p>
             )}
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
+          <button
+            type="button"
             onClick={async () => {
               await loadBudget(selectedProfile);
               toast({
@@ -328,11 +327,11 @@ export default function TripBudgetPage() {
               });
             }}
             disabled={loading}
-            className="flex items-center gap-2 rounded-xl"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-300 bg-white text-xs sm:text-sm font-medium text-slate-900 shadow-xs hover:bg-slate-50 hover:scale-[1.03] transition-all disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
             Recalculate
-          </Button>
+          </button>
         </div>
 
         {/* Unified Module Nav */}
@@ -393,7 +392,7 @@ export default function TripBudgetPage() {
                       Estimated
                     </Badge>
                   </div>
-                  <CardTitle className="text-2xl font-black text-blue-950 dark:text-blue-100 tracking-tight mt-1">
+                  <CardTitle className="font-instrument text-3xl font-normal text-blue-950 dark:text-blue-100 tracking-tight mt-1">
                     {formatCurrency(budgetMinor, { isMinor: true, currency })}
                   </CardTitle>
                 </CardHeader>
@@ -413,7 +412,7 @@ export default function TripBudgetPage() {
                       Actual
                     </Badge>
                   </div>
-                  <CardTitle className="text-2xl font-black text-emerald-950 dark:text-emerald-100 tracking-tight mt-1">
+                  <CardTitle className="font-instrument text-3xl font-normal text-emerald-950 dark:text-emerald-100 tracking-tight mt-1">
                     {budgetData.totalExpensesFormatted}
                   </CardTitle>
                 </CardHeader>
@@ -433,7 +432,7 @@ export default function TripBudgetPage() {
                       Remaining
                     </Badge>
                   </div>
-                  <CardTitle className="text-2xl font-black text-sky-950 dark:text-sky-100 tracking-tight mt-1">
+                  <CardTitle className="font-instrument text-3xl font-normal text-sky-950 dark:text-sky-100 tracking-tight mt-1">
                     {isOverBudget ? "₹0.00" : formatCurrency(remainingMinor, { isMinor: true, currency })}
                   </CardTitle>
                 </CardHeader>

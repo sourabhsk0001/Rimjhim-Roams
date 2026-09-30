@@ -161,25 +161,26 @@ export default function TripDocumentsPage() {
       : documents.filter((d) => d.document_type === activeFilter);
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl space-y-6">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl space-y-6 animate-fade-rise">
         {/* Top Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <Button variant="ghost" size="sm" asChild className="gap-1.5 text-muted-foreground">
-            <Link href={`/trips/${tripId}`}>
-              <ArrowLeft className="w-4 h-4" /> Back to Trip Details
-            </Link>
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={() => setShowUploadModal(true)}
-            className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs font-medium rounded-xl"
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
+          <Link
+            href={`/trips/${tripId}`}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(215,25%,32%)] hover:text-black transition-colors"
           >
-            <Upload className="w-4 h-4" /> Upload Document
-          </Button>
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Trip Details
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setShowUploadModal(true)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-black text-white text-xs sm:text-sm font-medium shadow-xs hover:scale-[1.03] active:scale-[0.98] transition-transform"
+          >
+            <Upload className="w-3.5 h-3.5" /> Upload Document
+          </button>
         </div>
 
         {/* Unified Module Nav */}
@@ -239,10 +240,10 @@ export default function TripDocumentsPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveFilter(tab.id)}
-                  className={`text-xs px-3.5 py-1.5 rounded-full font-medium transition whitespace-nowrap ${
+                  className={`text-xs px-4 py-1.5 rounded-full font-medium transition whitespace-nowrap ${
                     activeFilter === tab.id
-                      ? "bg-blue-600 text-white shadow-xs font-semibold"
-                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      ? "bg-black text-white shadow-xs font-medium"
+                      : "bg-slate-100 text-[hsl(215,25%,32%)] hover:bg-slate-200 hover:text-black"
                   }`}
                 >
                   {tab.label}

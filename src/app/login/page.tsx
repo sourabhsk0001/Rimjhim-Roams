@@ -55,23 +55,27 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md space-y-6">
+    <div className="w-full max-w-md space-y-6 animate-fade-rise">
       <div className="text-center space-y-2">
         <Link href="/" className="inline-flex items-center gap-2 group">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-md transition-transform group-hover:scale-105">
-            <Compass className="w-6 h-6" />
+          <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-white shadow-xs transition-transform group-hover:scale-105">
+            <Compass className="w-4 h-4" />
           </div>
-          <span className="font-bold text-2xl tracking-tight">Rimjhim Roams</span>
+          <span className="font-instrument text-3xl font-normal tracking-tight text-[#0f172a]">
+            Rimjhim Roams<sup className="text-xs font-sans text-slate-500 font-normal ml-0.5">®</sup>
+          </span>
         </Link>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-[hsl(215,25%,32%)] font-normal">
           Sign in to access your itineraries and travel plans
         </p>
       </div>
 
-      <Card className="shadow-lg border-muted">
-        <CardHeader>
-          <CardTitle>Welcome Back</CardTitle>
-          <CardDescription>
+      <Card className="rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+        <CardHeader className="space-y-1 pb-4">
+          <CardTitle className="font-instrument text-3xl font-normal text-[#0f172a]">
+            Welcome Back
+          </CardTitle>
+          <CardDescription className="text-xs text-[hsl(215,25%,32%)] font-normal">
             Enter your account credentials to continue
           </CardDescription>
         </CardHeader>
@@ -84,15 +88,15 @@ function LoginForm() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email" className="text-xs font-medium text-slate-700">Email Address</Label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="traveler@example.com"
                   required
-                  className="pl-9"
+                  className="pl-9 rounded-full border-slate-200 text-sm focus-visible:ring-black"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
@@ -102,16 +106,16 @@ function LoginForm() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-xs font-medium text-slate-700">Password</Label>
               </div>
               <div className="relative">
-                <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <Input
                   id="password"
                   type="password"
                   placeholder="••••••••"
                   required
-                  className="pl-9"
+                  className="pl-9 rounded-full border-slate-200 text-sm focus-visible:ring-black"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
@@ -120,17 +124,21 @@ function LoginForm() {
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full gap-2" disabled={loading}>
+          <CardFooter className="flex flex-col space-y-4 pt-2">
+            <button
+              type="submit"
+              className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-full bg-black text-white text-sm font-medium shadow-xs hover:scale-[1.03] active:scale-[0.98] transition-transform disabled:opacity-50"
+              disabled={loading}
+            >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {loading ? "Signing in..." : "Sign In"}
-            </Button>
+            </button>
 
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="text-center text-xs text-[hsl(215,25%,32%)]">
               Don&apos;t have an account?{" "}
               <Link
                 href="/register"
-                className="font-medium text-primary hover:underline"
+                className="font-medium text-black hover:underline"
               >
                 Create an account
               </Link>
@@ -144,11 +152,11 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50/50 font-sans">
       <Suspense
         fallback={
           <div className="flex items-center justify-center p-12">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <Loader2 className="w-8 h-8 animate-spin text-black" />
           </div>
         }
       >

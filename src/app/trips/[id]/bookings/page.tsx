@@ -192,25 +192,26 @@ export default function TripBookingsPage() {
       : bookings.filter((b) => b.type === activeTypeFilter);
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl space-y-6">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl space-y-6 animate-fade-rise">
         {/* Top Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <Button variant="ghost" size="sm" asChild className="gap-1.5 text-muted-foreground">
-            <Link href={`/trips/${tripId}`}>
-              <ArrowLeft className="w-4 h-4" /> Back to Trip Details
-            </Link>
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={() => setShowAddModal(true)}
-            className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs font-medium rounded-xl"
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
+          <Link
+            href={`/trips/${tripId}`}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(215,25%,32%)] hover:text-black transition-colors"
           >
-            <Plus className="w-4 h-4" /> Add Booking Record
-          </Button>
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Trip Details
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setShowAddModal(true)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-black text-white text-xs sm:text-sm font-medium shadow-xs hover:scale-[1.03] active:scale-[0.98] transition-transform"
+          >
+            <Plus className="w-3.5 h-3.5" /> Add Booking Record
+          </button>
         </div>
 
         {/* Unified Module Nav */}
@@ -249,37 +250,37 @@ export default function TripBookingsPage() {
             {/* Summary Statistics Card */}
             {summary && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <Card className="border bg-white shadow-xs">
-                  <CardContent className="p-4 space-y-1">
-                    <span className="text-xs text-muted-foreground">Total Bookings</span>
-                    <p className="text-2xl font-bold font-mono text-foreground">
+                <Card className="rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+                  <CardContent className="p-5 space-y-1">
+                    <span className="text-xs text-[hsl(215,25%,32%)] font-medium uppercase tracking-wider">Total Bookings</span>
+                    <p className="font-instrument text-3xl font-normal text-[#0f172a]">
                       {summary.totalCount}
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card className="border border-emerald-200 bg-emerald-50/30 shadow-xs">
-                  <CardContent className="p-4 space-y-1">
-                    <span className="text-xs text-emerald-800 font-medium">Verified Confirmed</span>
-                    <p className="text-2xl font-bold font-mono text-emerald-700">
+                <Card className="rounded-2xl border border-emerald-200 bg-emerald-50/30 shadow-xs">
+                  <CardContent className="p-5 space-y-1">
+                    <span className="text-xs text-emerald-800 font-medium uppercase tracking-wider">Verified Confirmed</span>
+                    <p className="font-instrument text-3xl font-normal text-emerald-800">
                       {summary.confirmedCount}
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card className="border border-amber-200 bg-amber-50/30 shadow-xs">
-                  <CardContent className="p-4 space-y-1">
-                    <span className="text-xs text-amber-800 font-medium">Pending Confirmation</span>
-                    <p className="text-2xl font-bold font-mono text-amber-700">
+                <Card className="rounded-2xl border border-amber-200 bg-amber-50/30 shadow-xs">
+                  <CardContent className="p-5 space-y-1">
+                    <span className="text-xs text-amber-800 font-medium uppercase tracking-wider">Pending Confirmation</span>
+                    <p className="font-instrument text-3xl font-normal text-amber-800">
                       {summary.pendingCount}
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card className="border bg-white shadow-xs">
-                  <CardContent className="p-4 space-y-1">
-                    <span className="text-xs text-muted-foreground">Committed Spend</span>
-                    <p className="text-2xl font-bold font-mono text-blue-600">
+                <Card className="rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+                  <CardContent className="p-5 space-y-1">
+                    <span className="text-xs text-[hsl(215,25%,32%)] font-medium uppercase tracking-wider">Committed Spend</span>
+                    <p className="font-instrument text-3xl font-normal text-[#0f172a]">
                       {summary.totalCostFormatted}
                     </p>
                   </CardContent>

@@ -191,57 +191,56 @@ export default function TripGroupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       <Navigation />
 
-      <main className="container max-w-5xl mx-auto px-4 py-8 space-y-8">
+      <main className="container max-w-5xl mx-auto px-4 py-8 space-y-6 animate-fade-rise">
         {/* Navigation & Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3 text-sm text-muted-foreground mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-6">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-3 text-xs text-[hsl(215,25%,32%)] mb-1">
               <Link
                 href={`/trips/${tripId}`}
-                className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                className="inline-flex items-center gap-1 hover:text-black transition-colors"
               >
-                <ArrowLeft className="w-4 h-4" /> Trip Details
+                <ArrowLeft className="w-3.5 h-3.5" /> Trip Details
               </Link>
               <span>•</span>
               <Link
                 href={`/trips/${tripId}/expenses`}
-                className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-medium"
+                className="inline-flex items-center gap-1 text-slate-700 hover:text-black font-medium"
               >
                 <Wallet className="w-3.5 h-3.5" /> Split & Expenses
               </Link>
             </div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-extrabold tracking-tight">
+              <h1 className="font-instrument text-4xl sm:text-5xl font-normal tracking-[-1.5px] text-[#0f172a] leading-none">
                 Trip Collaboration & Group Voting
               </h1>
-              <Badge variant="outline" className="text-xs uppercase bg-indigo-50 text-indigo-700 border-indigo-300">
+              <span className="text-[10px] uppercase font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                 Phase 12
-              </Badge>
+              </span>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-[17px] text-[hsl(215,25%,32%)] font-normal mt-1 leading-relaxed">
               Plan together seamlessly: invite members, assign roles, cast group votes, and decide itineraries collectively.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
               onClick={() => setShowInviteModal(true)}
-              className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-black text-white text-xs sm:text-sm font-medium shadow-xs hover:scale-[1.03] active:scale-[0.98] transition-transform"
             >
-              <UserPlus className="w-4 h-4" /> Invite Member
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
+              <UserPlus className="w-3.5 h-3.5" /> Invite Member
+            </button>
+            <button
+              type="button"
               onClick={() => setShowPollModal(true)}
-              className="gap-2 border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-slate-300 bg-white text-xs sm:text-sm font-medium text-slate-900 shadow-xs hover:bg-slate-50 hover:scale-[1.03] transition-all"
             >
-              <Vote className="w-4 h-4" /> Create Poll
-            </Button>
+              <Vote className="w-3.5 h-3.5" /> Create Poll
+            </button>
           </div>
         </div>
 

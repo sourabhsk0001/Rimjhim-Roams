@@ -50,20 +50,24 @@ export function Navigation() {
   ];
 
   return (
-    <header className="border-b bg-card/85 backdrop-blur-md sticky top-0 z-40 transition-colors">
+    <header className="border-b border-slate-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 transition-colors">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-sm transition-transform group-hover:scale-105">
-              <Compass className="w-5 h-5" />
+          <Link href="/dashboard" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white shadow-xs transition-transform group-hover:scale-105">
+              <Compass className="w-4 h-4" />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-lg tracking-tight leading-none">Rimjhim Roams</span>
-              <span className="text-[10px] text-muted-foreground font-medium tracking-wider uppercase">TripWise OS</span>
+              <span className="font-instrument text-2xl font-normal tracking-[-0.5px] text-[#0f172a] leading-none">
+                Rimjhim Roams<sup className="text-[10px] font-sans font-normal ml-0.5 text-slate-500">®</sup>
+              </span>
+              <span className="text-[9px] text-[hsl(215,25%,32%)] font-medium tracking-wider uppercase mt-0.5">
+                TripWise AI
+              </span>
             </div>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-1" aria-label="Desktop navigation">
+          <nav className="hidden lg:flex items-center gap-1.5" aria-label="Desktop navigation">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -71,13 +75,13 @@ export function Navigation() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${
                     isActive
-                      ? "bg-primary/10 text-primary font-semibold shadow-xs"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "bg-black text-white shadow-xs"
+                      : "text-[hsl(215,25%,32%)] hover:text-[#0f172a] hover:bg-slate-100"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-slate-500"}`} />
                   {item.label}
                 </Link>
               );
@@ -85,30 +89,30 @@ export function Navigation() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <Button size="sm" asChild className="gap-1.5 shadow-sm rounded-xl">
-            <Link href="/trips/new">
-              <PlusCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">New Trip</span>
-            </Link>
-          </Button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/trips/new"
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-black text-white text-xs sm:text-sm font-medium shadow-xs hover:scale-[1.03] active:scale-[0.98] transition-transform duration-200"
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">New Trip</span>
+          </Link>
 
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
+            type="button"
             onClick={handleLogout}
-            className="hidden sm:flex text-muted-foreground hover:text-destructive gap-1.5 rounded-xl"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium text-[hsl(215,25%,32%)] hover:text-[#0f172a] hover:bg-slate-100 transition-colors"
             title="Sign Out"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5" />
             <span className="inline">Sign Out</span>
-          </Button>
+          </button>
 
           {/* Mobile hamburger button */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary"
+            className="lg:hidden p-2 rounded-full text-slate-700 hover:text-black hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-black"
             aria-expanded={mobileMenuOpen}
             aria-label="Toggle navigation menu"
           >
@@ -119,8 +123,8 @@ export function Navigation() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t bg-card/95 backdrop-blur-lg px-4 pt-3 pb-6 animate-in slide-in-from-top-4 duration-200">
-          <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
+        <div className="lg:hidden border-t border-slate-200/80 bg-white/95 backdrop-blur-lg px-4 pt-3 pb-6 animate-in slide-in-from-top-4 duration-200">
+          <nav className="flex flex-col gap-1.5" aria-label="Mobile navigation">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -129,27 +133,26 @@ export function Navigation() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-medium transition-colors ${
                     isActive
-                      ? "bg-primary/10 text-primary font-semibold"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "bg-black text-white font-medium"
+                      : "text-[hsl(215,25%,32%)] hover:bg-slate-100 hover:text-[#0f172a]"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-slate-500"}`} />
                   {item.label}
                 </Link>
               );
             })}
-            <div className="pt-3 mt-2 border-t flex flex-col gap-2">
-              <Button
-                variant="outline"
-                size="sm"
+            <div className="pt-3 mt-2 border-t border-slate-200/60 flex flex-col gap-2">
+              <button
+                type="button"
                 onClick={handleLogout}
-                className="w-full justify-start text-destructive hover:bg-destructive/10 border-destructive/20 gap-2 rounded-xl"
+                className="w-full flex items-center justify-start gap-2.5 px-4 py-2.5 rounded-full text-sm font-medium text-red-600 hover:bg-red-50 border border-red-200 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 Sign Out
-              </Button>
+              </button>
             </div>
           </nav>
         </div>
