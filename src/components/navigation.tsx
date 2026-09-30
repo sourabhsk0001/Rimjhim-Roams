@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Compass, Map, User, LogOut, PlusCircle, LayoutDashboard, Globe } from "lucide-react";
+import { Compass, Map, User, LogOut, PlusCircle, LayoutDashboard, Globe, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
@@ -28,6 +28,7 @@ export function Navigation() {
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { label: "Explore", href: "/explore", icon: Globe },
     { label: "My Trips", href: "/trips", icon: Map },
+    { label: "AI Copilot", href: "/assistant", icon: Sparkles },
     { label: "Profile", href: "/profile", icon: User },
   ];
 

@@ -163,11 +163,35 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
-## Phase 9: AI Itinerary Synthesis Engine (Next Phase)
-- [ ] Structured Prompt engineering with Gemini 1.5 Flash using JSON Schema output mode.
-- [ ] Feeding deterministic TimeEngine, RoutingProvider, and BudgetEngine bounds into Gemini prompts.
-- [ ] Thematic narrative generation and cultural contextualization within strict physical limits.
-- [ ] Streaming response support for low perceived latency.
+## Phase 9: TripWise AI Travel Copilot (Completed)
+- [x] Pluggable `AIModelProvider` abstraction decoupling model implementations from business logic:
+  - `GeminiModelProvider` integrating Google Gemini API (`@google/generative-ai`) via structured function declarations (`SchemaType`).
+  - `DeterministicCopilotProvider` offline-capable fallback ensuring zero test flakiness or broken builds when API keys are unset.
+  - `getAIModelProvider()` factory for dynamic provider resolution.
+- [x] Strict Invariant: Zero LLM Math or Raw DB Writes:
+  - Architecture: `User → Gemini → Tool Selection → TripWise Backend Tool → Deterministic Service/Provider → Structured Result → Gemini → User Response`.
+  - Authoritative math and database mutations strictly delegated to validated backend engines (`BudgetEngine`, `TimeEngine`, `RoutingProvider`, `WeatherService`, `TripPlannerService`).
+- [x] Implemented 12 Deterministic Backend Tools with strict input/output schemas:
+  1. `search_destinations`: Search cities by name, state, and climate.
+  2. `search_hotels`: Filter by price, rating, and amenities.
+  3. `search_transport`: Intercity routes and local taxi tariffs.
+  4. `search_restaurants`: Budget limits per person and cuisine types.
+  5. `search_attractions`: Operational hours, ticket pricing, and weather suitability.
+  6. `get_weather`: Live conditions and multi-day meteorological forecasts.
+  7. `calculate_route`: OSRM road geometry, distances, and transit modes.
+  8. `calculate_budget`: Zero-drift minor-unit financial aggregation across 8 categories.
+  9. `calculate_visit_duration`: Quick, Normal, Relaxed tiers adjusted for traveller pace.
+  10. `optimize_itinerary`: Schedule rebalancing and validated attraction removal.
+  11. `replan_trip`: Deterministic budget reduction and stay adjustments.
+  12. `get_trip_context`: Hydrated trip details, scheduled items, budget, and weather.
+- [x] Strict user authorization boundaries: Copilot verifies active user ownership for all trip-specific contexts.
+- [x] REST API endpoint: `POST /api/copilot/chat` with session validation and multi-turn tool calling orchestration.
+- [x] Frontend Experiences:
+  - `/assistant`: Global travel copilot with value pillars, starter chips, and interactive tool console.
+  - `/trips/[id]/assistant`: Trip-specific copilot with hydrated itinerary, budget, and weather context.
+  - `CopilotChat`: Reusable conversational interface featuring tool execution badges, latency metrics, expandable JSON payload inspector, and "Apply Changes" action buttons.
+  - Integrated "AI Copilot" links into global navigation and trip detail action groups.
+- [x] 21 unit & end-to-end tests in `test/phase9.test.ts` verifying all 12 tools independently, strict authorization bounds, and required prompt scenarios (112 tests total across all 9 phases).
 
 ---
 

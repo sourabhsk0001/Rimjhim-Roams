@@ -34,6 +34,9 @@ Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, Open
 - `/login`: Secure authentication portal with redirect preservation.
 - `/register`: User onboarding and account creation.
 - `/api/health`: Health monitoring and service availability status.
+- `/assistant`: **Phase 9 Global AI Travel Copilot Console** featuring interactive tool execution displays, quick prompts, and deterministic grounded answers.
+- `/trips/[id]/assistant`: **Phase 9 Trip-Specific AI Copilot** with hydrated itinerary context, budget inspection, schedule rebalancing, and "Apply Changes" actions.
+- `/api/copilot/chat`: **Phase 9 AI Copilot Chat Endpoint** with session validation and multi-turn tool calling orchestration.
 - `/api/destinations`: REST endpoint for destinations with search and climate filters.
 - `/api/destinations/discover`: **Phase 7 Destination Discovery REST endpoint** (Origin + Budget + Duration + Profile + Preferences → Ranked feasible destinations).
 - `/api/destinations/nearby`: PostGIS spatial radius query endpoint (`lat`, `lng`, `radius`).
@@ -45,6 +48,7 @@ Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, Open
 - `/trips`: Searchable and filterable itinerary directory with status badges.
 - `/trips/new`: Itinerary planning form with duration calculation, budget & currency selectors, pace options, and automatic "destination discovery required" fallback.
 - `/trips/[id]`: Individual itinerary inspection, configuration review, and deletion management.
+- `/trips/[id]/assistant`: **Phase 9 AI Travel Copilot** attached to active trip data.
 - `/trips/[id]/budget`: **Phase 4 Interactive Budget Dashboard** with category breakdowns, over-budget warnings, 4 optimization profiles, and live expense ledger.
 - `/trips/[id]/itinerary`: **Phase 5 Time Intelligence Engine & Timeline Dashboard** with day selectors, discrete unmerged time blocks (visit, travel, queue, buffer), schedule feasibility validation, transit indicators, and **Optimize Day**.
 - `/trips/[id]/weather`: **Phase 8 Weather Intelligence & Itinerary Shield Dashboard** with current conditions, multi-day forecast, hourly timeline, and automatic conflict detection & resolution (reschedules outdoor activities or swaps with indoor attractions).
@@ -54,6 +58,34 @@ Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, Open
 - `/api/trips/[id]/weather`: REST endpoint for live/cached forecasts and weather snapshots.
 - `/api/trips/[id]/weather/integrate`: REST endpoint for weather-itinerary conflict resolution and updates.
 - `/profile`: Multi-section personal traveler identity, contact details, emergency contacts, and AI preference tuning.
+
+---
+
+## 🤖 TripWise AI Travel Copilot (Phase 9)
+
+- **Strict Architecture Invariant: Zero LLM Math**:
+  `User → Gemini → Tool Selection → TripWise Backend Tool → Deterministic Service/Provider → Structured Result → Gemini → User Response`
+  The LLM is strictly prohibited from computing budget math, route distances, or mutating the database directly. All authoritative actions pass through validated domain services.
+- **12 Deterministic Backend Tools**:
+  1. `search_destinations`: Keyword and climate search.
+  2. `search_hotels`: Lodging candidate filtering by price ceiling and rating.
+  3. `search_transport`: Flights, trains, buses, and local taxi tariffs.
+  4. `search_restaurants`: Cuisine search under budget per person limits (e.g. ₹300).
+  5. `search_attractions`: Sights with operational hours, fees, and weather suitability.
+  6. `get_weather`: Live atmospheric conditions and multi-day meteorological forecasts.
+  7. `calculate_route`: Real OSRM road geometry, distance, and transit time.
+  8. `calculate_budget`: Zero-drift minor-unit financial aggregation across all 8 categories.
+  9. `calculate_visit_duration`: Quick, Normal, Relaxed dwell times adjusted for pace.
+  10. `optimize_itinerary`: Schedule rebalancing and validated attraction deletion.
+  11. `replan_trip`: Deterministic budget optimization and stay adjustments.
+  12. `get_trip_context`: Complete authorized trip hydration, items, budget, and weather.
+- **Pluggable AI Provider**: `GeminiModelProvider` (Google Gemini 1.5 Flash via `@google/generative-ai`) with automatic fallback to `DeterministicCopilotProvider` for offline test suites and zero-key deployments.
+- **Strict Authorization Boundaries**: Current authenticated user context is strictly isolated; users cannot inspect or replan other users' trips.
+- **Interactive Copilot UI**:
+  - Global `/assistant` and contextual `/trips/[id]/assistant`.
+  - Tool execution badges showing latency in milliseconds (`14ms`) and success/error status.
+  - Expandable JSON inspector to audit exact inputs and structured tool results.
+  - Contextual action buttons (e.g. *"Apply Changes & View Itinerary"*).
 
 ---
 

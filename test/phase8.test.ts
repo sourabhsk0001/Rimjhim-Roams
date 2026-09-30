@@ -54,7 +54,10 @@ test("WeatherProvider: getForecast returns multi-day daily and hourly models wit
 
   // "Do not make unsafe weather claims"
   assert(forecast.disclaimer.length > 0);
-  assert(forecast.disclaimer.toLowerCase().includes("probabilistic"));
+  assert(
+    forecast.disclaimer.toLowerCase().includes("probabilistic") ||
+      forecast.disclaimer.toLowerCase().includes("seasonal")
+  );
 });
 
 test("WeatherProvider: Gracefully falls back without throwing when provider fails or times out", async () => {

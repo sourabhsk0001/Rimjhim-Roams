@@ -25,6 +25,7 @@ import {
   TrendingDown,
   Navigation as NavIcon,
   CloudSun,
+  Bot,
 } from "lucide-react";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
@@ -290,6 +291,13 @@ export default function TripDetailPage() {
                 <Link href={`/trips/${trip.id}/weather`}>
                   <CloudSun className="w-4 h-4" />
                   Weather & Forecast
+                </Link>
+              </Button>
+
+              <Button size="sm" asChild variant="outline" className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
+                <Link href={`/trips/${trip.id}/assistant`}>
+                  <Bot className="w-4 h-4 text-indigo-600" />
+                  AI Copilot
                 </Link>
               </Button>
 

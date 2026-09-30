@@ -27,16 +27,25 @@ flowchart TD
         Optimizer --> Alternatives[Accept / Reject Alternatives Engine]
     end
 
-    subgraph AI Intelligence Layer
-        NextApp --> GeminiAdapter[Gemini API Client]
-        GeminiAdapter <--> GeminiEngine[Google Gemini 1.5 Flash]
+    subgraph AI Travel Copilot Layer
+        NextApp --> CopilotService[CopilotService Orchestrator]
+        CopilotService <--> AIProvider[AIModelProvider Abstraction]
+        AIProvider <--> GeminiEngine[Google Gemini API]
+        AIProvider <--> DeterministicEngine[Deterministic Offline Provider]
+        CopilotService --> ToolRegistry[Deterministic Tool Registry: 12 Tools]
+        ToolRegistry --> TimeEngine
+        ToolRegistry --> BudgetEngine
+        ToolRegistry --> RoutingService
+        ToolRegistry --> WeatherService
+        ToolRegistry --> TripPlannerService
     end
 
     subgraph Geospatial & Routing Layer
         NextApp --> RoutingService[RoutingProvider Abstraction]
         RoutingService --> OSRM[OSRM Road Network API]
         RoutingService -. Fallback .-> HaversineEngine[Haversine Fallback Engine]
-        NextApp --> OpenMeteo[Open-Meteo Weather API]
+        NextApp --> WeatherService[WeatherService & Cache]
+        WeatherService --> OpenMeteo[Open-Meteo Weather API]
     end
 
     subgraph Data & Persistence Layer
@@ -83,16 +92,19 @@ Rimjhim Roams/
 │   ├── app/                  # Next.js App Router
 │   │   ├── api/
 │   │   │   ├── auth/         # Login, register, logout handlers
+│   │   │   ├── copilot/      # Phase 9 AI Copilot chat route (/api/copilot/chat)
 │   │   │   ├── destinations/ # Catalog, PostGIS radius queries & discovery (/discover)
 │   │   │   ├── geo/          # OSRM routing proxy (/api/geo/route)
 │   │   │   ├── health/       # Health monitoring endpoint
 │   │   │   ├── profile/      # User profile & preferences
 │   │   │   └── trips/        # AI trip synthesis, CRUD, /budget, /itinerary, /plan, /weather
+│   │   ├── assistant/        # Phase 9 Global AI Travel Copilot UI
 │   │   ├── dashboard/        # Authenticated user dashboard
 │   │   ├── explore/          # Destination catalog & interactive maps
 │   │   ├── profile/          # User preferences editor
 │   │   ├── trips/            # Trip management & itinerary creation
 │   │   │   └── [id]/
+│   │   │       ├── assistant/# Phase 9 Trip-specific AI Copilot UI
 │   │   │       ├── budget/   # Phase 4 Budget & Optimization Engine UI
 │   │   │       ├── itinerary/# Phase 5 Time Intelligence Timeline UI
 │   │   │       ├── weather/  # Phase 8 Weather Intelligence & Conflict Shield UI
@@ -101,18 +113,21 @@ Rimjhim Roams/
 │   │   ├── layout.tsx        # Root HTML layout and metadata
 │   │   └── page.tsx          # Landing & Phase 7 "FIND WHERE I SHOULD GO" Discovery UI
 │   ├── components/
+│   │   ├── ai/               # Phase 9 CopilotChat interactive console & tool inspect cards
 │   │   ├── discovery/        # Destination Discovery interactive widget
 │   │   ├── map/              # Reusable Leaflet interactive map components
 │   │   └── ui/               # shadcn/ui reusable design system tokens
 │   ├── lib/
+│   │   ├── ai/               # AI Model Providers (Gemini, Deterministic) & Tool Registry (12 tools)
 │   │   ├── budget/           # BudgetEngine, money precision & optimizer
 │   │   ├── time/             # TimeEngine, duration calculation & validation
 │   │   ├── geo/              # RoutingProvider, OSRM & Open-Meteo
 │   │   ├── weather/          # WeatherProvider, Open-Meteo & WeatherCacheManager
-│   │   ├── services/         # TravelData, Trip, Budget, Itinerary, Planner, Discovery & Weather services
+│   │   ├── services/         # Copilot, TravelData, Trip, Budget, Itinerary, Planner, Discovery & Weather
 │   │   ├── supabase/         # SSR & Browser Supabase clients
 │   │   └── utils.ts          # Styling & formatting utilities
 │   └── types/
+│       ├── ai.ts             # Phase 9 AI Copilot domain & tool schemas
 │       ├── budget.ts         # Budget & financial domain types
 │       ├── time.ts           # Time intelligence, itinerary & validation types
 │       ├── discovery.ts      # Destination discovery query & result types
@@ -129,7 +144,8 @@ Rimjhim Roams/
 │   ├── phase5.test.ts        # TimeEngine & itinerary tests
 │   ├── phase6.test.ts        # Complete TripPlannerService tests
 │   ├── phase7.test.ts        # DestinationDiscoveryEngine unit & e2e tests
-│   └── phase8.test.ts        # WeatherProvider & itinerary integration tests
+│   ├── phase8.test.ts        # WeatherProvider & itinerary integration tests
+│   └── phase9.test.ts        # AI Copilot 12 tools, authorization & scenario tests
 ├── supabase/
 │   └── migrations/
 │       ├── 20241001000000_initial_schema.sql
