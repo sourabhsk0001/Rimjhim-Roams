@@ -12,6 +12,7 @@ import {
 import { Navigation } from "@/components/navigation";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { CardSkeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DestinationCard, DemoBadge } from "@/components/travel/cards";
 import { Destination } from "@/types/travel";
@@ -129,9 +130,15 @@ export default function ExplorePage() {
 
         {/* Loading State */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">Loading travel catalog...</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
           </div>
         ) : destinations.length === 0 ? (
           /* Empty State */

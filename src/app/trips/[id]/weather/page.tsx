@@ -39,6 +39,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { TripWorkspaceNav } from "@/components/travel/trip-workspace-nav";
+import { useToast } from "@/components/ui/toast";
 import {
   WeatherForecastResponse,
   WeatherSnapshot,
@@ -51,6 +53,7 @@ export default function TripWeatherPage() {
   const params = useParams();
   const router = useRouter();
   const tripId = params.id as string;
+  const { toast } = useToast();
 
   const [weather, setWeather] = useState<WeatherForecastResponse | null>(null);
   const [snapshots, setSnapshots] = useState<WeatherSnapshot[]>([]);
@@ -178,15 +181,25 @@ export default function TripWeatherPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={fetchWeatherData}
+              onClick={async () => {
+                await fetchWeatherData();
+                toast({
+                  title: "Weather Synchronized",
+                  description: "Forecast refreshed from Open-Meteo.",
+                  type: "info",
+                });
+              }}
               disabled={loading}
-              className="gap-1.5"
+              className="gap-1.5 rounded-xl"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
           </div>
         </div>
+
+        {/* Unified Module Nav */}
+        <TripWorkspaceNav tripId={tripId} />
 
         {error && (
           <Alert variant="destructive">

@@ -24,6 +24,9 @@ import {
   Loader2,
   RefreshCw,
   ShieldAlert,
+  Calculator,
+  Receipt,
+  ShieldCheck,
 } from "lucide-react";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
@@ -38,6 +41,9 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TripWorkspaceNav } from "@/components/travel/trip-workspace-nav";
+import { useToast } from "@/components/ui/toast";
+import { CardSkeleton } from "@/components/ui/skeleton";
 import {
   TripBudgetPageData,
   OptimizationProfile,
@@ -57,6 +63,7 @@ export default function TripBudgetPage() {
   const params = useParams();
   const router = useRouter();
   const tripId = params.id as string;
+  const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -204,12 +211,21 @@ export default function TripBudgetPage() {
         throw new Error(json.error || "Failed to add expense");
       }
 
+      toast({
+        title: "Expense Logged",
+        description: `₹${Number(expenseAmount).toLocaleString()} added to ${expenseCategory.replace("_", " ")}.`,
+        type: "success",
+      });
       setExpenseTitle("");
       setExpenseAmount("");
       // Reload budget data
       await loadBudget(selectedProfile);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error saving expense");
+      toast({
+        title: "Expense Notice",
+        description: err instanceof Error ? err.message : "Error saving expense",
+        type: "error",
+      });
     } finally {
       setSubmittingExpense(false);
     }
@@ -217,17 +233,25 @@ export default function TripBudgetPage() {
 
   // Handle Expense Deletion
   const handleDeleteExpense = async (expenseId: string) => {
-    if (!confirm("Are you sure you want to delete this expense record?")) return;
     try {
       const res = await fetch(
         `/api/trips/${tripId}/budget?expenseId=${expenseId}`,
         { method: "DELETE" }
       );
       if (res.ok) {
+        toast({
+          title: "Expense Removed",
+          description: "Expense deleted and ledger updated.",
+          type: "info",
+        });
         await loadBudget(selectedProfile);
       }
     } catch {
-      alert("Failed to delete expense");
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete expense",
+        type: "error",
+      });
     }
   };
 
@@ -295,17 +319,27 @@ export default function TripBudgetPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => loadBudget(selectedProfile)}
+            onClick={async () => {
+              await loadBudget(selectedProfile);
+              toast({
+                title: "Budget Recalculated",
+                description: "All 8 categories updated.",
+                type: "info",
+              });
+            }}
             disabled={loading}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 rounded-xl"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
             Recalculate
           </Button>
         </div>
 
+        {/* Unified Module Nav */}
+        <TripWorkspaceNav tripId={tripId} />
+
         {error && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="rounded-2xl">
             <AlertTriangle className="w-4 h-4" />
             <AlertTitle>Budget Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
@@ -313,19 +347,25 @@ export default function TripBudgetPage() {
         )}
 
         {loading && !budgetData ? (
-          <div className="flex flex-col items-center justify-center py-24 space-y-4">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">
-              Executing deterministic cost calculations...
-            </p>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              <span>Executing deterministic integer arithmetic & ledger reconciliation...</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+            </div>
           </div>
         ) : budgetData ? (
           <>
             {/* Over-Budget Alert Banner */}
             {isOverBudget && (
-              <Alert className="border-rose-500/50 bg-rose-500/10 text-rose-950 dark:text-rose-200">
+              <Alert className="border-rose-400 bg-rose-50/90 text-rose-950 dark:bg-rose-950/50 dark:text-rose-100 rounded-2xl shadow-sm">
                 <ShieldAlert className="w-5 h-5 text-rose-600" />
-                <AlertTitle className="text-base font-bold text-rose-700 dark:text-rose-300">
+                <AlertTitle className="text-base font-bold text-rose-800 dark:text-rose-300">
                   Over-Budget Warning: Projected Cost Exceeds Allocated Budget
                 </AlertTitle>
                 <AlertDescription className="text-sm mt-1">
@@ -340,86 +380,115 @@ export default function TripBudgetPage() {
               </Alert>
             )}
 
-            {/* Top KPI Summary Cards */}
+            {/* Top KPI Summary Cards - Explicit 4-State Visual Differentiation */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Card 1: Total Budget */}
-              <Card>
+              {/* State 1: Estimated */}
+              <Card className="rounded-2xl border bg-blue-50/60 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900 shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardDescription className="text-xs uppercase font-medium">
-                    Allocated Budget
-                  </CardDescription>
-                  <CardTitle className="text-2xl font-bold text-foreground">
+                  <div className="flex items-center justify-between">
+                    <CardDescription className="text-xs uppercase font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
+                      <Calculator className="w-3.5 h-3.5" /> Allocated Budget
+                    </CardDescription>
+                    <Badge variant="outline" className="text-[10px] border-blue-300 text-blue-700 bg-blue-100/50 dark:bg-blue-900/50">
+                      Estimated
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-2xl font-black text-blue-950 dark:text-blue-100 tracking-tight mt-1">
                     {formatCurrency(budgetMinor, { isMinor: true, currency })}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="text-xs text-muted-foreground">
+                <CardContent className="text-xs text-blue-700 dark:text-blue-300">
                   Baseline cap set for itinerary
                 </CardContent>
               </Card>
 
-              {/* Card 2: Projected Total Cost */}
-              <Card className={isOverBudget ? "border-rose-400" : "border-muted"}>
+              {/* State 2: Actual Spent */}
+              <Card className="rounded-2xl border bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900 shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardDescription className="text-xs uppercase font-medium">
-                    Projected Total Cost
-                  </CardDescription>
+                  <div className="flex items-center justify-between">
+                    <CardDescription className="text-xs uppercase font-semibold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+                      <Receipt className="w-3.5 h-3.5" /> Logged Spend
+                    </CardDescription>
+                    <Badge variant="outline" className="text-[10px] border-emerald-300 text-emerald-700 bg-emerald-100/50 dark:bg-emerald-900/50">
+                      Actual
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-2xl font-black text-emerald-950 dark:text-emerald-100 tracking-tight mt-1">
+                    {budgetData.totalExpensesFormatted}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-xs text-emerald-700 dark:text-emerald-300">
+                  {budgetData.expenses.length} logged expense item(s)
+                </CardContent>
+              </Card>
+
+              {/* State 3: Remaining Buffer */}
+              <Card className="rounded-2xl border bg-sky-50/60 dark:bg-sky-950/30 border-sky-200 dark:border-sky-900 shadow-sm">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardDescription className="text-xs uppercase font-semibold text-sky-700 dark:text-sky-300 flex items-center gap-1.5">
+                      <TrendingDown className="w-3.5 h-3.5" /> Remaining Buffer
+                    </CardDescription>
+                    <Badge variant="outline" className="text-[10px] border-sky-300 text-sky-700 bg-sky-100/50 dark:bg-sky-900/50">
+                      Remaining
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-2xl font-black text-sky-950 dark:text-sky-100 tracking-tight mt-1">
+                    {isOverBudget ? "₹0.00" : formatCurrency(remainingMinor, { isMinor: true, currency })}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-xs text-sky-700 dark:text-sky-300">
+                  {isOverBudget ? "Deficit active" : "Available surplus"}
+                </CardContent>
+              </Card>
+
+              {/* State 4: Over Budget Deficit / Health State */}
+              <Card
+                className={`rounded-2xl border shadow-sm ${
+                  isOverBudget
+                    ? "bg-rose-50/90 dark:bg-rose-950/60 border-rose-300 dark:border-rose-900 ring-1 ring-rose-400 text-rose-950"
+                    : "bg-card border-muted"
+                }`}
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardDescription
+                      className={`text-xs uppercase font-semibold flex items-center gap-1.5 ${
+                        isOverBudget ? "text-rose-700 dark:text-rose-300" : "text-muted-foreground"
+                      }`}
+                    >
+                      {isOverBudget ? (
+                        <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                      ) : (
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                      )}
+                      {isOverBudget ? "Over Budget Deficit" : "Budget Health"}
+                    </CardDescription>
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] ${
+                        isOverBudget
+                          ? "border-rose-300 text-rose-700 bg-rose-100 dark:bg-rose-900/50"
+                          : "border-emerald-300 text-emerald-700 bg-emerald-100 dark:bg-emerald-900/50"
+                      }`}
+                    >
+                      {isOverBudget ? "Over Budget" : "Healthy"}
+                    </Badge>
+                  </div>
                   <CardTitle
-                    className={`text-2xl font-bold ${
-                      isOverBudget ? "text-rose-600" : "text-foreground"
+                    className={`text-2xl font-black tracking-tight mt-1 ${
+                      isOverBudget ? "text-rose-700 dark:text-rose-300" : "text-foreground"
                     }`}
                   >
-                    {formatCurrency(currentTotalMinor, { isMinor: true, currency })}
+                    {isOverBudget
+                      ? `-${formatCurrency(overBudgetMinor, { isMinor: true, currency })}`
+                      : "Balanced"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="text-xs text-muted-foreground">
                   {isOverBudget
-                    ? `Over budget by ${formatCurrency(overBudgetMinor, {
-                        isMinor: true,
-                        currency,
-                      })}`
-                    : `Well within budget limit`}
-                </CardContent>
-              </Card>
-
-              {/* Card 3: Remaining / Difference */}
-              <Card className={isOverBudget ? "bg-rose-50/50" : "bg-emerald-50/50"}>
-                <CardHeader className="pb-2">
-                  <CardDescription className="text-xs uppercase font-medium">
-                    {isOverBudget ? "Excess Over Budget" : "Remaining Buffer"}
-                  </CardDescription>
-                  <CardTitle
-                    className={`text-2xl font-bold ${
-                      isOverBudget ? "text-rose-700" : "text-emerald-700"
-                    }`}
-                  >
-                    {isOverBudget
-                      ? `-${formatCurrency(overBudgetMinor, {
-                          isMinor: true,
-                          currency,
-                        })}`
-                      : formatCurrency(remainingMinor, {
-                          isMinor: true,
-                          currency,
-                        })}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-muted-foreground">
-                  {isOverBudget ? "Savings required" : "Available surplus"}
-                </CardContent>
-              </Card>
-
-              {/* Card 4: Actual Logged Expenses */}
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription className="text-xs uppercase font-medium">
-                    Actual Spent So Far
-                  </CardDescription>
-                  <CardTitle className="text-2xl font-bold text-foreground">
-                    {budgetData.totalExpensesFormatted}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-muted-foreground">
-                  {budgetData.expenses.length} logged expense item(s)
+                    ? "Excess requires alternative swaps"
+                    : `Projected spend: ${formatCurrency(currentTotalMinor, { isMinor: true, currency })}`}
                 </CardContent>
               </Card>
             </div>

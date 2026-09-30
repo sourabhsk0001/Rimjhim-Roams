@@ -16,9 +16,16 @@ import {
   ArrowRight,
   RefreshCw,
   Zap,
+  Brain,
+  Cpu,
+  Database,
+  MessageSquareQuote,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ToolExecutionEvent } from "@/types/ai";
+
+export type CopilotPhase = "thinking" | "calling_tool" | "receiving_data" | "responding";
 
 interface ChatEntry {
   id: string;
@@ -67,6 +74,7 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [copilotPhase, setCopilotPhase] = useState<CopilotPhase>("thinking");
   const [activeProvider, setActiveProvider] = useState<string>("TripWise AI Copilot");
   const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -97,6 +105,11 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
+    setCopilotPhase("thinking");
+
+    const t1 = setTimeout(() => setCopilotPhase("calling_tool"), 450);
+    const t2 = setTimeout(() => setCopilotPhase("receiving_data"), 1100);
+    const t3 = setTimeout(() => setCopilotPhase("responding"), 1800);
 
     try {
       // Build lightweight conversation history for the copilot
@@ -147,6 +160,9 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
         },
       ]);
     } finally {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
       setLoading(false);
     }
   };
@@ -346,13 +362,76 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
         ))}
 
         {loading && (
-          <div className="flex gap-3 sm:gap-4 items-start">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 flex-shrink-0 flex items-center justify-center text-white shadow-sm animate-pulse">
+          <div className="flex gap-3 sm:gap-4 items-start animate-in fade-in-50 duration-200">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex-shrink-0 flex items-center justify-center text-white shadow-sm animate-pulse">
               <Bot className="w-4 h-4" />
             </div>
-            <div className="bg-muted/40 border rounded-2xl rounded-tl-none p-4 text-xs text-muted-foreground flex items-center gap-2">
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-blue-600" />
-              Executing deterministic backend tools and calculating schedule...
+            <div className="bg-card border rounded-2xl rounded-tl-none p-4 shadow-sm space-y-3 max-w-[85%] sm:max-w-[75%] w-full">
+              <div className="flex items-center justify-between border-b pb-2">
+                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-primary animate-spin" />
+                  TripWise Copilot Processing
+                </span>
+                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                  {copilotPhase.replace("_", " ")}
+                </span>
+              </div>
+
+              {/* 4-Stage State Display */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { id: "thinking", label: "Thinking", icon: Brain, desc: "Intent analysis" },
+                  { id: "calling_tool", label: "Calling Tool", icon: Cpu, desc: "Engine dispatch" },
+                  { id: "receiving_data", label: "Receiving Data", icon: Database, desc: "Data verification" },
+                  { id: "responding", label: "Responding", icon: MessageSquareQuote, desc: "Plan assembly" },
+                ].map((step) => {
+                  const phases: CopilotPhase[] = ["thinking", "calling_tool", "receiving_data", "responding"];
+                  const stepIndex = phases.indexOf(step.id as CopilotPhase);
+                  const currentIndex = phases.indexOf(copilotPhase);
+                  const isDone = stepIndex < currentIndex;
+                  const isCurrent = stepIndex === currentIndex;
+                  const Icon = step.icon;
+
+                  return (
+                    <div
+                      key={step.id}
+                      className={`p-2 rounded-xl border text-xs transition-all ${
+                        isCurrent
+                          ? "bg-primary/10 border-primary/40 shadow-xs ring-1 ring-primary/20"
+                          : isDone
+                          ? "bg-muted/40 border-muted text-muted-foreground"
+                          : "opacity-40 border-transparent bg-muted/20"
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 font-semibold text-[11px]">
+                        {isDone ? (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        ) : isCurrent ? (
+                          <Loader2 className="w-3.5 h-3.5 text-primary animate-spin shrink-0" />
+                        ) : (
+                          <Icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        )}
+                        <span className={isCurrent ? "text-primary font-bold" : ""}>
+                          {step.label}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                        {step.desc}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 pt-1">
+                <Loader2 className="w-3 h-3 animate-spin text-primary shrink-0" />
+                <span className="truncate">
+                  {copilotPhase === "thinking" && "Interpreting constraints, dates, and budget allowances..."}
+                  {copilotPhase === "calling_tool" && "Executing deterministic PostGIS, transit, and catalog tools..."}
+                  {copilotPhase === "receiving_data" && "Receiving verified payload with integer minor-unit arithmetic..."}
+                  {copilotPhase === "responding" && "Formatting grounded response with source citations..."}
+                </span>
+              </div>
             </div>
           </div>
         )}

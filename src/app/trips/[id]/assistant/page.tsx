@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Navigation } from "@/components/navigation";
 import { CopilotChat } from "@/components/ai/CopilotChat";
+import { TripWorkspaceNav } from "@/components/travel/trip-workspace-nav";
 import { TripRow } from "@/lib/services/trip-service";
 
 export default function TripAssistantPage() {
@@ -94,30 +95,10 @@ export default function TripAssistantPage() {
               <ArrowLeft className="w-4 h-4" /> Back to Trip Details
             </Link>
           </Button>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Button size="sm" asChild variant="outline" className="gap-1.5 border-purple-300 text-purple-700 hover:bg-purple-50">
-              <Link href={`/trips/${trip.id}/itinerary`}>
-                <Clock className="w-4 h-4" />
-                Itinerary
-              </Link>
-            </Button>
-
-            <Button size="sm" asChild variant="outline" className="gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50">
-              <Link href={`/trips/${trip.id}/budget`}>
-                <Wallet className="w-4 h-4" />
-                Budget
-              </Link>
-            </Button>
-
-            <Button size="sm" asChild variant="outline" className="gap-1.5 border-sky-300 text-sky-700 hover:bg-sky-50">
-              <Link href={`/trips/${trip.id}/weather`}>
-                <CloudSun className="w-4 h-4" />
-                Weather
-              </Link>
-            </Button>
-          </div>
         </div>
+
+        {/* Unified Module Nav */}
+        <TripWorkspaceNav tripId={trip.id} />
 
         {/* Trip Context Card */}
         <div className="bg-card border rounded-2xl p-5 shadow-sm flex flex-wrap items-center justify-between gap-4">

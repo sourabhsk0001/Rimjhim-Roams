@@ -36,11 +36,14 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { TripWorkspaceNav } from "@/components/travel/trip-workspace-nav";
+import { useToast } from "@/components/ui/toast";
 import { TripMember, TripInvitation, GroupPoll, TripMemberRole } from "@/types/collaboration";
 
 export default function TripGroupPage() {
   const params = useParams();
   const tripId = params.id as string;
+  const { toast } = useToast();
 
   const [members, setMembers] = useState<TripMember[]>([]);
   const [invitations, setInvitations] = useState<TripInvitation[]>([]);
@@ -250,30 +253,8 @@ export default function TripGroupPage() {
           </Alert>
         )}
 
-        {/* Quick Nav Bar */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b">
-          <Button size="sm" asChild variant="ghost" className="text-xs h-8">
-            <Link href={`/trips/${tripId}`}>Overview</Link>
-          </Button>
-          <Button size="sm" asChild variant="ghost" className="text-xs h-8">
-            <Link href={`/trips/${tripId}/itinerary`}>Itinerary</Link>
-          </Button>
-          <Button size="sm" asChild variant="ghost" className="text-xs h-8">
-            <Link href={`/trips/${tripId}/budget`}>Budget</Link>
-          </Button>
-          <Button size="sm" asChild variant="ghost" className="text-xs h-8">
-            <Link href={`/trips/${tripId}/weather`}>Weather</Link>
-          </Button>
-          <Button size="sm" variant="secondary" className="text-xs h-8 font-semibold bg-indigo-100 text-indigo-800">
-            Group & Polls
-          </Button>
-          <Button size="sm" asChild variant="ghost" className="text-xs h-8">
-            <Link href={`/trips/${tripId}/expenses`}>Expenses & Split</Link>
-          </Button>
-          <Button size="sm" asChild variant="ghost" className="text-xs h-8">
-            <Link href={`/trips/${tripId}/assistant`}>AI Copilot</Link>
-          </Button>
-        </div>
+        {/* Unified Module Nav */}
+        <TripWorkspaceNav tripId={tripId} />
 
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center space-y-4">

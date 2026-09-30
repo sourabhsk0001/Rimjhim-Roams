@@ -20,6 +20,8 @@ export interface MapMarkerItem {
   latitude: number;
   longitude: number;
   type: "destination" | "attraction" | "hotel" | "restaurant";
+  order?: number;
+  isSelected?: boolean;
   details?: {
     category?: string;
     price?: number | string;
@@ -43,39 +45,53 @@ export interface MapInnerProps {
 }
 
 // Custom styled div icons to avoid Leaflet asset path 404s
-function createCustomIcon(type: MapMarkerItem["type"]) {
+function createCustomIcon(
+  type: MapMarkerItem["type"],
+  order?: number,
+  isSelected?: boolean
+) {
   let bgColor = "bg-blue-600";
-  let letter = "D";
+  let displayChar: string | number = "D";
 
   if (type === "attraction") {
     bgColor = "bg-emerald-600";
-    letter = "★";
+    displayChar = order !== undefined ? order : "★";
   } else if (type === "hotel") {
     bgColor = "bg-amber-600";
-    letter = "H";
+    displayChar = order !== undefined ? order : "H";
   } else if (type === "restaurant") {
     bgColor = "bg-rose-600";
-    letter = "R";
+    displayChar = order !== undefined ? order : "R";
+  } else if (order !== undefined) {
+    displayChar = order;
   }
+
+  const size = isSelected ? 34 : 28;
+  const half = size / 2;
+  const borderWidth = isSelected ? "3px" : "2px";
+  const ringStyle = isSelected
+    ? "box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.4), 0 4px 12px rgba(0,0,0,0.35); transform: scale(1.15);"
+    : "box-shadow: 0 2px 6px rgba(0,0,0,0.3);";
 
   return L.divIcon({
     className: "custom-leaflet-marker",
     html: `<div style="
-      width: 28px;
-      height: 28px;
+      width: ${size}px;
+      height: ${size}px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
       font-weight: bold;
-      font-size: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      border: 2px solid white;
-    " class="${bgColor}">${letter}</div>`,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-    popupAnchor: [0, -14],
+      font-size: ${isSelected ? 13 : 11}px;
+      ${ringStyle}
+      border: ${borderWidth} solid white;
+      transition: all 0.2s ease;
+    " class="${bgColor}">${displayChar}</div>`,
+    iconSize: [size, size],
+    iconAnchor: [half, half],
+    popupAnchor: [0, -half],
   });
 }
 
@@ -214,7 +230,7 @@ export default function MapInner({
             <Marker
               key={marker.id}
               position={[marker.latitude, marker.longitude]}
-              icon={createCustomIcon(marker.type)}
+              icon={createCustomIcon(marker.type, marker.order, marker.isSelected)}
               eventHandlers={{
                 click: () => onMarkerSelect?.(marker),
               }}

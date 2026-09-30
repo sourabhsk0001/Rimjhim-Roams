@@ -37,6 +37,8 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TripWorkspaceNav } from "@/components/travel/trip-workspace-nav";
+import { useToast } from "@/components/ui/toast";
 import {
   PackingCategory,
   PackingItem,
@@ -55,6 +57,7 @@ const CATEGORY_ICONS: Record<PackingCategory, any> = {
 export default function TripPackingPage() {
   const params = useParams();
   const tripId = params?.id as string;
+  const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -269,6 +272,9 @@ export default function TripPackingPage() {
             </Button>
           </div>
         </div>
+
+        {/* Unified Module Nav */}
+        <TripWorkspaceNav tripId={tripId} />
 
         {error && (
           <Alert variant="destructive">

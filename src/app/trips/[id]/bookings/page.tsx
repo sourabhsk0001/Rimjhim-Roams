@@ -39,6 +39,8 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TripWorkspaceNav } from "@/components/travel/trip-workspace-nav";
+import { useToast } from "@/components/ui/toast";
 import {
   TripBooking,
   BookingType,
@@ -70,6 +72,7 @@ const TYPE_LABELS: Record<BookingType, string> = {
 export default function TripBookingsPage() {
   const params = useParams();
   const tripId = params?.id as string;
+  const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -204,11 +207,14 @@ export default function TripBookingsPage() {
           <Button
             size="sm"
             onClick={() => setShowAddModal(true)}
-            className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs font-medium"
+            className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs font-medium rounded-xl"
           >
             <Plus className="w-4 h-4" /> Add Booking Record
           </Button>
         </div>
+
+        {/* Unified Module Nav */}
+        <TripWorkspaceNav tripId={tripId} />
 
         {/* Verification Invariant Banner */}
         <Alert className="bg-indigo-50/60 border-indigo-200 text-indigo-950">

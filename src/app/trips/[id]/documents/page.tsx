@@ -35,6 +35,8 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TripWorkspaceNav } from "@/components/travel/trip-workspace-nav";
+import { useToast } from "@/components/ui/toast";
 import {
   TripDocument,
   TravelDocumentType,
@@ -57,6 +59,7 @@ const TYPE_LABELS: Record<TravelDocumentType, string> = {
 export default function TripDocumentsPage() {
   const params = useParams();
   const tripId = params?.id as string;
+  const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -173,11 +176,14 @@ export default function TripDocumentsPage() {
           <Button
             size="sm"
             onClick={() => setShowUploadModal(true)}
-            className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs font-medium"
+            className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs font-medium rounded-xl"
           >
             <Upload className="w-4 h-4" /> Upload Document
           </Button>
         </div>
+
+        {/* Unified Module Nav */}
+        <TripWorkspaceNav tripId={tripId} />
 
         {/* Security & Access Control Banner */}
         <Alert className="bg-slate-50 border-slate-300 text-slate-800">

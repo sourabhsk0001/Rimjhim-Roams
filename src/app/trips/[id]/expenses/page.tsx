@@ -38,6 +38,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { TripWorkspaceNav } from "@/components/travel/trip-workspace-nav";
+import { useToast } from "@/components/ui/toast";
 import {
   TripSplitExpense,
   TripMember,
@@ -60,6 +62,7 @@ const CATEGORIES = [
 export default function TripExpensesPage() {
   const params = useParams();
   const tripId = params.id as string;
+  const { toast } = useToast();
 
   const [members, setMembers] = useState<TripMember[]>([]);
   const [expenses, setExpenses] = useState<TripSplitExpense[]>([]);
@@ -148,7 +151,11 @@ export default function TripExpensesPage() {
     e.preventDefault();
     const amountVal = parseFloat(amountInput);
     if (isNaN(amountVal) || amountVal <= 0) {
-      alert("Please enter a valid amount.");
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid positive amount.",
+        variant: "warning",
+      });
       return;
     }
 
@@ -157,7 +164,11 @@ export default function TripExpensesPage() {
 
     if (splitType === "equal") {
       if (selectedUserIds.length === 0) {
-        alert("Please select at least one participant.");
+        toast({
+          title: "Select Participants",
+          description: "Please select at least one participant to split with.",
+          variant: "warning",
+        });
         return;
       }
       participantsPayload = selectedUserIds.map((uid) => ({ user_id: uid }));
@@ -171,7 +182,11 @@ export default function TripExpensesPage() {
 
       const sum = participantsPayload.reduce((s, p) => s + (p.share_amount_minor_units || 0), 0);
       if (sum !== amountMinor) {
-        alert(`Custom shares (₹${fromMinorUnits(sum)}) must exactly equal the total amount (₹${amountVal}).`);
+        toast({
+          title: "Sum Mismatch",
+          description: `Custom shares (₹${fromMinorUnits(sum)}) must exactly equal the total amount (₹${amountVal}).`,
+          variant: "warning",
+        });
         return;
       }
     } else if (splitType === "percentage") {
@@ -184,7 +199,11 @@ export default function TripExpensesPage() {
 
       const sumPct = participantsPayload.reduce((s, p) => s + (p.share_percentage || 0), 0);
       if (Math.abs(sumPct - 100) > 0.1) {
-        alert(`Percentage shares (${sumPct.toFixed(1)}%) must equal 100%.`);
+        toast({
+          title: "Percentage Mismatch",
+          description: `Percentage shares (${sumPct.toFixed(1)}%) must equal 100%.`,
+          variant: "warning",
+        });
         return;
       }
     }
@@ -209,9 +228,18 @@ export default function TripExpensesPage() {
       if (!res.ok) throw new Error(data.error || "Failed to create expense");
 
       setShowAddModal(false);
+      toast({
+        title: "Expense Logged",
+        description: `Split ₹${amountVal} for "${title}".`,
+        variant: "success",
+      });
       await loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to record expense");
+      toast({
+        title: "Expense Failed",
+        description: err instanceof Error ? err.message : "Failed to record expense",
+        variant: "error",
+      });
     } finally {
       setSavingExpense(false);
     }
@@ -227,9 +255,18 @@ export default function TripExpensesPage() {
         const data = await res.json();
         throw new Error(data.error || "Failed to delete expense");
       }
+      toast({
+        title: "Expense Deleted",
+        description: "Shared expense removed and balances recalculated.",
+        variant: "info",
+      });
       await loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to delete expense");
+      toast({
+        title: "Delete Failed",
+        description: err instanceof Error ? err.message : "Failed to delete expense",
+        variant: "error",
+      });
     }
   }
 
@@ -298,30 +335,8 @@ export default function TripExpensesPage() {
           </Alert>
         )}
 
-        {/* Quick Nav Bar */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b">
-          <Button size="sm" asChild variant="ghost" className="text-xs h-8">
-            <Link href={`/trips/${tripId}`}>Overview</Link>
-          </Button>
-          <Button size="sm" asChild variant="ghost" className="text-xs h-8">
-            <Link href={`/trips/${tripId}/itinerary`}>Itinerary</Link>
-          </Button>
-          <Button size="sm" asChild variant="ghost" className="text-xs h-8">
-            <Link href={`/trips/${tripId}/budget`}>Budget Ledger</Link>
-          </Button>
-          <Button size="sm" asChild variant="ghost" className="text-xs h-8">
-            <Link href={`/trips/${tripId}/weather`}>Weather</Link>
-          </Button>
-          <Button size="sm" asChild variant="ghost" className="text-xs h-8">
-            <Link href={`/trips/${tripId}/group`}>Group & Polls</Link>
-          </Button>
-          <Button size="sm" variant="secondary" className="text-xs h-8 font-semibold bg-emerald-100 text-emerald-800">
-            Expenses & Split
-          </Button>
-          <Button size="sm" asChild variant="ghost" className="text-xs h-8">
-            <Link href={`/trips/${tripId}/assistant`}>AI Copilot</Link>
-          </Button>
-        </div>
+        {/* Workspace Navigation */}
+        <TripWorkspaceNav tripId={tripId} />
 
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center space-y-4">

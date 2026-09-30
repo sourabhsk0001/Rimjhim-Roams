@@ -40,6 +40,11 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TripWorkspaceNav } from "@/components/travel/trip-workspace-nav";
+import { ConfirmationModal } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/toast";
+import { TimelineSkeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   ItineraryItem,
   DayItineraryData,
@@ -53,6 +58,7 @@ import { ReplanModal } from "@/components/travel/replan-modal";
 export default function TripItineraryPage() {
   const params = useParams();
   const tripId = params.id as string;
+  const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +66,8 @@ export default function TripItineraryPage() {
   const [selectedDayNumber, setSelectedDayNumber] = useState<number>(1);
   const [currentDay, setCurrentDay] = useState<DayItineraryData | null>(null);
   const [validation, setValidation] = useState<ScheduleValidationResult | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [deletingItem, setDeletingItem] = useState(false);
 
   // Re-plan My Day Modal state
   const [showReplanModal, setShowReplanModal] = useState(false);
@@ -143,9 +151,18 @@ export default function TripItineraryPage() {
       }
 
       setOptimizationSummary(data.result.changesMade || ["Day schedule optimized."]);
+      toast({
+        title: "Day Schedule Optimized",
+        description: `Verified transit times and opening hours applied for Day ${selectedDayNumber}.`,
+        type: "success",
+      });
       await loadDay(selectedDayNumber);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Optimization failed.");
+      toast({
+        title: "Optimization Notice",
+        description: err instanceof Error ? err.message : "Optimization failed.",
+        type: "error",
+      });
     } finally {
       setOptimizing(false);
     }
@@ -186,61 +203,103 @@ export default function TripItineraryPage() {
         throw new Error(data.error || "Failed to add itinerary item.");
       }
 
+      toast({
+        title: "Stop Added",
+        description: `${addTitle.trim()} scheduled for Day ${selectedDayNumber}.`,
+        type: "success",
+      });
       setShowAddModal(false);
       setAddTitle("");
       setAddLocationName("");
       await loadDay(selectedDayNumber);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error adding item");
+      toast({
+        title: "Add Failed",
+        description: err instanceof Error ? err.message : "Error adding item",
+        type: "error",
+      });
     } finally {
       setSubmittingItem(false);
     }
   };
 
-  // Handle Deleting Item
-  const handleDeleteItem = async (itemId: string) => {
-    if (!confirm("Are you sure you want to remove this item from the schedule?")) return;
+  // Handle Deleting Item via ConfirmationModal
+  const handleDeleteItem = (itemId: string) => {
+    setItemToDelete(itemId);
+  };
+
+  const confirmDeleteItem = async () => {
+    if (!itemToDelete) return;
+    setDeletingItem(true);
     try {
-      const res = await fetch(`/api/trips/${tripId}/itinerary?itemId=${itemId}`, {
+      const res = await fetch(`/api/trips/${tripId}/itinerary?itemId=${itemToDelete}`, {
         method: "DELETE",
       });
       if (res.ok) {
+        toast({
+          title: "Stop Removed",
+          description: "Activity has been removed from schedule.",
+          type: "info",
+        });
         await loadDay(selectedDayNumber);
+      } else {
+        throw new Error("Failed to delete item.");
       }
-    } catch {
-      alert("Failed to delete item.");
+    } catch (err: unknown) {
+      toast({
+        title: "Delete Failed",
+        description: err instanceof Error ? err.message : "Failed to delete item.",
+        type: "error",
+      });
+    } finally {
+      setDeletingItem(false);
+      setItemToDelete(null);
     }
   };
 
   const getCategoryColor = (cat: ItineraryItemCategory) => {
     switch (cat) {
       case "food":
-        return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-300";
+        return "bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border-amber-300";
       case "rest":
-        return "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-300";
+        return "bg-purple-100 text-purple-800 dark:bg-purple-950/80 dark:text-purple-300 border-purple-300";
       case "travel":
-        return "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-300";
+        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-950/80 dark:text-indigo-300 border-indigo-300";
       case "activity":
-        return "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-300";
       case "sightseeing":
       default:
-        return "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-300";
+        return "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-300";
+    }
+  };
+
+  const getCategoryBorder = (cat: ItineraryItemCategory) => {
+    switch (cat) {
+      case "food":
+        return "border-l-4 border-l-amber-500 bg-amber-50/20";
+      case "rest":
+        return "border-l-4 border-l-purple-500 bg-purple-50/20";
+      case "travel":
+        return "border-l-4 border-l-indigo-500 bg-indigo-50/20";
+      case "activity":
+      case "sightseeing":
+      default:
+        return "border-l-4 border-l-emerald-500 bg-emerald-50/20";
     }
   };
 
   const getCategoryIcon = (cat: ItineraryItemCategory) => {
     switch (cat) {
       case "food":
-        return <Utensils className="w-4 h-4 text-emerald-600" />;
+        return <Utensils className="w-4 h-4 text-amber-600" />;
       case "rest":
-        return <Coffee className="w-4 h-4 text-amber-600" />;
+        return <Coffee className="w-4 h-4 text-purple-600" />;
       case "travel":
         return <Car className="w-4 h-4 text-indigo-600" />;
       case "activity":
-        return <Ticket className="w-4 h-4 text-purple-600" />;
+        return <Ticket className="w-4 h-4 text-emerald-600" />;
       case "sightseeing":
       default:
-        return <Eye className="w-4 h-4 text-blue-600" />;
+        return <Eye className="w-4 h-4 text-emerald-600" />;
     }
   };
 
@@ -285,7 +344,7 @@ export default function TripItineraryPage() {
               variant="outline"
               size="sm"
               onClick={() => setShowAddModal(true)}
-              className="gap-1.5 text-xs h-9"
+              className="gap-1.5 text-xs h-9 rounded-xl"
             >
               <Plus className="w-3.5 h-3.5" /> Add Block
             </Button>
@@ -294,7 +353,7 @@ export default function TripItineraryPage() {
               variant="outline"
               size="sm"
               onClick={() => setShowReplanModal(true)}
-              className="gap-2 text-xs h-9 border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-950/40 shadow-xs"
+              className="gap-2 text-xs h-9 border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-950/40 shadow-xs rounded-xl"
             >
               <Clock className="w-3.5 h-3.5 text-purple-600" />
               Re-plan My Day
@@ -304,13 +363,16 @@ export default function TripItineraryPage() {
               size="sm"
               onClick={handleOptimizeDay}
               disabled={optimizing || loading}
-              className="gap-2 text-xs h-9 bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
+              className="gap-2 text-xs h-9 bg-purple-600 hover:bg-purple-700 text-white shadow-sm rounded-xl"
             >
               <Sparkles className={`w-3.5 h-3.5 ${optimizing ? "animate-spin" : ""}`} />
               {optimizing ? "Optimizing..." : "Optimize Day"}
             </Button>
           </div>
         </div>
+
+        {/* Unified Module Nav */}
+        <TripWorkspaceNav tripId={tripId} />
 
         {/* Day Selector Tabs */}
         {days.length > 0 && (
@@ -386,9 +448,12 @@ export default function TripItineraryPage() {
         )}
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 space-y-3">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">Evaluating time intelligence models...</p>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              <span>Evaluating time intelligence models & schedule constraints...</span>
+            </div>
+            <TimelineSkeleton />
           </div>
         ) : currentDay ? (
           <>
@@ -490,21 +555,23 @@ export default function TripItineraryPage() {
               </div>
 
               {currentDay.items.length === 0 ? (
-                <Card className="p-12 text-center border-dashed">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    No itinerary stops planned for this day yet.
-                  </p>
-                  <Button size="sm" onClick={() => setShowAddModal(true)} className="gap-1.5 text-xs">
-                    <Plus className="w-3.5 h-3.5" /> Add First Stop
-                  </Button>
-                </Card>
+                <EmptyState
+                  icon={<Clock className="w-8 h-8 text-primary" />}
+                  title="No Itinerary Stops Planned"
+                  description="No stops scheduled for this day yet. Add your first visit, dining stop, or activity."
+                  action={{
+                    label: "Add First Stop",
+                    onClick: () => setShowAddModal(true),
+                    icon: <Plus className="w-4 h-4" />,
+                  }}
+                />
               ) : (
                 <div className="relative pl-6 space-y-6 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-0.5 before:bg-muted-foreground/20">
                   {currentDay.items.map((item, idx) => (
                     <div key={item.id} className="relative space-y-3">
                       {/* Transit Indicator connector if item has travel time */}
                       {item.travel_minutes > 0 && idx > 0 && (
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 p-2 rounded-lg border border-dashed ml-3">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 p-2.5 rounded-xl border border-dashed ml-3">
                           <Car className="w-3.5 h-3.5 text-indigo-600" />
                           <span>
                             <strong>{item.travel_minutes} mins</strong> transit from previous location
@@ -516,7 +583,7 @@ export default function TripItineraryPage() {
                       <div className="absolute -left-6 top-4 w-3.5 h-3.5 rounded-full border-2 border-background bg-primary" />
 
                       {/* Activity Card */}
-                      <Card className="shadow-sm hover:border-primary/40 transition-colors">
+                      <Card className={`shadow-sm rounded-2xl transition-all hover:border-primary/40 hover:shadow-md ${getCategoryBorder(item.category)}`}>
                         <CardHeader className="p-4 pb-2">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -527,6 +594,12 @@ export default function TripItineraryPage() {
                                 <span className="mr-1">{getCategoryIcon(item.category)}</span>
                                 {item.category}
                               </Badge>
+                              {item.buffer_minutes > 0 && (
+                                <Badge variant="outline" className="text-[10px] bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border-slate-300 gap-1 font-semibold">
+                                  <Shield className="w-3 h-3 text-slate-600 dark:text-slate-400" />
+                                  +{item.buffer_minutes}m Buffer
+                                </Badge>
+                              )}
                               <Badge variant="secondary" className="text-[10px]">
                                 Tier: {item.duration_tier}
                               </Badge>
@@ -557,22 +630,22 @@ export default function TripItineraryPage() {
                         {/* Discrete Time Blocks (Strictly Kept Separate) */}
                         <CardContent className="p-4 pt-2">
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t text-xs">
-                            <div className="bg-muted/40 p-2 rounded">
+                            <div className="bg-muted/40 p-2 rounded-xl">
                               <span className="text-muted-foreground block text-[10px]">Visit Time</span>
                               <strong className="text-foreground">{item.visit_minutes} mins</strong>
                             </div>
 
-                            <div className="bg-muted/40 p-2 rounded">
+                            <div className="bg-muted/40 p-2 rounded-xl">
                               <span className="text-muted-foreground block text-[10px]">Travel Time</span>
                               <strong className="text-foreground">{item.travel_minutes} mins</strong>
                             </div>
 
-                            <div className="bg-muted/40 p-2 rounded">
+                            <div className="bg-muted/40 p-2 rounded-xl">
                               <span className="text-muted-foreground block text-[10px]">Waiting / Queue</span>
                               <strong className="text-foreground">{item.waiting_minutes} mins</strong>
                             </div>
 
-                            <div className="bg-muted/40 p-2 rounded">
+                            <div className="bg-muted/40 p-2 rounded-xl">
                               <span className="text-muted-foreground block text-[10px]">Contingency Buffer</span>
                               <strong className="text-foreground">{item.buffer_minutes} mins</strong>
                             </div>
@@ -736,6 +809,19 @@ export default function TripItineraryPage() {
             await loadDay(selectedDayNumber);
             await loadAllDays();
           }}
+        />
+
+        {/* Confirmation Modal for Item Deletion */}
+        <ConfirmationModal
+          isOpen={!!itemToDelete}
+          title="Remove Schedule Stop?"
+          description="Are you sure you want to remove this item from the schedule? Time allocations and daily capacity will be recalculated."
+          confirmText="Remove Stop"
+          cancelText="Keep Stop"
+          isDestructive={true}
+          isLoading={deletingItem}
+          onConfirm={confirmDeleteItem}
+          onCancel={() => setItemToDelete(null)}
         />
       </main>
     </div>

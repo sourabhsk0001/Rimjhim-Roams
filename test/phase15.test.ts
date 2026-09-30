@@ -332,7 +332,9 @@ test("Itinerary Planning: Avoids Overpacked itineraries forces relaxed pace and 
 
   // For every planned day, attractions should be capped at 2 per day (relaxed pace)
   for (const day of plan.itinerary) {
-    const attractionItems = day.items.filter((item) => item.type === "attraction");
+    const attractionItems = day.items.filter(
+      (item) => item.category === "sightseeing" || item.category === "activity" || Boolean(item.attraction_id)
+    );
     assert.ok(
       attractionItems.length <= 2,
       `Day ${day.dayNumber} has ${attractionItems.length} attractions, exceeding relaxed cap of 2!`

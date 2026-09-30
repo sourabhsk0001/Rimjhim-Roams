@@ -40,6 +40,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { TripWorkspaceNav } from "@/components/travel/trip-workspace-nav";
+import { useToast } from "@/components/ui/toast";
 import {
   DestinationSafetyCenter,
   TripEmergencyCard,
@@ -55,6 +57,7 @@ import {
 export default function TripSafetyPage() {
   const params = useParams();
   const tripId = params?.id as string;
+  const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -297,6 +300,9 @@ export default function TripSafetyPage() {
                 </span>
               </div>
             </div>
+
+            {/* Unified Module Nav */}
+            <TripWorkspaceNav tripId={tripId} />
 
             {locationError && (
               <Alert variant="destructive" className="py-2 text-xs">

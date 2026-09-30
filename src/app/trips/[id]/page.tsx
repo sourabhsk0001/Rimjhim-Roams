@@ -32,6 +32,11 @@ import {
   Luggage,
   FileText,
   CalendarCheck,
+  Coffee,
+  Shield,
+  Receipt,
+  Calculator,
+  AlertTriangle,
 } from "lucide-react";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
@@ -46,6 +51,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { InteractiveMap, MapMarkerItem } from "@/components/map/interactive-map";
+import { TripWorkspaceNav } from "@/components/travel/trip-workspace-nav";
+import { ConfirmationModal } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/toast";
+import { TripHeaderSkeleton, TimelineSkeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import { TripRow } from "@/lib/services/trip-service";
 import { PlannedTripResult } from "@/types/planner";
 
@@ -62,19 +72,22 @@ export default function TripDetailPage() {
   const params = useParams();
   const router = useRouter();
   const tripId = params.id as string;
+  const { toast } = useToast();
 
   const [trip, setTrip] = useState<TripRow | null>(null);
   const [plan, setPlan] = useState<PlannedTripResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Generation state
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
-  // Selected Day tab in itinerary view
+  // Selected Day tab & interactive item highlight
   const [selectedDayNumber, setSelectedDayNumber] = useState(1);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 
   // Load trip and check for existing plan
   useEffect(() => {
@@ -142,21 +155,27 @@ export default function TripDetailPage() {
       setCurrentStepIndex(PLANNING_STAGES.length);
       setPlan(data.plan);
       setSelectedDayNumber(1);
+      toast({
+        title: "Complete Trip Plan Generated!",
+        description: `Verified itinerary created for ${data.plan.destination.name} within budget.`,
+        type: "success",
+      });
     } catch (err: unknown) {
       clearInterval(stepInterval);
       setError(
         err instanceof Error ? err.message : "Error generating trip plan."
       );
+      toast({
+        title: "Generation Failed",
+        description: err instanceof Error ? err.message : "Error generating trip plan.",
+        type: "error",
+      });
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this trip itinerary?")) {
-      return;
-    }
-
+  const confirmDeleteTrip = async () => {
     setDeleting(true);
     try {
       const res = await fetch(`/api/trips/${tripId}`, {
@@ -166,15 +185,35 @@ export default function TripDetailPage() {
       if (!res.ok) {
         throw new Error(data.error || "Failed to delete trip.");
       }
+      toast({
+        title: "Trip Deleted",
+        description: "The trip itinerary has been permanently removed.",
+        type: "info",
+      });
       router.push("/trips");
       router.refresh();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error deleting trip.");
+      toast({
+        title: "Deletion Failed",
+        description: err instanceof Error ? err.message : "Error deleting trip.",
+        type: "error",
+      });
       setDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
-  // Convert planned entities into interactive map markers
+  // Active day plan
+  const activeDay = useMemo(() => {
+    if (!plan || !plan.itinerary) return null;
+    return (
+      plan.itinerary.find((d) => d.dayNumber === selectedDayNumber) ||
+      plan.itinerary[0] ||
+      null
+    );
+  }, [plan, selectedDayNumber]);
+
+  // Convert planned entities into interactive map markers with numbered order for activeDay
   const mapMarkers: MapMarkerItem[] = useMemo(() => {
     if (!plan) return [];
     const list: MapMarkerItem[] = [];
@@ -193,12 +232,14 @@ export default function TripDetailPage() {
 
     // 2. Hotel
     if (plan.hotel?.selected) {
+      const isSelected = selectedItemId === `hotel-${plan.hotel.selected.id}`;
       list.push({
         id: `hotel-${plan.hotel.selected.id}`,
         name: plan.hotel.selected.name,
         latitude: plan.hotel.selected.latitude,
         longitude: plan.hotel.selected.longitude,
         type: "hotel",
+        isSelected,
         details: {
           price: `₹${plan.hotel.selected.price_per_night}/night`,
           rating: plan.hotel.selected.rating,
@@ -208,12 +249,21 @@ export default function TripDetailPage() {
 
     // 3. Attractions
     plan.attractions.forEach((a) => {
+      const dayIndex = activeDay?.items?.findIndex(
+        (it) => it.attraction_id === a.attraction.id || it.title.toLowerCase() === a.attraction.name.toLowerCase()
+      );
+      const isSelected =
+        selectedItemId === `attr-${a.attraction.id}` ||
+        (dayIndex !== undefined && dayIndex !== -1 && activeDay?.items[dayIndex]?.id === selectedItemId);
+
       list.push({
         id: `attr-${a.attraction.id}`,
         name: a.attraction.name,
         latitude: a.attraction.latitude,
         longitude: a.attraction.longitude,
         type: "attraction",
+        order: dayIndex !== undefined && dayIndex !== -1 ? dayIndex + 1 : undefined,
+        isSelected,
         details: {
           category: a.attraction.category,
           price: a.attraction.ticket_price === 0 ? "Free" : `₹${a.attraction.ticket_price}`,
@@ -224,12 +274,21 @@ export default function TripDetailPage() {
 
     // 4. Restaurants
     plan.food.meals.forEach((m) => {
+      const dayIndex = activeDay?.items?.findIndex(
+        (it) => it.title.toLowerCase().includes(m.restaurant.name.toLowerCase())
+      );
+      const isSelected =
+        selectedItemId === `rest-${m.restaurant.id}` ||
+        (dayIndex !== undefined && dayIndex !== -1 && activeDay?.items[dayIndex]?.id === selectedItemId);
+
       list.push({
         id: `rest-${m.restaurant.id}`,
         name: m.restaurant.name,
         latitude: m.restaurant.latitude,
         longitude: m.restaurant.longitude,
         type: "restaurant",
+        order: dayIndex !== undefined && dayIndex !== -1 ? dayIndex + 1 : undefined,
+        isSelected,
         details: {
           cuisine: m.restaurant.cuisine,
           price: m.restaurant.price_level,
@@ -238,160 +297,82 @@ export default function TripDetailPage() {
     });
 
     return list;
-  }, [plan]);
-
-  // Active day plan
-  const activeDay = useMemo(() => {
-    if (!plan || !plan.itinerary) return null;
-    return (
-      plan.itinerary.find((d) => d.dayNumber === selectedDayNumber) ||
-      plan.itinerary[0] ||
-      null
-    );
-  }, [plan, selectedDayNumber]);
+  }, [plan, activeDay, selectedItemId]);
 
   return (
     <div className="min-h-screen bg-muted/20 flex flex-col">
       <Navigation />
 
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl space-y-6">
-        {/* Top Bar Actions */}
+      <main className="flex-1 container mx-auto px-4 py-6 max-w-6xl space-y-6">
+        {/* Top Back & Header Actions */}
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <Button variant="ghost" size="sm" asChild className="gap-1.5 text-muted-foreground">
+          <Button variant="ghost" size="sm" asChild className="gap-1.5 text-muted-foreground hover:text-foreground">
             <Link href="/trips">
               <ArrowLeft className="w-4 h-4" /> Back to My Trips
             </Link>
           </Button>
 
           {trip && (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
               <Button
                 size="sm"
                 onClick={handleGenerateTrip}
                 disabled={isGenerating}
-                className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md font-semibold"
+                className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md font-semibold rounded-xl"
               >
                 {isGenerating ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Sparkles className="w-4 h-4 text-amber-300" />
                 )}
-                {plan ? "Regenerate Complete Trip" : "Generate My Complete Trip"}
-              </Button>
-
-              <Button size="sm" asChild variant="outline" className="gap-1.5 border-purple-300 text-purple-700 hover:bg-purple-50">
-                <Link href={`/trips/${trip.id}/itinerary`}>
-                  <Clock className="w-4 h-4" />
-                  Time & Itinerary
-                </Link>
-              </Button>
-
-              <Button size="sm" asChild className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
-                <Link href={`/trips/${trip.id}/budget`}>
-                  <Wallet className="w-4 h-4" />
-                  Budget & Ledger
-                </Link>
-              </Button>
-
-              <Button size="sm" asChild variant="outline" className="gap-1.5 border-sky-300 text-sky-700 hover:bg-sky-50">
-                <Link href={`/trips/${trip.id}/weather`}>
-                  <CloudSun className="w-4 h-4" />
-                  Weather & Forecast
-                </Link>
-              </Button>
-
-              <Button size="sm" asChild variant="outline" className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
-                <Link href={`/trips/${trip.id}/group`}>
-                  <Users className="w-4 h-4 text-indigo-600" />
-                  Group & Polls
-                </Link>
-              </Button>
-
-              <Button size="sm" asChild variant="outline" className="gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50">
-                <Link href={`/trips/${trip.id}/expenses`}>
-                  <Scale className="w-4 h-4 text-emerald-600" />
-                  Split & Expenses
-                </Link>
-              </Button>
-
-              <Button size="sm" asChild variant="outline" className="gap-1.5 border-purple-300 text-purple-700 hover:bg-purple-50">
-                <Link href={`/trips/${trip.id}/assistant`}>
-                  <Bot className="w-4 h-4 text-purple-600" />
-                  AI Copilot
-                </Link>
-              </Button>
-
-              <Button size="sm" asChild variant="outline" className="gap-1.5 border-rose-300 text-rose-700 hover:bg-rose-50 font-medium">
-                <Link href={`/trips/${trip.id}/safety`}>
-                  <ShieldAlert className="w-4 h-4 text-rose-600" />
-                  Safety & SOS
-                </Link>
-              </Button>
-
-              <Button size="sm" asChild variant="outline" className="gap-1.5 border-blue-300 text-blue-700 hover:bg-blue-50 font-medium">
-                <Link href={`/trips/${trip.id}/packing`}>
-                  <Luggage className="w-4 h-4 text-blue-600" />
-                  Packing
-                </Link>
-              </Button>
-
-              <Button size="sm" asChild variant="outline" className="gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-50 font-medium">
-                <Link href={`/trips/${trip.id}/documents`}>
-                  <FileText className="w-4 h-4 text-amber-600" />
-                  Documents
-                </Link>
-              </Button>
-
-              <Button size="sm" asChild variant="outline" className="gap-1.5 border-teal-300 text-teal-700 hover:bg-teal-50 font-medium">
-                <Link href={`/trips/${trip.id}/bookings`}>
-                  <CalendarCheck className="w-4 h-4 text-teal-600" />
-                  Bookings
-                </Link>
+                {plan ? "Regenerate Plan" : "Generate Complete Trip"}
               </Button>
 
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleDelete}
+                onClick={() => setShowDeleteModal(true)}
                 disabled={deleting}
-                className="text-destructive hover:bg-destructive/10 border-destructive/30 gap-1.5"
+                className="text-destructive hover:bg-destructive/10 border-destructive/30 gap-1.5 rounded-xl"
               >
-                {deleting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Trash2 className="w-4 h-4" />
-                )}
-                Delete Trip
+                <Trash2 className="w-4 h-4" />
+                Delete
               </Button>
             </div>
           )}
         </div>
 
         {error && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="rounded-2xl">
             <AlertCircle className="w-4 h-4" />
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>Notice</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24 space-y-4">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">Loading trip information...</p>
+          <div className="space-y-6">
+            <TripHeaderSkeleton />
+            <TimelineSkeleton />
           </div>
         ) : !trip ? (
-          <Card className="p-12 text-center border-dashed">
-            <p className="text-muted-foreground">Trip not found or unauthorized.</p>
-          </Card>
+          <EmptyState
+            title="Trip Not Found"
+            description="The requested trip itinerary does not exist or you do not have permission to view it."
+            action={{
+              label: "Return to My Trips",
+              href: "/trips",
+              icon: <ArrowLeft className="w-4 h-4" />,
+            }}
+          />
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-6">
             {/* Live Progress Card when Generating */}
             {isGenerating && (
-              <Card className="border-blue-200 bg-blue-50/50 shadow-md">
+              <Card className="border-blue-200 bg-blue-50/50 shadow-md rounded-3xl">
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center animate-pulse">
+                    <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center animate-pulse shadow-md">
                       <Sparkles className="w-5 h-5" />
                     </div>
                     <div>
@@ -412,7 +393,7 @@ export default function TripDetailPage() {
                       return (
                         <div
                           key={st.id}
-                          className={`flex items-start gap-3 p-3 rounded-lg border text-sm transition-all ${
+                          className={`flex items-start gap-3 p-3 rounded-xl border text-sm transition-all ${
                             isCurrent
                               ? "bg-white border-blue-400 shadow-sm"
                               : isDone
@@ -441,77 +422,87 @@ export default function TripDetailPage() {
               </Card>
             )}
 
-            {/* 1. Trip Overview Card */}
-            <Card className="overflow-hidden shadow-lg border-muted">
+            {/* 1. Trip Hero Header with Strong Visual Hierarchy */}
+            <Card className="overflow-hidden shadow-xl border-border/80 rounded-3xl">
               <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 text-white p-6 sm:p-8">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="space-y-2">
+                <div className="flex flex-wrap items-start justify-between gap-6">
+                  <div className="space-y-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge className="bg-white/20 hover:bg-white/30 text-white border-none uppercase tracking-wider text-xs">
+                      <Badge className="bg-white/20 hover:bg-white/30 text-white border-none uppercase tracking-wider text-xs font-semibold px-2.5 py-0.5 rounded-lg">
                         {plan ? "Complete Plan Ready" : trip.status}
                       </Badge>
-                      <Badge className="bg-emerald-500/20 text-emerald-200 border-none text-xs">
-                        Deterministic Intelligence
+                      <Badge className="bg-emerald-400/20 text-emerald-200 border-none text-xs font-medium px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5" /> Deterministic Engine
                       </Badge>
                     </div>
 
-                    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                    <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
                       {trip.origin} → {plan ? plan.destination.name : trip.destination}
                     </h1>
 
                     <p className="text-blue-100 flex items-center gap-2 text-sm">
-                      <MapPin className="w-4 h-4 text-amber-300" />
+                      <MapPin className="w-4 h-4 text-amber-300 shrink-0" />
                       <span>
                         {plan ? `${plan.destination.name}, ${plan.destination.state_province}, ${plan.destination.country}` : trip.destination}
                       </span>
                       {plan?.destination.climate && (
                         <>
                           <span>•</span>
-                          <span>{plan.destination.climate}</span>
+                          <span className="font-medium text-amber-200">{plan.destination.climate}</span>
                         </>
                       )}
                     </p>
                   </div>
 
-                  <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 text-right min-w-[180px]">
-                    <span className="text-xs text-blue-200 uppercase tracking-wider">
+                  {/* Financial Status Box */}
+                  <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-right min-w-[200px] shadow-inner">
+                    <span className="text-[11px] text-blue-200 uppercase tracking-wider font-semibold">
                       {plan ? "Total Plan Cost" : "Budget Cap"}
                     </span>
-                    <div className="text-3xl font-extrabold text-white">
+                    <div className="text-3xl sm:text-4xl font-black text-white tracking-tight">
                       ₹{(plan ? plan.budget.totalCost : trip.budget).toLocaleString()}
                     </div>
                     {plan && (
-                      <div className="text-xs text-emerald-300 mt-1 flex items-center justify-end gap-1 font-medium">
-                        <TrendingDown className="w-3.5 h-3.5" />
-                        <span>₹{plan.budget.remainingBudget.toLocaleString()} Surplus</span>
+                      <div className="text-xs mt-1 flex items-center justify-end gap-1 font-semibold">
+                        {plan.budget.isOverBudget ? (
+                          <span className="text-rose-300 flex items-center gap-1">
+                            <AlertTriangle className="w-3.5 h-3.5" />
+                            ₹{(plan.budget.totalCost - plan.budget.allocatedBudget).toLocaleString()} Over Budget
+                          </span>
+                        ) : (
+                          <span className="text-emerald-300 flex items-center gap-1">
+                            <TrendingDown className="w-3.5 h-3.5" />
+                            ₹{plan.budget.remainingBudget.toLocaleString()} Surplus
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Highlights Strip */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-white/10">
-                  <div className="space-y-0.5">
+                {/* Key Trip Parameters Strip */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/15">
+                  <div className="space-y-1">
                     <span className="text-xs text-blue-200 flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" /> Dates
                     </span>
                     <p className="text-sm font-semibold">{trip.start_date} to {trip.end_date}</p>
                   </div>
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     <span className="text-xs text-blue-200 flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5" /> Duration
                     </span>
                     <p className="text-sm font-semibold">{trip.duration_days} Days ({Math.max(1, trip.duration_days - 1)} Nights)</p>
                   </div>
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     <span className="text-xs text-blue-200 flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5" /> Travellers
+                      <Users className="w-3.5 h-3.5" /> Party
                     </span>
                     <p className="text-sm font-semibold capitalize">{trip.traveller_count} ({trip.traveller_type})</p>
                   </div>
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     <span className="text-xs text-blue-200 flex items-center gap-1">
-                      <Compass className="w-3.5 h-3.5" /> Pace
+                      <Compass className="w-3.5 h-3.5" /> Travel Pace
                     </span>
                     <p className="text-sm font-semibold capitalize">{trip.travel_pace} Pace</p>
                   </div>
@@ -519,61 +510,60 @@ export default function TripDetailPage() {
               </div>
             </Card>
 
-            {/* If Plan is Not Generated Yet, Show Prompt CTA */}
+            {/* Segmented Module Navigation Bar */}
+            <TripWorkspaceNav tripId={trip.id} />
+
+            {/* If Plan is Not Generated Yet, Show CTA Empty State */}
             {!plan && !isGenerating && (
-              <Card className="p-8 text-center border-dashed bg-card space-y-4">
-                <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 mx-auto flex items-center justify-center">
-                  <Sparkles className="w-6 h-6" />
-                </div>
-                <div className="max-w-md mx-auto space-y-2">
-                  <h3 className="text-xl font-bold">Generate Your Complete Itinerary</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Connect verified attractions, hotels, dining, intercity routing, and budget arithmetic into a verified, conflict-free travel operating plan.
-                  </p>
-                </div>
-                <Button
-                  onClick={handleGenerateTrip}
-                  size="lg"
-                  className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow font-semibold"
-                >
-                  <Sparkles className="w-4 h-4 text-amber-300" />
-                  Generate My Complete Trip
-                </Button>
-              </Card>
+              <EmptyState
+                icon={<Sparkles className="w-8 h-8 text-primary" />}
+                title="Generate Your Complete Travel Operating Plan"
+                description="Connect verified attractions, hotels, dining, intercity routing, and budget arithmetic into a verified, conflict-free travel operating plan."
+                action={{
+                  label: "Generate My Complete Trip",
+                  onClick: handleGenerateTrip,
+                  icon: <Sparkles className="w-4 h-4 text-amber-300" />,
+                }}
+              />
             )}
 
-            {/* When Plan is Present: Render Complete 7-Section Architecture */}
+            {/* When Plan is Present: Render Complete Architecture */}
             {plan && (
               <div className="space-y-8">
                 {/* 2. Interactive Map Section */}
-                <Card className="shadow-md">
-                  <CardHeader className="pb-3">
+                <Card className="shadow-md rounded-3xl overflow-hidden">
+                  <CardHeader className="pb-3 border-b bg-card/60">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <MapPin className="w-5 h-5 text-blue-600" />
-                        <CardTitle className="text-lg font-bold">Interactive Route & Destination Map</CardTitle>
+                        <div>
+                          <CardTitle className="text-base sm:text-lg font-bold">
+                            Interactive Route & Destination Map
+                          </CardTitle>
+                          <CardDescription className="text-xs">
+                            Day {selectedDayNumber} stops numbered #1, #2, #3 matching your schedule.
+                          </CardDescription>
+                        </div>
                       </div>
-                      <Badge variant="outline" className="text-xs">
-                        OpenStreetMap & OSRM
+                      <Badge variant="outline" className="text-xs font-mono">
+                        OSM & OSRM
                       </Badge>
                     </div>
-                    <CardDescription className="text-xs">
-                      Explore hotel base, curated attractions, and local dining stops on Leaflet canvas.
-                    </CardDescription>
                   </CardHeader>
-                  <CardContent className="p-4 pt-0">
+                  <CardContent className="p-0">
                     <InteractiveMap
                       center={[plan.destination.latitude, plan.destination.longitude]}
                       zoom={12}
                       markers={mapMarkers}
                       routeCoordinates={activeDay?.routeCoordinates || []}
+                      onMarkerSelect={(m) => setSelectedItemId(m.id)}
                       height="460px"
                     />
                   </CardContent>
                 </Card>
 
                 {/* 3. Day-by-Day Itinerary Section */}
-                <Card className="shadow-md">
+                <Card className="shadow-md rounded-3xl">
                   <CardHeader className="border-b pb-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
@@ -593,8 +583,11 @@ export default function TripDetailPage() {
                             key={d.dayNumber}
                             size="sm"
                             variant={d.dayNumber === selectedDayNumber ? "default" : "outline"}
-                            onClick={() => setSelectedDayNumber(d.dayNumber)}
-                            className="text-xs"
+                            onClick={() => {
+                              setSelectedDayNumber(d.dayNumber);
+                              setSelectedItemId(null);
+                            }}
+                            className="text-xs rounded-xl"
                           >
                             Day {d.dayNumber}
                           </Button>
@@ -607,7 +600,7 @@ export default function TripDetailPage() {
                     {activeDay && (
                       <div className="space-y-6">
                         {/* Day Header Info */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-muted/30 rounded-xl border text-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-2 p-3.5 bg-muted/40 rounded-2xl border text-sm">
                           <div>
                             <span className="font-bold text-foreground">Day {activeDay.dayNumber}: {activeDay.theme}</span>
                             <span className="text-muted-foreground text-xs block">{activeDay.date} • {activeDay.dayStartTime} to {activeDay.dayEndTime}</span>
@@ -627,54 +620,109 @@ export default function TripDetailPage() {
 
                         {/* Discrete Time Metrics Bar */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                          <div className="p-3 rounded-lg border bg-blue-50/50 border-blue-200">
-                            <span className="text-muted-foreground block">Sightseeing Time</span>
-                            <span className="font-bold text-sm text-blue-900">{activeDay.totalVisitMinutes} min</span>
+                          <div className="p-3 rounded-2xl border bg-emerald-50/50 border-emerald-200">
+                            <span className="text-muted-foreground block text-[11px] font-medium">Activity / Sights</span>
+                            <span className="font-bold text-sm text-emerald-900">{activeDay.totalVisitMinutes} min</span>
                           </div>
-                          <div className="p-3 rounded-lg border bg-amber-50/50 border-amber-200">
-                            <span className="text-muted-foreground block">Travel / Transit</span>
-                            <span className="font-bold text-sm text-amber-900">{activeDay.totalTravelMinutes} min</span>
+                          <div className="p-3 rounded-2xl border bg-indigo-50/50 border-indigo-200">
+                            <span className="text-muted-foreground block text-[11px] font-medium">Travel / Transit</span>
+                            <span className="font-bold text-sm text-indigo-900">{activeDay.totalTravelMinutes} min</span>
                           </div>
-                          <div className="p-3 rounded-lg border bg-rose-50/50 border-rose-200">
-                            <span className="text-muted-foreground block">Queue Waiting</span>
-                            <span className="font-bold text-sm text-rose-900">{activeDay.totalWaitingMinutes} min</span>
+                          <div className="p-3 rounded-2xl border bg-amber-50/50 border-amber-200">
+                            <span className="text-muted-foreground block text-[11px] font-medium">Queue Waiting</span>
+                            <span className="font-bold text-sm text-amber-900">{activeDay.totalWaitingMinutes} min</span>
                           </div>
-                          <div className="p-3 rounded-lg border bg-emerald-50/50 border-emerald-200">
-                            <span className="text-muted-foreground block">Contingency Buffer</span>
-                            <span className="font-bold text-sm text-emerald-900">{activeDay.totalBufferMinutes} min</span>
+                          <div className="p-3 rounded-2xl border bg-slate-100/70 border-slate-300">
+                            <span className="text-muted-foreground block text-[11px] font-medium">Contingency Buffer</span>
+                            <span className="font-bold text-sm text-slate-800">{activeDay.totalBufferMinutes} min</span>
                           </div>
                         </div>
 
-                        {/* Timeline of Items */}
-                        <div className="space-y-3 relative pl-6 border-l-2 border-muted ml-3">
+                        {/* Timeline of Items with Distinct Styles */}
+                        <div className="space-y-4 relative pl-6 border-l-2 border-muted ml-3">
                           {activeDay.items.map((item, idx) => {
                             const isMeal = item.category === "food";
+                            const isTravel = item.category === "travel";
+                            const isRest = item.category === "rest";
+                            const isActivity = !isMeal && !isTravel && !isRest;
+                            const hasBuffer = item.buffer_minutes > 0;
+                            const isSelected = selectedItemId === item.id;
+
+                            // Theme palette for the 5 distinct categories
+                            let borderTheme = "border-l-4 border-l-emerald-500 bg-emerald-50/20";
+                            let badgeStyle = "bg-emerald-100 text-emerald-800 border-emerald-200";
+                            let CategoryIcon = Ticket;
+                            let categoryLabel = "Activity";
+                            let dotColor = "border-emerald-600 text-emerald-600 bg-emerald-600";
+
+                            if (isTravel) {
+                              borderTheme = "border-l-4 border-l-indigo-500 bg-indigo-50/20";
+                              badgeStyle = "bg-indigo-100 text-indigo-800 border-indigo-200";
+                              CategoryIcon = Car;
+                              categoryLabel = "Travel";
+                              dotColor = "border-indigo-600 text-indigo-600 bg-indigo-600";
+                            } else if (isMeal) {
+                              borderTheme = "border-l-4 border-l-amber-500 bg-amber-50/20";
+                              badgeStyle = "bg-amber-100 text-amber-800 border-amber-200";
+                              CategoryIcon = Utensils;
+                              categoryLabel = "Food";
+                              dotColor = "border-amber-600 text-amber-600 bg-amber-600";
+                            } else if (isRest) {
+                              borderTheme = "border-l-4 border-l-purple-500 bg-purple-50/20";
+                              badgeStyle = "bg-purple-100 text-purple-800 border-purple-200";
+                              CategoryIcon = Coffee;
+                              categoryLabel = "Rest";
+                              dotColor = "border-purple-600 text-purple-600 bg-purple-600";
+                            }
+
                             return (
-                              <div key={item.id || idx} className="relative group">
-                                {/* Dot indicator */}
-                                <div className={`absolute -left-[31px] top-3 w-4 h-4 rounded-full border-2 bg-background flex items-center justify-center ${
-                                  isMeal ? "border-rose-500 text-rose-500" : "border-blue-600 text-blue-600"
+                              <div
+                                key={item.id || idx}
+                                className="relative group cursor-pointer"
+                                onClick={() => setSelectedItemId(item.id)}
+                              >
+                                {/* Dot indicator matching stop number */}
+                                <div className={`absolute -left-[35px] top-4 w-6 h-6 rounded-full border-2 bg-background flex items-center justify-center font-bold text-[10px] shadow-sm transition-all ${
+                                  isSelected ? "scale-125 ring-2 ring-primary" : ""
                                 }`}>
-                                  <div className={`w-1.5 h-1.5 rounded-full ${isMeal ? "bg-rose-500" : "bg-blue-600"}`} />
+                                  <span className="leading-none text-foreground">{idx + 1}</span>
                                 </div>
 
-                                <Card className="p-4 border hover:border-primary/40 transition-colors">
+                                <Card
+                                  className={`p-4 rounded-2xl transition-all shadow-sm ${borderTheme} ${
+                                    isSelected
+                                      ? "ring-2 ring-primary shadow-md border-primary/50"
+                                      : "hover:border-primary/40 hover:shadow"
+                                  }`}
+                                >
                                   <div className="flex flex-wrap items-start justify-between gap-2">
-                                    <div className="space-y-1">
-                                      <div className="flex items-center gap-2">
-                                        <Badge variant={isMeal ? "secondary" : "default"} className="text-xs">
+                                    <div className="space-y-1.5">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <Badge variant="outline" className="text-xs font-mono">
                                           {item.start_time} - {item.end_time}
                                         </Badge>
-                                        <span className="font-semibold text-sm">{item.title}</span>
+                                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border flex items-center gap-1 ${badgeStyle}`}>
+                                          <CategoryIcon className="w-3 h-3" />
+                                          {categoryLabel}
+                                        </span>
+                                        {hasBuffer && (
+                                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full border bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border-slate-300 flex items-center gap-1">
+                                            <Shield className="w-3 h-3 text-slate-600 dark:text-slate-400" />
+                                            +{item.buffer_minutes}m Buffer
+                                          </span>
+                                        )}
                                       </div>
+                                      <h4 className="font-bold text-base text-foreground leading-snug">
+                                        {item.title}
+                                      </h4>
                                       <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                        <MapPin className="w-3 h-3 text-primary" />
+                                        <MapPin className="w-3.5 h-3.5 text-primary" />
                                         <span>{item.location.name}</span>
                                       </p>
                                     </div>
 
                                     <div className="text-right">
-                                      <span className="font-bold text-xs text-foreground">
+                                      <span className="font-bold text-sm text-foreground">
                                         {item.estimated_cost === 0 ? "Free" : `₹${item.estimated_cost.toLocaleString()}`}
                                       </span>
                                     </div>
@@ -682,22 +730,22 @@ export default function TripDetailPage() {
 
                                   {/* Discrete breakdown badges */}
                                   <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t text-[11px] text-muted-foreground">
-                                    <span className="bg-muted px-2 py-0.5 rounded">
+                                    <span className="bg-muted px-2 py-0.5 rounded-lg">
                                       Visit: {item.visit_minutes}m
                                     </span>
                                     {item.travel_minutes > 0 && (
-                                      <span className="bg-amber-100/70 text-amber-900 px-2 py-0.5 rounded">
+                                      <span className="bg-indigo-100/70 text-indigo-900 px-2 py-0.5 rounded-lg">
                                         Transit: {item.travel_minutes}m
                                       </span>
                                     )}
                                     {item.waiting_minutes > 0 && (
-                                      <span className="bg-rose-100/70 text-rose-900 px-2 py-0.5 rounded">
+                                      <span className="bg-amber-100/70 text-amber-900 px-2 py-0.5 rounded-lg">
                                         Queue: {item.waiting_minutes}m
                                       </span>
                                     )}
                                     {item.buffer_minutes > 0 && (
-                                      <span className="bg-emerald-100/70 text-emerald-900 px-2 py-0.5 rounded">
-                                        Buffer: {item.buffer_minutes}m
+                                      <span className="bg-slate-200/70 text-slate-900 px-2 py-0.5 rounded-lg">
+                                        Buffer Margin: {item.buffer_minutes}m
                                       </span>
                                     )}
                                     {item.opening_time && item.closing_time && (
@@ -716,15 +764,20 @@ export default function TripDetailPage() {
                   </CardContent>
                 </Card>
 
-                {/* 4. Budget Section */}
-                <Card className="shadow-md">
+                {/* 4. Budget Section with Explicit Visual Distinction */}
+                <Card className="shadow-md rounded-3xl">
                   <CardHeader className="border-b pb-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Wallet className="w-5 h-5 text-emerald-600" />
-                        <CardTitle className="text-lg font-bold">Deterministic Budget Allocation</CardTitle>
+                        <div>
+                          <CardTitle className="text-lg font-bold">Deterministic Budget Allocation</CardTitle>
+                          <CardDescription className="text-xs">
+                            Integer minor-unit arithmetic distinguishing Estimated, Actual, Remaining, and Over-Budget.
+                          </CardDescription>
+                        </div>
                       </div>
-                      <Button size="sm" variant="outline" asChild className="text-xs">
+                      <Button size="sm" variant="outline" asChild className="text-xs rounded-xl">
                         <Link href={`/trips/${trip.id}/budget`}>
                           Open Expense Ledger <ChevronRight className="w-3.5 h-3.5 ml-1" />
                         </Link>
@@ -732,11 +785,102 @@ export default function TripDetailPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="pt-6 space-y-6">
+                    {/* 4 Core Budget KPI States */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {/* State 1: Estimated */}
+                      <div className="p-4 rounded-2xl border bg-blue-50/60 border-blue-200 space-y-1">
+                        <div className="flex items-center justify-between text-blue-700 text-xs font-semibold">
+                          <span className="flex items-center gap-1.5">
+                            <Calculator className="w-4 h-4" /> Estimated Cap
+                          </span>
+                          <Badge variant="outline" className="text-[10px] border-blue-300 text-blue-700">Target</Badge>
+                        </div>
+                        <div className="text-2xl font-black text-blue-950">
+                          ₹{plan.budget.allocatedBudget.toLocaleString()}
+                        </div>
+                        <p className="text-[11px] text-blue-700">Trip allocation ceiling</p>
+                      </div>
+
+                      {/* State 2: Actual / Total Planned Spend */}
+                      <div className="p-4 rounded-2xl border bg-emerald-50/60 border-emerald-200 space-y-1">
+                        <div className="flex items-center justify-between text-emerald-700 text-xs font-semibold">
+                          <span className="flex items-center gap-1.5">
+                            <Receipt className="w-4 h-4" /> Actual Planned
+                          </span>
+                          <Badge variant="outline" className="text-[10px] border-emerald-300 text-emerald-700">Calculated</Badge>
+                        </div>
+                        <div className="text-2xl font-black text-emerald-950">
+                          ₹{plan.budget.totalCost.toLocaleString()}
+                        </div>
+                        <p className="text-[11px] text-emerald-700">
+                          {Math.round((plan.budget.totalCost / plan.budget.allocatedBudget) * 100)}% of total budget
+                        </p>
+                      </div>
+
+                      {/* State 3: Remaining Surplus */}
+                      <div className="p-4 rounded-2xl border bg-sky-50/60 border-sky-200 space-y-1">
+                        <div className="flex items-center justify-between text-sky-700 text-xs font-semibold">
+                          <span className="flex items-center gap-1.5">
+                            <TrendingDown className="w-4 h-4" /> Remaining
+                          </span>
+                          <Badge variant="outline" className="text-[10px] border-sky-300 text-sky-700">Surplus</Badge>
+                        </div>
+                        <div className="text-2xl font-black text-sky-950">
+                          ₹{Math.max(0, plan.budget.remainingBudget).toLocaleString()}
+                        </div>
+                        <p className="text-[11px] text-sky-700">Unallocated reserve buffer</p>
+                      </div>
+
+                      {/* State 4: Over Budget Alert / Health State */}
+                      <div
+                        className={`p-4 rounded-2xl border space-y-1 ${
+                          plan.budget.isOverBudget
+                            ? "bg-rose-50 border-rose-300 ring-1 ring-rose-400 text-rose-950"
+                            : "bg-muted/40 border-muted text-muted-foreground"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between text-xs font-semibold">
+                          <span className="flex items-center gap-1.5">
+                            {plan.budget.isOverBudget ? (
+                              <AlertTriangle className="w-4 h-4 text-rose-600" />
+                            ) : (
+                              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                            )}
+                            Budget Health
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className={`text-[10px] ${
+                              plan.budget.isOverBudget
+                                ? "border-rose-300 text-rose-700 bg-rose-100"
+                                : "border-emerald-300 text-emerald-700 bg-emerald-100"
+                            }`}
+                          >
+                            {plan.budget.isOverBudget ? "Over Budget" : "Balanced"}
+                          </Badge>
+                        </div>
+                        <div
+                          className={`text-2xl font-black ${
+                            plan.budget.isOverBudget ? "text-rose-700" : "text-foreground"
+                          }`}
+                        >
+                          {plan.budget.isOverBudget
+                            ? `+₹${(plan.budget.totalCost - plan.budget.allocatedBudget).toLocaleString()}`
+                            : "₹0 Deficit"}
+                        </div>
+                        <p className="text-[11px]">
+                          {plan.budget.isOverBudget
+                            ? `${plan.budget.overBudgetPercentage}% above planned cap`
+                            : "Cost within allocated bounds"}
+                        </p>
+                      </div>
+                    </div>
+
                     {/* Budget Overview Progress Bar */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Allocated Budget: ₹{plan.budget.allocatedBudget.toLocaleString()}</span>
-                        <span className="font-bold text-foreground">Total: ₹{plan.budget.totalCost.toLocaleString()} ({Math.round((plan.budget.totalCost / plan.budget.allocatedBudget) * 100)}%)</span>
+                    <div className="space-y-2 pt-2">
+                      <div className="flex justify-between text-xs font-medium">
+                        <span className="text-muted-foreground">Category Proportions</span>
+                        <span className="font-bold text-foreground">Total: ₹{plan.budget.totalCost.toLocaleString()}</span>
                       </div>
                       <div className="w-full h-3 rounded-full bg-muted overflow-hidden flex">
                         <div
@@ -770,7 +914,7 @@ export default function TripDetailPage() {
                     {/* 8 Categories Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {Object.entries(plan.budget.categories).map(([cat, val]) => (
-                        <div key={cat} className="p-3 rounded-xl border bg-card space-y-1">
+                        <div key={cat} className="p-3 rounded-2xl border bg-card space-y-1">
                           <span className="text-xs text-muted-foreground capitalize">
                             {cat.replace("_", " ")}
                           </span>
@@ -783,7 +927,7 @@ export default function TripDetailPage() {
                     </div>
 
                     {plan.optimization.wasOptimized && (
-                      <Alert className="bg-amber-50 border-amber-300 text-amber-900">
+                      <Alert className="bg-amber-50 border-amber-300 text-amber-900 rounded-2xl">
                         <TrendingDown className="w-4 h-4 text-amber-700" />
                         <AlertTitle className="text-xs font-bold uppercase">Budget Optimizer Applied</AlertTitle>
                         <AlertDescription className="text-xs">
@@ -797,15 +941,15 @@ export default function TripDetailPage() {
                 {/* 5. Selected Hotel & 6. Transport Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Selected Hotel */}
-                  <Card className="shadow-md">
-                    <CardHeader className="pb-3">
+                  <Card className="shadow-md rounded-3xl">
+                    <CardHeader className="pb-3 border-b">
                       <div className="flex items-center gap-2">
                         <Bed className="w-5 h-5 text-amber-600" />
                         <CardTitle className="text-base font-bold">Selected Lodging</CardTitle>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="p-4 rounded-xl border bg-amber-50/40 border-amber-200 space-y-2">
+                    <CardContent className="space-y-4 pt-4">
+                      <div className="p-4 rounded-2xl border bg-amber-50/40 border-amber-200 space-y-2">
                         <div className="flex items-start justify-between">
                           <div>
                             <h4 className="font-bold text-foreground text-sm">{plan.hotel.selected.name}</h4>
@@ -832,7 +976,7 @@ export default function TripDetailPage() {
 
                       <div className="flex flex-wrap gap-1.5">
                         {plan.hotel.selected.amenities.map((am) => (
-                          <Badge key={am} variant="outline" className="text-[11px] bg-muted/40">
+                          <Badge key={am} variant="outline" className="text-[11px] bg-muted/40 rounded-lg">
                             {am}
                           </Badge>
                         ))}
@@ -841,15 +985,15 @@ export default function TripDetailPage() {
                   </Card>
 
                   {/* Transport */}
-                  <Card className="shadow-md">
-                    <CardHeader className="pb-3">
+                  <Card className="shadow-md rounded-3xl">
+                    <CardHeader className="pb-3 border-b">
                       <div className="flex items-center gap-2">
                         <Car className="w-5 h-5 text-blue-600" />
                         <CardTitle className="text-base font-bold">Transit & Local Mobility</CardTitle>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="p-4 rounded-xl border bg-blue-50/40 border-blue-200 space-y-2">
+                    <CardContent className="space-y-4 pt-4">
+                      <div className="p-4 rounded-2xl border bg-blue-50/40 border-blue-200 space-y-2">
                         <div className="flex items-start justify-between">
                           <div>
                             <h4 className="font-bold text-foreground text-sm">
@@ -890,17 +1034,17 @@ export default function TripDetailPage() {
                 </div>
 
                 {/* 7. Dining & Food Section */}
-                <Card className="shadow-md">
-                  <CardHeader className="pb-3">
+                <Card className="shadow-md rounded-3xl">
+                  <CardHeader className="pb-3 border-b">
                     <div className="flex items-center gap-2">
                       <Utensils className="w-5 h-5 text-rose-600" />
                       <CardTitle className="text-base font-bold">Curated Dining Schedule</CardTitle>
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                       {plan.food.meals.map((meal, idx) => (
-                        <div key={idx} className="p-3 rounded-xl border bg-card space-y-1 text-xs">
+                        <div key={idx} className="p-3.5 rounded-2xl border bg-card space-y-1.5 text-xs hover:border-primary/40 transition-colors">
                           <div className="flex items-center justify-between">
                             <Badge variant="outline" className="text-[10px] uppercase font-bold text-rose-700 border-rose-300">
                               Day {meal.dayNumber} {meal.mealType}
@@ -909,7 +1053,7 @@ export default function TripDetailPage() {
                           </div>
                           <p className="font-bold text-sm text-foreground">{meal.restaurant.name}</p>
                           <p className="text-muted-foreground">{meal.restaurant.cuisine}</p>
-                          <div className="flex justify-between text-[11px] pt-1 text-muted-foreground">
+                          <div className="flex justify-between text-[11px] pt-1.5 border-t text-muted-foreground">
                             <span>Est. Cost:</span>
                             <span className="font-semibold text-foreground">₹{meal.estimatedCost.toLocaleString()}</span>
                           </div>
@@ -920,20 +1064,20 @@ export default function TripDetailPage() {
                 </Card>
 
                 {/* 8. Selected Attractions Section */}
-                <Card className="shadow-md">
-                  <CardHeader className="pb-3">
+                <Card className="shadow-md rounded-3xl">
+                  <CardHeader className="pb-3 border-b">
                     <div className="flex items-center gap-2">
                       <Ticket className="w-5 h-5 text-emerald-600" />
                       <CardTitle className="text-base font-bold">Selected Attractions & Heritage Sites</CardTitle>
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {plan.attractions.map((a, idx) => (
-                        <div key={idx} className="p-3 rounded-xl border bg-card space-y-2 text-xs">
+                        <div key={idx} className="p-3.5 rounded-2xl border bg-card space-y-2 text-xs hover:border-primary/40 transition-colors">
                           <div className="flex items-start justify-between gap-1">
                             <h4 className="font-bold text-sm text-foreground">{a.attraction.name}</h4>
-                            <Badge variant="secondary" className="text-[10px]">
+                            <Badge variant="secondary" className="text-[10px] rounded-md">
                               Day {a.dayNumber}
                             </Badge>
                           </div>
@@ -954,6 +1098,19 @@ export default function TripDetailPage() {
             )}
           </div>
         )}
+
+        {/* Confirmation Modal for Trip Deletion */}
+        <ConfirmationModal
+          isOpen={showDeleteModal}
+          title="Delete Trip Itinerary?"
+          description="Are you sure you want to delete this trip itinerary? All associated scheduled items, budget ledgers, and notes will be permanently removed."
+          confirmText="Delete Trip"
+          cancelText="Keep Trip"
+          isDestructive={true}
+          isLoading={deleting}
+          onConfirm={confirmDeleteTrip}
+          onCancel={() => setShowDeleteModal(false)}
+        />
       </main>
     </div>
   );
