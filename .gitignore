@@ -1,0 +1,22 @@
+# Environment variables
+.env
+*.env
+.env.*
+
+# OS generated files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+.DS_Store
+
+# IDE & Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Node modules / build output (in case web app is added)
+node_modules/
+dist/
+build/
