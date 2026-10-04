@@ -91,7 +91,7 @@ export default function RegisterPage() {
               Start designing your dream adventures today
             </CardDescription>
           </CardHeader>
-          <form onSubmit={handleSubmit}>
+          <form action="javascript:void(0)" onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               {error && (
                 <Alert variant="destructive">

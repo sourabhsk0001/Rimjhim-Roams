@@ -79,7 +79,7 @@ function LoginForm() {
             Enter your account credentials to continue
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
+        <form action="javascript:void(0)" onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
               <Alert variant="destructive">

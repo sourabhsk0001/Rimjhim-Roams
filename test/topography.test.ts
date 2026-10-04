@@ -1,10 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert";
 import { Topography } from "../src/components/ui/Topography";
+import { TopographyBackground } from "../src/components/background/TopographyBackground";
 import { GlobalTopographyBackground } from "../src/components/layout/global-topography-background";
 
 test("Topography Component: Export and Component Definition", () => {
   assert.strictEqual(typeof Topography, "function", "Topography should be exported as a React function component");
+  assert.strictEqual(typeof TopographyBackground, "function", "TopographyBackground should be exported as a React function component");
   assert.strictEqual(typeof GlobalTopographyBackground, "function", "GlobalTopographyBackground should be exported as a React function component");
 });
 
