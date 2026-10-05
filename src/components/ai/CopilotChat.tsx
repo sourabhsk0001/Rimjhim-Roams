@@ -77,7 +77,31 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
   const [copilotPhase, setCopilotPhase] = useState<CopilotPhase>("thinking");
   const [activeProvider, setActiveProvider] = useState<string>("TripWise AI Copilot");
   const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
+  const [quotaInfo, setQuotaInfo] = useState<{
+    userRemaining?: number;
+    userLimit?: number;
+    serverRemaining?: number;
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const fetchQuota = () => {
+    fetch("/api/ai/quota")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.quota) {
+          setQuotaInfo({
+            userRemaining: data.quota.user?.remaining,
+            userLimit: data.quota.user?.limit,
+            serverRemaining: data.quota.server?.remaining,
+          });
+        }
+      })
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchQuota();
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -131,7 +155,7 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Failed to receive response from Travel Copilot.");
+        throw new Error(data.message || data.error || "Failed to receive response from Travel Copilot.");
       }
 
       if (data.provider) {
@@ -164,6 +188,7 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
       clearTimeout(t2);
       clearTimeout(t3);
       setLoading(false);
+      fetchQuota();
     }
   };
 
@@ -198,14 +223,32 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
           </div>
         </div>
 
-        {tripId && (
-          <div className="hidden sm:flex items-center gap-2 text-xs bg-slate-50 px-3.5 py-1.5 rounded-full border border-slate-200/80">
-            <span className="text-[hsl(215,25%,32%)]">Active Trip:</span>
-            <span className="font-medium text-[#0f172a]">
-              {tripSummary ? `${tripSummary.origin} → ${tripSummary.destination}` : "Loaded"}
-            </span>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {quotaInfo && typeof quotaInfo.userRemaining === "number" && (
+            <div
+              className={`text-[11px] font-medium px-2.5 py-1 rounded-full border flex items-center gap-1.5 transition-colors ${
+                quotaInfo.userRemaining <= 2
+                  ? "bg-rose-50 text-rose-800 border-rose-200"
+                  : "bg-amber-50 text-amber-800 border-amber-200"
+              }`}
+              title="Daily free-tier quota for this student project (resets midnight UTC)"
+            >
+              <Sparkles className="w-3 h-3 text-amber-600" />
+              <span>
+                AI Quota: <strong>{quotaInfo.userRemaining}</strong>/{quotaInfo.userLimit} today (Free Tier)
+              </span>
+            </div>
+          )}
+
+          {tripId && (
+            <div className="hidden sm:flex items-center gap-2 text-xs bg-slate-50 px-3.5 py-1.5 rounded-full border border-slate-200/80">
+              <span className="text-[hsl(215,25%,32%)]">Active Trip:</span>
+              <span className="font-medium text-[#0f172a]">
+                {tripSummary ? `${tripSummary.origin} → ${tripSummary.destination}` : "Loaded"}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Message Feed */}

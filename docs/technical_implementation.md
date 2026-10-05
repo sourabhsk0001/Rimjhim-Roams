@@ -465,3 +465,92 @@ Implemented via a high-performance in-memory sliding token bucket (`src/lib/secu
    - Travel memories enforce `auth.uid() = user_id`.
    - User profiles enforce individual identity boundaries.
 
+---
+
+## 13. Gemini API Daily Quota Architecture & Student Project Free-Tier Policy
+
+### 13.1 Academic Motivation & Free-Tier Operational Bounds
+Rimjhim Roams is an academic student project engineered for intelligent travel planning orchestration. All generative AI capabilities rely strictly on the **Google Gemini API Free Tier** (`gemini-1.5-flash`), which imposes a non-commercial hard ceiling of **1,500 Requests Per Day (RPD)**.
+
+To operate sustainably within this free tier without incurring commercial cloud hosting or API billing charges, and to guarantee that all student evaluators, recruiters, and travelers receive equitable access, Rimjhim Roams enforces a **Two-Level Daily Quota System**:
+
+```mermaid
+flowchart TD
+    Req["Incoming AI Request (/api/copilot/chat, /api/trips/generate, /api/rag/chat)"] --> AuthCheck["Authenticate Active User"]
+    AuthCheck --> QuotaCheck["Gemini Daily Quota Check (src/lib/security/gemini-quota.ts)"]
+    
+    QuotaCheck --> ServerCheck{"Server Daily Count >= Limit?\n(Default: 1,000 / day)"}
+    ServerCheck -->|"Yes (Ceiling Exceeded)"| S429["429 Too Many Requests\nCode: SERVER_DAILY_QUOTA_EXCEEDED\nExplanation: Platform-wide free quota reached"]
+    
+    ServerCheck -->|"No"| UserCheck{"User Daily Count >= Limit?\n(Default: 20 / day)"}
+    UserCheck -->|"Yes (User Exhausted)"| U429["429 Too Many Requests\nCode: USER_DAILY_QUOTA_EXCEEDED\nExplanation: Student project free tier allocation reached"]
+    
+    UserCheck -->|"No (Quota Available)"| Consume["Atomic Increment (User + 1, Server + 1)\nAttach Quota Headers"]
+    Consume --> GeminiCall["Dispatch to Google Gemini 1.5 Flash"]
+    GeminiCall --> SuccessResponse["200 OK (Plan / Copilot / Citations)"]
+```
+
+### 13.2 Quota Limits and Configurable Parameters
+
+| Quota Scope | Default Ceiling | Environment Variable | Reset Schedule | Target Protection |
+| :--- | :--- | :--- | :--- | :--- |
+| **Per-User Quota** | **20 calls / day** | `GEMINI_DAILY_USER_LIMIT` | Midnight 00:00:00 UTC | Prevents individual accounts from monopolizing free API resources |
+| **Server-Wide Quota** | **1,000 calls / day** | `GEMINI_DAILY_SERVER_LIMIT` | Midnight 00:00:00 UTC | Protects entire platform from breaching Google's 1,500 RPD free tier |
+
+### 13.3 Transparent Educational Reasoning & Fallback Guarantees
+When a quota ceiling is reached, the API returns an HTTP `429 Too Many Requests` with a structured educational explanation:
+
+1. **User Daily Quota Exceeded**:
+   - **Reason Code**: `student_project_free_tier`
+   - **User Message**:
+     > *"Daily Gemini AI request limit reached (20/20 requests used today). Rimjhim Roams is an academic student project operating strictly on Google Gemini's Free Tier API. To ensure fair and reliable access for all student evaluators, recruiters, and travelers without incurring paid cloud billing costs, individual accounts are provided 20 AI generation calls per day. Your quota will automatically reset at midnight UTC. In the meantime, all deterministic planning engines (OSRM routing, Open-Meteo weather forecasts, NATMO exploration, and zero-drift budget calculation) remain 100% available without limits. Thank you for evaluating our student project!"*
+
+2. **Server-Wide Quota Exceeded**:
+   - **Reason Code**: `server_daily_quota_exceeded`
+   - **Server Message**:
+     > *"Server-wide daily Gemini AI quota reached (1,000/1,000 requests used today). Rimjhim Roams is an academic student project operating under Google Gemini Free-Tier constraints (1,500 daily requests ceiling). To prevent total service suspension and stay within free non-commercial thresholds, new generative AI queries are temporarily paused until midnight UTC. All saved itineraries, official tourism destinations, interactive maps, and deterministic financial calculations continue to function normally without restriction."*
+
+### 13.4 Quota Status Inspection API (`GET /api/ai/quota`)
+Publicly accessible endpoint allowing frontends, mobile clients, and users to monitor real-time quota consumption:
+
+```json
+{
+  "success": true,
+  "quota": {
+    "date": "2026-10-06",
+    "user": {
+      "userId": "demo-user-123",
+      "limit": 20,
+      "used": 3,
+      "remaining": 17
+    },
+    "server": {
+      "limit": 1000,
+      "used": 42,
+      "remaining": 958
+    },
+    "resetAt": "2026-10-07T00:00:00.000Z",
+    "retryAfterSeconds": 78840,
+    "explanation": {
+      "title": "Rimjhim Roams — Student Project Free-Tier AI Quota Policy",
+      "studentProjectNotice": "Rimjhim Roams is an academic student project engineered for intelligent travel planning education...",
+      "fairUsePolicy": "To maintain equitable access for all student evaluators...",
+      "deterministicFallbackNotice": "When daily AI quota is exhausted, all deterministic engines remain 100% available."
+    }
+  }
+}
+```
+
+### 13.5 Response Headers & Test Bypass Mechanisms
+- **Standard Quota Headers**:
+  - `Retry-After`: Seconds remaining until midnight UTC reset.
+  - `X-Gemini-User-Limit`: Allocated daily user quota (e.g. `20`).
+  - `X-Gemini-User-Used`: Requests consumed today by the user.
+  - `X-Gemini-User-Remaining`: Requests remaining today for the user.
+  - `X-Gemini-Server-Limit`: Server-wide quota ceiling (e.g. `1000`).
+  - `X-Gemini-Server-Remaining`: Server-wide requests remaining.
+  - `X-Gemini-Reset`: ISO 8601 UTC timestamp of next midnight reset.
+- **Automated Test Isolation**:
+  - Internal unit test suites and CI runners can pass `x-bypass-gemini-quota: true` to prevent test executions from consuming or failing on daily quota limits.
+
+

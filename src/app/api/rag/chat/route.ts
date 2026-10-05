@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ragService } from "@/lib/services/rag-service";
 import { requireAuth } from "@/lib/auth/session";
 import { enforceRateLimit } from "@/lib/security/rate-limiter";
+import { enforceGeminiQuota } from "@/lib/security/gemini-quota";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,6 +15,9 @@ export async function POST(req: NextRequest) {
 
     const auth = await requireAuth(req);
     if (!auth.authorized) return auth.response;
+
+    const quotaResponse = enforceGeminiQuota(req, auth.user.id);
+    if (quotaResponse) return quotaResponse;
 
     const body = await req.json().catch(() => ({}));
     const { question, destination, category, minSimilarity } = body;

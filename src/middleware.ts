@@ -7,6 +7,7 @@ import { enforceRateLimit } from "@/lib/security/rate-limiter";
  */
 function isPublicApiRoute(pathname: string, method: string): boolean {
   if (pathname === "/api/health") return true;
+  if (pathname === "/api/ai/quota") return true;
   if (pathname === "/api/auth/login" || pathname === "/api/auth/register") return true;
   if (method === "GET" && pathname === "/api/public-profiles") return true;
   if (method === "GET" && pathname.startsWith("/api/public-profiles/")) return true;

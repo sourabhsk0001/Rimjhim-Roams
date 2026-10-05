@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getActiveUserId } from "@/lib/auth/session";
 import { copilotService } from "@/lib/services/copilot-service";
 import { enforceRateLimit } from "@/lib/security/rate-limiter";
+import { enforceGeminiQuota } from "@/lib/security/gemini-quota";
 
 /**
  * POST /api/copilot/chat
@@ -21,6 +22,9 @@ export async function POST(req: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized. Please sign in." }, { status: 401 });
     }
+
+    const quotaResponse = enforceGeminiQuota(req, userId);
+    if (quotaResponse) return quotaResponse;
 
     const body = await req.json().catch(() => ({}));
     const { message, tripId, history } = body;
