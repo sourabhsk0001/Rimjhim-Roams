@@ -441,6 +441,7 @@ export const TopographyBackground: React.FC<TopographyBackgroundProps> = ({
       } catch {}
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExcluded, intensity, interactive]);
 
   // Section 6 & 27: Strict landing page exclusion

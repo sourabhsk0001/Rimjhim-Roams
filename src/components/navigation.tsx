@@ -28,6 +28,7 @@ export function Navigation() {
 
   const handleLogout = async () => {
     try {
+      await fetch("/api/auth/logout", { method: "POST" });
       await supabase.auth.signOut();
       // Clear demo session cookie if set
       document.cookie = "rr_demo_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
@@ -53,15 +54,21 @@ export function Navigation() {
     <header className="border-b border-slate-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 transition-colors">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white shadow-xs transition-transform group-hover:scale-105">
-              <Compass className="w-4 h-4" />
+          <Link
+            href="/"
+            className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer active:scale-95 transition-transform duration-150 select-none"
+            title="Go to Landing Page"
+            aria-label="TripWise AI - Go to Landing Page"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black flex items-center justify-center text-white shadow-xs transition-all group-hover:scale-105 group-active:scale-95 shrink-0">
+              <Compass className="w-4 h-4 sm:w-4.5 sm:h-4.5 transition-transform group-hover:rotate-45 duration-300" />
             </div>
             <div className="flex flex-col">
-              <span className="font-instrument text-2xl font-normal tracking-[-0.5px] text-[#0f172a] leading-none">
-                Rimjhim Roams<sup className="text-[10px] font-sans font-normal ml-0.5 text-slate-500">®</sup>
+              <span className="font-instrument text-xl sm:text-2xl font-normal tracking-[-0.5px] text-[#0f172a] leading-none group-hover:opacity-80 transition-opacity">
+                Rimjhim Roams<sup className="text-[9px] sm:text-[10px] font-sans font-normal ml-0.5 text-slate-500">®</sup>
               </span>
-              <span className="text-[9px] text-[hsl(215,25%,32%)] font-medium tracking-wider uppercase mt-0.5">
+              <span className="text-[8px] sm:text-[9px] text-[hsl(215,25%,32%)] font-medium tracking-wider uppercase mt-0.5">
                 TripWise AI
               </span>
             </div>

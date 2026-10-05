@@ -29,12 +29,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { TripRow } from "@/lib/services/trip-service";
+import { PersonalizedRecommendations } from "@/components/tourism/PersonalizedRecommendations";
+import { OnboardingPanel } from "@/components/tourism/OnboardingPanel";
 
 export default function DashboardPage() {
   const [upcoming, setUpcoming] = useState<TripRow[]>([]);
   const [previous, setPrevious] = useState<TripRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const fetchTrips = async () => {
     setLoading(true);
@@ -60,6 +63,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchTrips();
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("onboarding") === "true") {
+        setShowOnboarding(true);
+      }
+    }
   }, []);
 
   return (
@@ -157,6 +167,9 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* Personalized Recommendations Section (NATMO Circuits & Preference Engine) */}
+            <PersonalizedRecommendations />
+
             {/* Upcoming Trips Section */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -230,6 +243,13 @@ export default function DashboardPage() {
           </>
         )}
       </main>
+
+      <OnboardingPanel
+        isOpen={showOnboarding}
+        isModal={true}
+        onClose={() => setShowOnboarding(false)}
+        onSaved={() => setShowOnboarding(false)}
+      />
     </div>
   );
 }

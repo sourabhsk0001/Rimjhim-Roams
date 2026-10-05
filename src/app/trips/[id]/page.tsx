@@ -422,9 +422,14 @@ export default function TripDetailPage() {
               </Card>
             )}
 
-            {/* 1. Trip Hero Header with Strong Visual Hierarchy */}
-            <div className="overflow-hidden shadow-sm border border-slate-200/80 rounded-3xl bg-gradient-to-br from-[#071324] via-[#0f172a] to-[#1e293b] text-white p-6 sm:p-8">
-              <div className="flex flex-wrap items-start justify-between gap-6">
+            {/* 1. Trip Hero Header with Strong Visual Hierarchy & My Trip Background */}
+            <div className="relative overflow-hidden shadow-sm border border-slate-200/80 rounded-3xl bg-gradient-to-br from-[#071324] via-[#0f172a] to-[#1e293b] text-white p-6 sm:p-8">
+              <div
+                className="absolute inset-0 bg-cover bg-center opacity-20 pointer-events-none mix-blend-luminosity"
+                style={{ backgroundImage: "url('/image/my-trip.jpg')" }}
+                aria-hidden="true"
+              />
+              <div className="relative z-10 flex flex-wrap items-start justify-between gap-6">
                 <div className="space-y-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="bg-white/10 text-white uppercase tracking-wider text-[10px] font-semibold px-3 py-1 rounded-full border border-white/15">

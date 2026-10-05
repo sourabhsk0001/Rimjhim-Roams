@@ -26,10 +26,34 @@ import { replanEngine } from "@/lib/engines/replan-engine";
 import { safetyService } from "@/lib/services/safety-service";
 import { travelMemoryService } from "@/lib/services/travel-memory-service";
 import { DurationTier } from "@/types/time";
+import { indiaTourismService } from "@/lib/services/india-tourism-service";
 
 // ==============================================================================
 // Tool Definition Schemas for Gemini Function Calling & Copilot Routing
 // ==============================================================================
+
+export const INDIA_TOURISM_TOOL_DEFINITIONS: ToolDefinition[] = [
+  {
+    name: "search_india_tourism_kb",
+    description: "Query the official multi-source India Tourism Knowledge Base combining Ministry of Tourism (MoT), NATMO thematic circuits, OpenStreetMap coordinates, and GeoNames administrative hierarchy across all 28 States and 8 Union Territories.",
+    parameters: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Search term, attraction name, or landmark (e.g. 'Taj Mahal', 'beaches', 'monastery', 'Ajanta')" },
+        state: { type: "string", description: "Indian State or Union Territory (e.g. 'Rajasthan', 'Kerala', 'Ladakh', 'Goa')" },
+        district: { type: "string", description: "District name (e.g. 'Agra', 'Varanasi', 'Jaipur')" },
+        category: { type: "string", description: "Category: 'historical_monument', 'temple', 'heritage_palace', 'beach', 'national_park', 'wildlife_sanctuary', 'museum', 'viewpoint', 'natural_attraction', 'hill_station', 'waterfall', 'cave', 'cultural_hub', 'lake', 'fort', 'pilgrimage_site'" },
+        zone: { type: "string", enum: ["North", "South", "East", "West", "Central", "North-East", "Islands"], description: "Geographic zone" },
+        maxEntryFee: { type: "number", description: "Maximum entry ticket fee in INR" },
+        latitude: { type: "number", description: "Center latitude for proximity radius search" },
+        longitude: { type: "number", description: "Center longitude for proximity radius search" },
+        radiusKm: { type: "number", description: "Search radius in km (default 50km if lat/lng supplied)" },
+        recommendItinerary: { type: "boolean", description: "Set true to synthesize a multi-day itinerary plan using verified attractions" },
+        days: { type: "number", description: "Number of days for itinerary recommendation (1-7)" },
+      },
+    },
+  },
+];
 
 export const COPILOT_TOOL_DEFINITIONS: ToolDefinition[] = [
   {
@@ -223,6 +247,13 @@ export const MEMORY_TOOL_DEFINITIONS: ToolDefinition[] = [
   },
 ];
 
+export const ALL_COPILOT_TOOL_DEFINITIONS: ToolDefinition[] = [
+  ...COPILOT_TOOL_DEFINITIONS,
+  ...SAFETY_TOOL_DEFINITIONS,
+  ...MEMORY_TOOL_DEFINITIONS,
+  ...INDIA_TOURISM_TOOL_DEFINITIONS,
+];
+
 // ==============================================================================
 // Deterministic Tool Execution Registry
 // ==============================================================================
@@ -279,6 +310,9 @@ export class ToolRegistry {
 
       case "get_travel_memories":
         return this.getTravelMemories(args, context);
+
+      case "search_india_tourism_kb":
+        return this.searchIndiaTourismKb(args);
 
       default:
         throw new Error(`Unrecognized tool: ${name}`);
@@ -901,6 +935,135 @@ export class ToolRegistry {
         likes: summary.likes,
         avoids: summary.avoids,
       },
+    };
+  }
+
+  // ----------------------------------------------------------------------------
+  // Tool 15: search_india_tourism_kb
+  // ----------------------------------------------------------------------------
+  private async searchIndiaTourismKb(args: Record<string, unknown>) {
+    if (args.recommendItinerary === true) {
+      const state = typeof args.state === "string" ? args.state : undefined;
+      const district = typeof args.district === "string" ? args.district : undefined;
+      const category = typeof args.category === "string" ? args.category : undefined;
+      const days = typeof args.days === "number" ? args.days : 3;
+
+      const recommendation = indiaTourismService.recommendForItinerary({
+        state,
+        district,
+        category,
+        maxDays: days,
+      });
+
+      return {
+        type: "itinerary_recommendation",
+        stateOrRegion: recommendation.stateOrRegion,
+        totalDays: recommendation.totalDays,
+        totalAttractions: recommendation.totalAttractions,
+        totalEntryFeeInr: recommendation.totalEntryFeeInr,
+        suggestedRoute: recommendation.suggestedRoute,
+        travelTips: recommendation.travelTips,
+        sourceAttribution: recommendation.sourceAttribution,
+        daysPlan: recommendation.daysPlan.map((dp) => ({
+          day: dp.day,
+          theme: dp.theme,
+          estimatedHours: dp.estimatedHours,
+          estimatedEntryFeeInr: dp.estimatedEntryFeeInr,
+          locations: dp.locations.map((loc) => ({
+            id: loc.id,
+            name: loc.name,
+            city: loc.city,
+            category: loc.category,
+            description: loc.description,
+            entryFee: loc.operational.entry_fee_inr,
+            timings: `${loc.operational.opening_time} - ${loc.operational.closing_time}`,
+            bestTime: loc.operational.best_time_to_visit,
+            primarySource: loc.sources.primary_source,
+          })),
+        })),
+      };
+    }
+
+    if (typeof args.latitude === "number" && typeof args.longitude === "number") {
+      const radiusKm = typeof args.radiusKm === "number" ? args.radiusKm : 50;
+      const limit = typeof args.limit === "number" ? args.limit : 10;
+      const category = typeof args.category === "string" ? args.category : undefined;
+
+      const nearby = indiaTourismService.getNearbyLocations(
+        args.latitude,
+        args.longitude,
+        radiusKm,
+        limit,
+        category
+      );
+
+      return {
+        type: "nearby_spatial_search",
+        center: { latitude: args.latitude, longitude: args.longitude },
+        radiusKm,
+        totalFound: nearby.length,
+        locations: nearby.map((loc) => ({
+          id: loc.id,
+          name: loc.name,
+          distanceKm: loc.distanceKm,
+          category: loc.category,
+          state: loc.state,
+          district: loc.district,
+          city: loc.city,
+          coordinates: { lat: loc.latitude, lng: loc.longitude },
+          description: loc.description,
+          entryFee: loc.operational.entry_fee_inr,
+          primarySource: loc.sources.primary_source,
+        })),
+      };
+    }
+
+    const searchResult = indiaTourismService.searchLocations({
+      query: typeof args.query === "string" ? args.query : undefined,
+      state: typeof args.state === "string" ? args.state : undefined,
+      district: typeof args.district === "string" ? args.district : undefined,
+      category: typeof args.category === "string" ? args.category : undefined,
+      zone: typeof args.zone === "string" ? (args.zone as any) : undefined,
+      maxEntryFee: typeof args.maxEntryFee === "number" ? args.maxEntryFee : undefined,
+      limit: typeof args.limit === "number" ? args.limit : 20,
+    });
+
+    return {
+      type: "knowledge_base_search",
+      totalFound: searchResult.total,
+      stateSummary: searchResult.stateSummary,
+      locations: searchResult.locations.map((loc) => ({
+        id: loc.id,
+        name: loc.name,
+        aliases: loc.aliases,
+        state: loc.state,
+        district: loc.district,
+        city: loc.city,
+        coordinates: { lat: loc.latitude, lng: loc.longitude },
+        category: loc.category,
+        description: loc.description,
+        tags: loc.tourism_tags,
+        nearbyAttractions: loc.nearby_attractions,
+        operational: {
+          openingTime: loc.operational.opening_time,
+          closingTime: loc.operational.closing_time,
+          entryFeeInr: loc.operational.entry_fee_inr,
+          foreignFeeInr: loc.operational.foreign_fee_inr,
+          bestTimeToVisit: loc.operational.best_time_to_visit,
+          idealDurationHours: loc.operational.ideal_duration_hours,
+          nearestAirport: loc.operational.nearest_airport,
+          nearestRailway: loc.operational.nearest_railway,
+        },
+        sources: {
+          primarySource: loc.sources.primary_source,
+          mot: loc.sources.mot,
+          natmo: loc.sources.natmo,
+          osm: loc.sources.osm,
+          geonames: loc.sources.geonames,
+          unescoRecognized: loc.sources.details?.unesco_recognized,
+          motCircuit: loc.sources.details?.mot_circuit,
+        },
+      })),
     };
   }
 

@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { enforceRateLimit } from "@/lib/security/rate-limiter";
+import { appDb } from "@/lib/db/app-db";
 
 export async function POST(req: NextRequest) {
   try {
     const rateLimitResponse = enforceRateLimit(req, {
       prefix: "auth_login",
-      maxRequests: 20,
+      maxRequests: 30,
       windowMs: 60 * 1000,
     });
     if (rateLimitResponse) return rateLimitResponse;
@@ -24,20 +25,52 @@ export async function POST(req: NextRequest) {
     const isMock = !supabaseUrl || supabaseUrl.includes("mock-project");
 
     if (isMock) {
-      const demoId = email.toLowerCase().includes("demo")
-        ? "demo-user-123"
-        : `user-${Buffer.from(email).toString("hex").substring(0, 10)}`;
+      // Connect and authenticate with the persistent App Database
+      const authResult = appDb.verifyCredentials(email, password);
+
+      if (!authResult.success || !authResult.user) {
+        // Special demo fallback if someone tests with demo accounts
+        if (email.toLowerCase().includes("demo") && password === "password123") {
+          const user = appDb.findUserById("demo-user-123");
+          if (user) {
+            const session = appDb.createSession(user.id);
+            const response = NextResponse.json({
+              success: true,
+              message: "Login successful.",
+              user: { id: user.id, email: user.email, fullName: user.full_name, role: user.role },
+              session: { token: session.token, expires_at: session.expires_at },
+            });
+            response.cookies.set("rr_demo_session", user.id, {
+              path: "/",
+              httpOnly: false,
+              sameSite: "lax",
+            });
+            return response;
+          }
+        }
+
+        const statusCode = authResult.error?.includes("No account") ? 404 : 401;
+        return NextResponse.json(
+          { error: authResult.error || "Login failed. Please check your credentials." },
+          { status: statusCode }
+        );
+      }
+
+      const session = appDb.createSession(authResult.user.id);
 
       const response = NextResponse.json({
         success: true,
-        message: "Login successful (demo mode).",
-        user: { id: demoId, email, fullName: "Demo Traveler" },
+        message: "Login successful. Welcome back!",
+        user: authResult.user,
+        session: { token: session.token, expires_at: session.expires_at },
       });
-      response.cookies.set("rr_demo_session", demoId, {
+
+      response.cookies.set("rr_demo_session", authResult.user.id, {
         path: "/",
         httpOnly: false,
         sameSite: "lax",
       });
+
       return response;
     }
 
