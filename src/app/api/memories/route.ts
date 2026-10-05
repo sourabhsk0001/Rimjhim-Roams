@@ -2,8 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { getActiveUser } from "@/lib/auth/session";
 import { travelMemoryService } from "@/lib/services/travel-memory-service";
 import { CreateMemoryInput } from "@/types/memories";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export async function GET(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "memories_get",
+    maxRequests: 60,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   const user = await getActiveUser(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -27,6 +35,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "memories_post",
+    maxRequests: 30,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   const user = await getActiveUser(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

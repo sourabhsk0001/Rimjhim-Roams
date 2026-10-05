@@ -1,19 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { recommendationEngineService } from "@/lib/services/recommendation-engine-service";
-
-function resolveUserId(req: NextRequest): string {
-  return (
-    req.cookies.get("rr_demo_session")?.value ||
-    req.headers.get("x-user-id") ||
-    "demo-user-123"
-  );
-}
+import { requireAuth } from "@/lib/auth/session";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export async function POST(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "sync_preferences",
+    maxRequests: 30,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
+  const auth = await requireAuth(req);
+  if (!auth.authorized) return auth.response;
+
   try {
-    const userId = resolveUserId(req);
     const syncResult = await recommendationEngineService.syncPreferencesFromSavedItineraries(
-      userId
+      auth.user.id
     );
 
     return NextResponse.json({

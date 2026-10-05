@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getActiveUserId } from "@/lib/auth/session";
 import { publicProfileService } from "@/lib/services/public-profile-service";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,13 @@ export const dynamic = "force-dynamic";
  * Safe & RLS isolated: Only returns public non-PII attributes.
  */
 export async function GET(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "public_profiles_get",
+    maxRequests: 60,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const url = new URL(req.url);
     const search = url.searchParams.get("search") || undefined;
@@ -42,6 +50,13 @@ export async function GET(req: NextRequest) {
  * Rejects dirty data with 400 Bad Request.
  */
 export async function POST(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "public_profiles_post",
+    maxRequests: 30,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   const userId = await getActiveUserId(req);
   if (!userId) {
     return NextResponse.json({ success: false, error: "Unauthorized. Please log in." }, { status: 401 });

@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ragService } from "@/lib/services/rag-service";
+import { requireAdmin } from "@/lib/auth/session";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export async function GET(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "admin_knowledge_get",
+    maxRequests: 30,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
+  const auth = await requireAdmin(req);
+  if (!auth.authorized) return auth.response;
+
   try {
     const { searchParams } = new URL(req.url);
     const query = searchParams.get("query") || undefined;
@@ -17,6 +29,16 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "admin_knowledge_post",
+    maxRequests: 20,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
+  const auth = await requireAdmin(req);
+  if (!auth.authorized) return auth.response;
+
   try {
     const body = await req.json().catch(() => ({}));
     const { title, content, source, destination, category, metadata } = body;

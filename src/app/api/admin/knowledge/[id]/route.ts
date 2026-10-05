@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ragService } from "@/lib/services/rag-service";
+import { requireAdmin } from "@/lib/auth/session";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "admin_knowledge_id_get",
+    maxRequests: 30,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
+  const auth = await requireAdmin(req);
+  if (!auth.authorized) return auth.response;
+
   try {
     const document = await ragService.getDocumentById(params.id);
     if (!document) {
@@ -21,6 +33,16 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "admin_knowledge_id_put",
+    maxRequests: 20,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
+  const auth = await requireAdmin(req);
+  if (!auth.authorized) return auth.response;
+
   try {
     const body = await req.json().catch(() => ({}));
     const updated = await ragService.updateDocument(params.id, body);
@@ -32,9 +54,19 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "admin_knowledge_id_del",
+    maxRequests: 20,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
+  const auth = await requireAdmin(req);
+  if (!auth.authorized) return auth.response;
+
   try {
     const deleted = await ragService.deleteDocument(params.id);
     if (!deleted) {

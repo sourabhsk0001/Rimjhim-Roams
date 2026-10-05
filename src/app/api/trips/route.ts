@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getActiveUserId } from "@/lib/auth/session";
 import { createTrip, getUserTrips } from "@/lib/services/trip-service";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export async function GET(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "trips_list_get",
+    maxRequests: 60,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   const userId = await getActiveUserId(req);
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -13,6 +21,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "trips_list_post",
+    maxRequests: 30,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   const userId = await getActiveUserId(req);
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

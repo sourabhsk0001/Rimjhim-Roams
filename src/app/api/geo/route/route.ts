@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { calculateRoute, RouteMode, GeoCoordinate } from "@/lib/geo/routing";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export async function POST(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "geo_route",
+    maxRequests: 30,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = await req.json();
     const { waypoints, mode = "driving" } = body as {

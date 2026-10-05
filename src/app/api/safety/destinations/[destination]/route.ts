@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safetyService } from "@/lib/services/safety-service";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 /**
  * GET /api/safety/destinations/[destination]
@@ -9,6 +10,13 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { destination: string } }
 ) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "safety_destination",
+    maxRequests: 60,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const destination = decodeURIComponent(params.destination || "").trim();
     if (!destination) {

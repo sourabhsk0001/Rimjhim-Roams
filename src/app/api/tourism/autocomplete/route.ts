@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { tourismAutocompleteService } from "@/lib/services/tourism-autocomplete-service";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export async function GET(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "tourism_autocomplete",
+    maxRequests: 60,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { searchParams } = new URL(req.url);
     const query = searchParams.get("q") || searchParams.get("query") || "";

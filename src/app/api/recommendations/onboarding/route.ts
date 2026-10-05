@@ -1,18 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { recommendationEngineService } from "@/lib/services/recommendation-engine-service";
-
-function resolveUserId(req: NextRequest): string {
-  return (
-    req.cookies.get("rr_demo_session")?.value ||
-    req.headers.get("x-user-id") ||
-    "demo-user-123"
-  );
-}
+import { requireAuth } from "@/lib/auth/session";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export async function GET(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "onboarding_get",
+    maxRequests: 30,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
+  const auth = await requireAuth(req);
+  if (!auth.authorized) return auth.response;
+
   try {
-    const userId = resolveUserId(req);
-    const profile = recommendationEngineService.getUserPreferences(userId);
+    const profile = recommendationEngineService.getUserPreferences(auth.user.id);
 
     return NextResponse.json({
       success: true,
@@ -32,12 +35,21 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "onboarding_post",
+    maxRequests: 30,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
+  const auth = await requireAuth(req);
+  if (!auth.authorized) return auth.response;
+
   try {
-    const userId = resolveUserId(req);
     const body = await req.json();
 
     const updatedProfile = recommendationEngineService.saveOnboardingPreferences(
-      userId,
+      auth.user.id,
       body
     );
 

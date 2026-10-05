@@ -2,11 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { getActiveUser } from "@/lib/auth/session";
 import { travelMemoryService } from "@/lib/services/travel-memory-service";
 import { UpdateMemoryInput } from "@/types/memories";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "memories_id_get",
+    maxRequests: 60,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   const user = await getActiveUser(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -30,6 +38,13 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "memories_id_patch",
+    maxRequests: 30,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   const user = await getActiveUser(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -59,6 +74,13 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "memories_id_del",
+    maxRequests: 30,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   const user = await getActiveUser(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

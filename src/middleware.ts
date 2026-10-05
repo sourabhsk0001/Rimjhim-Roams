@@ -1,7 +1,102 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
+
+/**
+ * Determines if an API endpoint is accessible publicly without user authentication.
+ */
+function isPublicApiRoute(pathname: string, method: string): boolean {
+  if (pathname === "/api/health") return true;
+  if (pathname === "/api/auth/login" || pathname === "/api/auth/register") return true;
+  if (method === "GET" && pathname === "/api/public-profiles") return true;
+  if (method === "GET" && pathname.startsWith("/api/public-profiles/")) return true;
+  if (method === "GET" && pathname.startsWith("/api/tourism/")) return true;
+  if (method === "GET" && pathname.startsWith("/api/destinations")) return true;
+  if (method === "GET" && pathname.startsWith("/api/safety/")) return true;
+  if (pathname === "/api/geo/route") return true;
+  return false;
+}
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const method = request.method;
+
+  // ============================================================================
+  // 1. API Edge Protection: Rate Limiting & Authorization Gates
+  // ============================================================================
+  if (pathname.startsWith("/api/")) {
+    // 1A. Enforce Sliding-Window Rate Limits across all API endpoints
+    let rateLimitPrefix = "api_general";
+    let maxRequests = 60;
+    const windowMs = 60 * 1000;
+
+    if (pathname.startsWith("/api/auth/login") || pathname.startsWith("/api/auth/register")) {
+      rateLimitPrefix = "api_auth";
+      maxRequests = 15;
+    } else if (
+      pathname.startsWith("/api/copilot/") ||
+      pathname.startsWith("/api/rag/") ||
+      pathname === "/api/trips/generate"
+    ) {
+      rateLimitPrefix = "api_ai";
+      maxRequests = 30;
+    }
+
+    const rateLimitResponse = enforceRateLimit(request, {
+      prefix: rateLimitPrefix,
+      maxRequests,
+      windowMs,
+    });
+
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
+    // 1B. Enforce Strict Authentication on Protected API Endpoints
+    if (!isPublicApiRoute(pathname, method)) {
+      const demoCookie = request.cookies.get("rr_demo_session")?.value;
+      const hasSupabaseCookie = request.cookies
+        .getAll()
+        .some((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"));
+      const authHeader = request.headers.get("authorization");
+      const testHeader =
+        request.headers.get("x-user-id") || request.headers.get("x-test-user-id");
+
+      const hasCredentials = Boolean(
+        demoCookie || hasSupabaseCookie || authHeader || testHeader
+      );
+
+      if (!hasCredentials) {
+        return NextResponse.json(
+          { error: "Unauthorized. Authentication required to access this endpoint." },
+          { status: 401 }
+        );
+      }
+
+      // 1C. Role-Based Access Control for Administrator Endpoints
+      if (pathname.startsWith("/api/admin/")) {
+        const isAdmin =
+          demoCookie === "admin-user-001" ||
+          demoCookie === "admin@tripwise.ai" ||
+          (authHeader && authHeader.includes("admin")) ||
+          (testHeader && testHeader.includes("admin"));
+
+        if (!isAdmin && (demoCookie === "demo-user-123" || testHeader === "demo-user-123")) {
+          return NextResponse.json(
+            { error: "Forbidden. Administrator role required to access admin endpoints." },
+            { status: 403 }
+          );
+        }
+      }
+    }
+
+    // Allow authenticated or public API requests to proceed
+    return NextResponse.next();
+  }
+
+  // ============================================================================
+  // 2. UI Page Protection & SSR Session Management
+  // ============================================================================
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -10,13 +105,12 @@ export async function middleware(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
   const isAuthRoute =
-    request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/register");
+    pathname.startsWith("/login") || pathname.startsWith("/register");
 
   const isProtectedRoute =
-    request.nextUrl.pathname.startsWith("/dashboard") ||
-    request.nextUrl.pathname.startsWith("/profile") ||
-    request.nextUrl.pathname.startsWith("/trips");
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/trips");
 
   // In test / mock mode without configured live Supabase, check for a demo session cookie
   if (

@@ -1,8 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ragService } from "@/lib/services/rag-service";
+import { requireAuth } from "@/lib/auth/session";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export async function POST(req: NextRequest) {
   try {
+    const rateLimitResponse = enforceRateLimit(req, {
+      prefix: "rag_search",
+      maxRequests: 30,
+      windowMs: 60 * 1000,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
+
+    const auth = await requireAuth(req);
+    if (!auth.authorized) return auth.response;
+
     const body = await req.json().catch(() => ({}));
     const { query, destination, category, minSimilarity, limit } = body;
 

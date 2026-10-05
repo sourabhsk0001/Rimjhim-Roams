@@ -318,7 +318,7 @@ When Next.js statically builds pages on Vercel without environment variables:
 
 ## 10. Test Harness & Quality Verification
 
-The test harness runs **242 automated tests** with Node.js built-in test runner (`tsx --test`):
+The test harness runs **250 automated tests** with Node.js built-in test runner (`tsx --test`):
 
 ```bash
 # Execute complete test suite
@@ -337,6 +337,7 @@ npm test
 - **Phase 11–15**: Group collaboration, bill splitting, document vault, and memories (16 tests).
 - **Security Audit**: RLS policies, rate limiting, and client secret hygiene (12 tests).
 - **Public Profiles**: Clean-format validation, sample explorer data, and RLS privacy separation (13 tests).
+- **API Authorization & Rate Limiting**: Edge middleware gates, RBAC, resource ownership isolation, and rate limiters (8 tests).
 
 ---
 
@@ -407,4 +408,60 @@ Five authentic traveler personas are pre-seeded in both SQL migrations and `data
 3. `ananya_coastal` (Ananya Roy, Kolkata) — Marine & coastal monsoon photographer (19 states, "Coastal Nomad").
 4. `vikram_royal` (Vikramaditya Rathore, Udaipur) — Palace gastronomy and royal haveli connoisseur (18 states, "Palace Connoisseur").
 5. `zoya_slowroad` (Zoya Merchant, Pune) — Sustainable village tourism advocate (22 states, "Eco Wanderer").
+
+---
+
+## 12. Endpoint Rate Limiting & Two-Tier Authorization Architecture
+
+### 12.1 Two-Tier Security Architecture
+Rimjhim Roams deploys defense-in-depth security across every HTTP API endpoint, preventing unauthenticated access, privilege escalation, and brute-force scraping:
+
+```mermaid
+flowchart TD
+    ClientReq([Incoming HTTP Request]) --> Tier1["Tier 1: Edge Middleware Gate (src/middleware.ts)"]
+    
+    subgraph EdgeGate ["Edge Middleware Evaluation"]
+        RateCheck{"Rate Limit Exceeded?"}
+        RouteCheck{"Is Protected Endpoint?"}
+        AuthCheck{"Valid Credentials Present?"}
+        AdminCheck{"Admin Route && Non-Admin Role?"}
+    end
+
+    Tier1 --> RateCheck
+    RateCheck -->|Yes| Resp429["429 Too Many Requests (Retry-After)"]
+    RateCheck -->|No| RouteCheck
+    RouteCheck -->|Public API| RouteHandler["Execute Route Handler"]
+    RouteCheck -->|Protected API| AuthCheck
+    AuthCheck -->|No Credentials| Resp401["401 Unauthorized (Auth Required)"]
+    AuthCheck -->|Has Credentials| AdminCheck
+    AdminCheck -->|Yes| Resp403["403 Forbidden (Admin Required)"]
+    AdminCheck -->|No| RouteHandler
+
+    subgraph HandlerGate ["Tier 2: Route Handler & Domain Service Authorization"]
+        SessionResolve["resolveActiveUser(req) (src/lib/auth/session.ts)"]
+        RBAC["requireAdmin(req) / requireAuth(req)"]
+        OwnershipCheck["Resource Ownership / RLS Isolation (Trip / Memory / Profile)"]
+    end
+
+    RouteHandler --> HandlerGate
+    HandlerGate -->|Unauthorized| RespDenied["401 / 403 / 404 Response"]
+    HandlerGate -->|Authorized| DBExecute[("Database & Computational Engine")]
+```
+
+### 12.2 Endpoint Rate Limiting Tiers
+Implemented via a high-performance in-memory sliding token bucket (`src/lib/security/rate-limiter.ts`) enforcing sliding window ceilings:
+- **Authentication Tier** (`15 requests / min`): `/api/auth/login`, `/api/auth/register`. Protects against credential stuffing and password guessing.
+- **AI & Heavy Compute Tier** (`30 requests / min`): `/api/copilot/chat`, `/api/rag/chat`, `/api/rag/search`, `/api/trips/generate`. Protects external LLM quotas and GPU inference resources.
+- **General API Tier** (`60 requests / min`): All other protected and public endpoints (`/api/trips`, `/api/profile`, `/api/memories`, `/api/destinations`, `/api/tourism/*`).
+
+### 12.3 Strict Authorization & Privilege Separation
+1. **Zero Unauthenticated Defaulting**:
+   - `resolveActiveUser(req)` strictly requires valid credentials (session cookie, Bearer token, or Supabase JWT).
+   - Unauthenticated requests receive `401 Unauthorized` without defaulting to any demo user.
+2. **Role-Based Access Control (RBAC)**:
+   - `/api/admin/knowledge`, `/api/admin/knowledge/seed`, `/api/admin/knowledge/[id]` strictly enforce `role === 'admin'`. Non-admin travelers receive `403 Forbidden`.
+3. **Resource Ownership Isolation**:
+   - Trips, itinerary days, budgets, and travel documents enforce `isAuthorized` (owner, editor, or viewer). User B cannot read or tamper with User A's trips or documents.
+   - Travel memories enforce `auth.uid() = user_id`.
+   - User profiles enforce individual identity boundaries.
 

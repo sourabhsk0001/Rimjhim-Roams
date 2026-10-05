@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGeminiClient, GEMINI_MODEL } from "@/lib/gemini/client";
 import { enforceRateLimit } from "@/lib/security/rate-limiter";
+import { requireAuth } from "@/lib/auth/session";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,6 +11,9 @@ export async function POST(req: NextRequest) {
       windowMs: 60 * 1000,
     });
     if (rateLimitResponse) return rateLimitResponse;
+
+    const auth = await requireAuth(req);
+    if (!auth.authorized) return auth.response;
 
     const body = await req.json();
     const { destination, days = 3, budget = "moderate" } = body;

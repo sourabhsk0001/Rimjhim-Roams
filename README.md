@@ -5,7 +5,7 @@
   <p><em>Production-grade, Vercel-deployable autonomous travel operating system built with Next.js 14, Supabase, Google Gemini AI, PostGIS spatial intelligence, and deterministic computational engines.</em></p>
 
   [![Build & Deploy](https://img.shields.io/badge/Vercel-Deployable_Zero--Config-black?logo=vercel)](https://vercel.com)
-  [![Tests](https://img.shields.io/badge/Tests-242_Passed_100%25-brightgreen)](https://github.com/sourabhsk0001/Rimjhim-Roams)
+  [![Tests](https://img.shields.io/badge/Tests-250_Passed_100%25-brightgreen)](https://github.com/sourabhsk0001/Rimjhim-Roams)
   [![Next.js](https://img.shields.io/badge/Next.js-14.2.18_App_Router-black?logo=next.js)](https://nextjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-Strict_Mode-blue?logo=typescript)](https://www.typescriptlang.org/)
   [![Supabase](https://img.shields.io/badge/Database-Supabase_%2B_Local_Persistent_DB-3ECF8E?logo=supabase)](https://supabase.com)
@@ -74,6 +74,11 @@ Built around a **Zero LLM Math** architectural invariant, AI models are strictly
 - **Pre-Configured Explorer Personas**: 5 diverse authentic Indian explorer cards pre-seeded in SQL and local DB (`priya_travels`, `kabir_peaks`, `ananya_coastal`, `vikram_royal`, `zoya_slowroad`).
 - **Public Discovery & Filter API**: Instant search across usernames, bios, and home cities with travel style filtering.
 
+### 8. 🔒 Two-Tier Edge Authorization & Sliding-Window Rate Limiting
+- **Edge Middleware Gate (Tier 1)**: Intercepts unauthenticated callers to protected `/api/*` endpoints before serverless execution, returning `401 Unauthorized`. Sliding-window token tracking returning `429 Too Many Requests` with `Retry-After`.
+- **Route Handler RBAC & Resource Defense (Tier 2)**: Strict `requireAuth(req)` and `requireAdmin(req)` guards enforcing role-based access (`role === 'admin'`) with `403 Forbidden` on admin endpoints, and user resource isolation.
+- **Granular Rate-Limit Tiers**: 15 req/min on auth, 30 req/min on AI/heavy routes, 60 req/min on general routes. Public discovery routes remain readable without credentials while protected against denial of service.
+
 ---
 
 ## 🛠️ Tech Stack & Cloud Primitives
@@ -141,7 +146,7 @@ c:\Rimjhim Roams\
 │   └── middleware.ts             # Edge route protection & session bridge
 ├── supabase/
 │   └── migrations/               # Production SQL migrations (PostGIS + pgvector)
-├── test/                         # 229 automated unit & integration tests
+├── test/                         # 250 automated unit & integration tests
 └── vercel.json                   # Vercel deployment configuration
 ```
 
@@ -192,7 +197,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🧪 Testing & Verification
 
-The project includes **229 automated tests** covering security, rate limiting, deterministic tool calling, PostGIS queries, RAG ingestion, prompt injection defense, and authentication:
+The project includes **250 automated tests** covering security, sliding-window rate limiting, role-based access control, deterministic tool calling, PostGIS queries, RAG ingestion, prompt injection defense, and authentication:
 
 ```bash
 # Run the complete test suite

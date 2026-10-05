@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { indiaTourismService } from "@/lib/services/india-tourism-service";
 import { IndiaZone, TourismCategory } from "@/types/india-tourism";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export async function GET(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "tourism_search",
+    maxRequests: 60,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { searchParams } = new URL(req.url);
 

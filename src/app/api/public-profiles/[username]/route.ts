@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { publicProfileService } from "@/lib/services/public-profile-service";
+import { enforceRateLimit } from "@/lib/security/rate-limiter";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,13 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { username: string } }
 ) {
+  const rateLimitResponse = enforceRateLimit(req, {
+    prefix: "public_profile_detail",
+    maxRequests: 60,
+    windowMs: 60 * 1000,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { username } = params;
     if (!username) {
