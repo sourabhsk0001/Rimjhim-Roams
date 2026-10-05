@@ -66,18 +66,25 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data?.user;
+  } catch {
+    // Non-fatal if Supabase connection has hiccups
+  }
 
-  if (!user && isProtectedRoute) {
+  const demoUser = request.cookies.get("rr_demo_session")?.value;
+  const isAuthenticated = Boolean(user || demoUser);
+
+  if (!isAuthenticated && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirectTo", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 
-  if (user && isAuthRoute) {
+  if (isAuthenticated && isAuthRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);

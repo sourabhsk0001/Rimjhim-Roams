@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { createClient } from "@/lib/supabase/client";
 import {
   Card,
   CardContent,
@@ -70,7 +71,23 @@ export default function RegisterPage() {
         throw new Error(data.error || "Registration failed.");
       }
 
-      setSuccess("Account successfully registered in database! Redirecting to dashboard...");
+      // Sync Supabase browser client session if live Supabase is configured
+      try {
+        const supabase = createClient();
+        await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+            },
+          },
+        });
+      } catch {
+        // Non-blocking: server session cookie is already active
+      }
+
+      setSuccess("Account successfully registered! Redirecting to dashboard...");
       setTimeout(() => {
         router.push("/dashboard");
         router.refresh();

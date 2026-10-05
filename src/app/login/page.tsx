@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { createClient } from "@/lib/supabase/client";
 import {
   Card,
   CardContent,
@@ -67,6 +68,14 @@ function LoginForm() {
 
       if (!res.ok) {
         throw new Error(data.error || "Login failed. Please check your credentials.");
+      }
+
+      // Sync Supabase browser client session if live Supabase is configured
+      try {
+        const supabase = createClient();
+        await supabase.auth.signInWithPassword({ email, password });
+      } catch {
+        // Non-blocking: server session cookie is already active
       }
 
       router.push(redirectTo);

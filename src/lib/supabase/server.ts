@@ -19,6 +19,10 @@ export function isMockSupabase(): boolean {
   );
 }
 
+export function isSupabaseLive(): boolean {
+  return !isMockSupabase();
+}
+
 export function createClient() {
   let cookieStore: ReturnType<typeof cookies> | null = null;
   try {

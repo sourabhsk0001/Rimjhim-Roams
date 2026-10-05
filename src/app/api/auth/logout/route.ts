@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, isSupabaseLive } from "@/lib/supabase/server";
 import { appDb } from "@/lib/db/app-db";
 
 export async function POST(req: NextRequest) {
@@ -9,15 +9,22 @@ export async function POST(req: NextRequest) {
       appDb.deleteSession(sessionUserId);
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const isMock = !supabaseUrl || supabaseUrl.includes("mock-project");
-
     const response = NextResponse.json({ success: true, message: "Logged out successfully." });
-    response.cookies.delete("rr_demo_session");
 
-    if (!isMock) {
-      const supabase = createClient();
-      await supabase.auth.signOut();
+    // Explicitly expire session cookie across all paths
+    response.cookies.set("rr_demo_session", "", {
+      path: "/",
+      maxAge: 0,
+      expires: new Date(0),
+    });
+
+    if (isSupabaseLive()) {
+      try {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+      } catch {
+        // Non-fatal
+      }
     }
 
     return response;

@@ -48,9 +48,8 @@ export async function createTrip(
   }
 
   try {
-    // @ts-expect-error Supabase generic builder inference
-    const { data, error } = await supabase
-      .from("trips")
+    const supabase = createServerSupabase();
+    const { data, error } = await (supabase.from("trips") as any)
       .insert(payload)
       .select()
       .single();
