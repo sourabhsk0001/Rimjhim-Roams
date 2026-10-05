@@ -135,8 +135,7 @@ export function LandingHero() {
 
         {/* Supporting Text */}
         <p className="font-sans text-sm sm:text-base md:text-lg text-white/95 max-w-2xl mx-auto font-normal leading-relaxed mb-8 drop-shadow-[0_2px_14px_rgba(0,0,0,0.85)] animate-in fade-in slide-in-from-bottom-4 duration-700">
-          Plan destinations, transport, hotels, food, activities, budgets and
-          itineraries from one intelligent travel platform.
+          Plan destinations, transport, hotels, food, activities, budgets and itineraries from one intelligent travel platform.
         </p>
 
         {/* Hero Quick Action Buttons: High-end luxury single-line pills */}

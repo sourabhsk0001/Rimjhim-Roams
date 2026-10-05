@@ -23,13 +23,17 @@ import { createClient } from "@/lib/supabase/client";
 export function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
-  const supabase = createClient();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-      await supabase.auth.signOut();
+      try {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+      } catch {
+        // Mock / offline fallback
+      }
       // Clear demo session cookie if set
       document.cookie = "rr_demo_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       router.push("/login");

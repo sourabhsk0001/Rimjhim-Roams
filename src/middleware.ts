@@ -19,7 +19,13 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/trips");
 
   // In test / mock mode without configured live Supabase, check for a demo session cookie
-  if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes("mock-project")) {
+  if (
+    !supabaseUrl ||
+    !supabaseAnonKey ||
+    supabaseUrl.includes("mock-project") ||
+    supabaseAnonKey.includes("mock-signature") ||
+    supabaseAnonKey === "mock-anon-key"
+  ) {
     const demoUser = request.cookies.get("rr_demo_session")?.value;
     if (!demoUser && isProtectedRoute) {
       const url = request.nextUrl.clone();
