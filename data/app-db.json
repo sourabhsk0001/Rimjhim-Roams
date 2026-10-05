@@ -20,96 +20,6 @@
       "role": "admin",
       "created_at": "2026-10-05T14:56:58.190Z",
       "updated_at": "2026-10-05T14:56:58.190Z"
-    },
-    {
-      "id": "user-muvdl7bb-15ab1dac",
-      "email": "api-test-1791212353217@test.com",
-      "full_name": "API Tester",
-      "password_hash": "86728ed27003d3696b6ab540efc0d5763f4bb6c72a52d875896ce86cdda7d8f72286659f744c8c0ab340bdfc3b9b49ed90c940aa4604709fed98009727ec545e",
-      "salt": "c1ea376b3316635cdf98f7b4fa82ac87",
-      "role": "traveler",
-      "created_at": "2026-10-05T14:59:15.911Z",
-      "updated_at": "2026-10-05T14:59:15.911Z"
-    },
-    {
-      "id": "user-muvdq8sb-8c70f0b3",
-      "email": "api-test-1791212590958@test.com",
-      "full_name": "API Tester",
-      "password_hash": "43ed8d6062efa78fabfe66151a416186826ee7929e6ae868869782702a67d971ac6c3f33047ec7af8ecbf6a2dec571944b6adb155f0900d55c901e330d6e97e7",
-      "salt": "03c8b24c9749a135af67174d58b8366b",
-      "role": "traveler",
-      "created_at": "2026-10-05T15:03:11.099Z",
-      "updated_at": "2026-10-05T15:03:11.099Z"
-    },
-    {
-      "id": "user-muve6uqo-0f8b797d",
-      "email": "api-test-1791213362664@test.com",
-      "full_name": "API Tester",
-      "password_hash": "29264df7e3fe0791228e0164ade0402ca01ea4b1dbdcb77e81cdc42a9e71658d88b81d17c759aa6a858487661c3fa1ee4396190212fb3751e517e6bcd2a6f286",
-      "salt": "bbab269f474db365c651667a2eb08c8d",
-      "role": "traveler",
-      "created_at": "2026-10-05T15:16:06.048Z",
-      "updated_at": "2026-10-05T15:16:06.048Z"
-    },
-    {
-      "id": "user-muvekitn-ab0252a7",
-      "email": "api-test-1791214002299@test.com",
-      "full_name": "API Tester",
-      "password_hash": "82225797a85af1d2ccc2bcc24252ea94598d74a7aa43aee340183f305fb76dc32f7aa7822d14a3dc3351cc6365eb670e16b4bc760e60827544f62ad3e97a8eae",
-      "salt": "5495e4b71e150e538d805023d7ccde9d",
-      "role": "traveler",
-      "created_at": "2026-10-05T15:26:43.787Z",
-      "updated_at": "2026-10-05T15:26:43.787Z"
-    },
-    {
-      "id": "user-muvfurac-50b21eca",
-      "email": "api-test-1791216159708@test.com",
-      "full_name": "API Tester",
-      "password_hash": "5faaeff96a7798a6482edc08f4ddbbf8aa0d46e3c184025cacd480684e928c798db74cac6d48c4056ab41661db0ec3c50506500501e4ff2cacb32ce0d72e09a8",
-      "salt": "b146bae1c49d482f43fca9210deeb2f6",
-      "role": "traveler",
-      "created_at": "2026-10-05T16:02:40.932Z",
-      "updated_at": "2026-10-05T16:02:40.932Z"
-    },
-    {
-      "id": "user-muvgvijg-95afb4d9",
-      "email": "api-test-1791217874574@test.com",
-      "full_name": "API Tester",
-      "password_hash": "1fbf9dda205237ef10dbfcb23b2fd4734cab71bd592316f13ac9f2d2c4df0a05b056a6689eb5602944b6b020d613f14688957418f6d589b26f4a19ea1add0f39",
-      "salt": "ee9da128292660003253aa41f85e1847",
-      "role": "traveler",
-      "created_at": "2026-10-05T16:31:15.868Z",
-      "updated_at": "2026-10-05T16:31:15.868Z"
-    },
-    {
-      "id": "user-muvhp3ig-8f13cb0d",
-      "email": "api-test-1791219255349@test.com",
-      "full_name": "API Tester",
-      "password_hash": "d478c842ca9227af8cf52d67194323a9bdc2b7a264dd77b051696314aaba054b6c679e61bbdaa4c5b45dae04f34c3f70f3c042abe5ac60f3b11bf7835e9c8491",
-      "salt": "03001a4170e333313c2ada760309a605",
-      "role": "traveler",
-      "created_at": "2026-10-05T16:54:16.072Z",
-      "updated_at": "2026-10-05T16:54:16.072Z"
-    },
-    {
-      "id": "user-muvoaql3-e2942f72",
-      "email": "traveler-1791230343445@test.com",
-      "full_name": "Aryan Sharma",
-      "password_hash": "913c1eace55ff80d8be21db7f28202c285c5f3a197c5206fa950f92ca6aa3b22839084c574f20ae83cae6e1ad87816a9777a2a1c2c787065e8588ab9c2024724",
-      "salt": "0af64103e2c9f71b94fcfcb2cbf43d7a",
-      "role": "traveler",
-      "created_at": "2026-10-05T19:59:03.446Z",
-      "updated_at": "2026-10-05T19:59:03.446Z"
-    },
-    {
-      "id": "user-muvoaql7-4a551068",
-      "email": "login-1791230343450@test.com",
-      "full_name": "Vikram Malhotra",
-      "password_hash": "56d702aada9e7da5621e17111d38216c65e2c35a44ea92adf9836a647c24153e3d0beb4ce0c4b2f23231740a9a4595d0130c1cf43d4c7d2f3efb683a7a2d7452",
-      "salt": "d29cc6b4869670c3be045b27e7edc4ed",
-      "role": "traveler",
-      "created_at": "2026-10-05T19:59:03.451Z",
-      "updated_at": "2026-10-05T19:59:03.451Z"
     }
   ],
   "sessions": [
@@ -117,162 +27,15 @@
       "id": "session-demo-001",
       "token": "demo-user-123",
       "user_id": "demo-user-123",
-      "expires_at": "2026-11-04T14:56:58.191Z",
+      "expires_at": "2027-01-01T00:00:00.000Z",
       "created_at": "2026-10-05T14:56:58.190Z"
     },
     {
-      "id": "sess-1791212355913-6aaa22ad",
-      "token": "tok-user-muvdl7bb-15ab1dac-4068e900c6e1bbe5ed5d4a339acce1f5",
-      "user_id": "user-muvdl7bb-15ab1dac",
-      "expires_at": "2026-11-04T14:59:15.912Z",
-      "created_at": "2026-10-05T14:59:15.912Z"
-    },
-    {
-      "id": "sess-1791212356473-800051f7",
-      "token": "tok-user-muvdl7bb-15ab1dac-082a95d4559d825e540d2deeec7521cf",
-      "user_id": "user-muvdl7bb-15ab1dac",
-      "expires_at": "2026-11-04T14:59:16.473Z",
-      "created_at": "2026-10-05T14:59:16.473Z"
-    },
-    {
-      "id": "sess-1791212356522-00493690",
-      "token": "tok-demo-user-123-4e4f5e169132b2eebc920f80d1457233",
-      "user_id": "demo-user-123",
-      "expires_at": "2026-11-04T14:59:16.522Z",
-      "created_at": "2026-10-05T14:59:16.522Z"
-    },
-    {
-      "id": "sess-1791212591102-4bc32a51",
-      "token": "tok-user-muvdq8sb-8c70f0b3-1f7996f64d6d9540d92b5f0351bff215",
-      "user_id": "user-muvdq8sb-8c70f0b3",
-      "expires_at": "2026-11-04T15:03:11.102Z",
-      "created_at": "2026-10-05T15:03:11.102Z"
-    },
-    {
-      "id": "sess-1791212700019-2fc904df",
-      "token": "tok-user-muvdq8sb-8c70f0b3-ac90c5517a349ee53b1222e36a72debe",
-      "user_id": "user-muvdq8sb-8c70f0b3",
-      "expires_at": "2026-11-04T15:05:00.019Z",
-      "created_at": "2026-10-05T15:05:00.019Z"
-    },
-    {
-      "id": "sess-1791212700374-986689a8",
-      "token": "tok-demo-user-123-67ee1c37c7f0e19bd522be406f61400b",
-      "user_id": "demo-user-123",
-      "expires_at": "2026-11-04T15:05:00.374Z",
-      "created_at": "2026-10-05T15:05:00.374Z"
-    },
-    {
-      "id": "sess-1791212773246-a1c34e1c",
-      "token": "tok-demo-user-123-7bb1a40a6cb17787b29da14ce776739b",
-      "user_id": "demo-user-123",
-      "expires_at": "2026-11-04T15:06:13.246Z",
-      "created_at": "2026-10-05T15:06:13.246Z"
-    },
-    {
-      "id": "sess-1791213366050-15f7bb60",
-      "token": "tok-user-muve6uqo-0f8b797d-0fddc9b4485a60cccb909b91e2dee876",
-      "user_id": "user-muve6uqo-0f8b797d",
-      "expires_at": "2026-11-04T15:16:06.050Z",
-      "created_at": "2026-10-05T15:16:06.050Z"
-    },
-    {
-      "id": "sess-1791213366671-baae2331",
-      "token": "tok-user-muve6uqo-0f8b797d-469f2f30ccfe7cc048c332475f820f1b",
-      "user_id": "user-muve6uqo-0f8b797d",
-      "expires_at": "2026-11-04T15:16:06.671Z",
-      "created_at": "2026-10-05T15:16:06.671Z"
-    },
-    {
-      "id": "sess-1791213366722-121d2b8c",
-      "token": "tok-demo-user-123-352568f4a00e0563aff4e64173fb32b7",
-      "user_id": "demo-user-123",
-      "expires_at": "2026-11-04T15:16:06.721Z",
-      "created_at": "2026-10-05T15:16:06.721Z"
-    },
-    {
-      "id": "sess-1791214003794-55d0ec59",
-      "token": "tok-user-muvekitn-ab0252a7-a1a7521fa6ff459c1d6ed0f046ed24f5",
-      "user_id": "user-muvekitn-ab0252a7",
-      "expires_at": "2026-11-04T15:26:43.794Z",
-      "created_at": "2026-10-05T15:26:43.794Z"
-    },
-    {
-      "id": "sess-1791214005018-8e6819fb",
-      "token": "tok-user-muvekitn-ab0252a7-1a419dbd73264a7101bde1ce819d46e8",
-      "user_id": "user-muvekitn-ab0252a7",
-      "expires_at": "2026-11-04T15:26:45.018Z",
-      "created_at": "2026-10-05T15:26:45.018Z"
-    },
-    {
-      "id": "sess-1791214005207-0f24beea",
-      "token": "tok-demo-user-123-37f4d1674caa5ee1c7933c0e307b9bff",
-      "user_id": "demo-user-123",
-      "expires_at": "2026-11-04T15:26:45.206Z",
-      "created_at": "2026-10-05T15:26:45.206Z"
-    },
-    {
-      "id": "sess-1791216160933-b5c430e3",
-      "token": "tok-user-muvfurac-50b21eca-2fd1718978d1e03d113415194774e3d9",
-      "user_id": "user-muvfurac-50b21eca",
-      "expires_at": "2026-11-04T16:02:40.933Z",
-      "created_at": "2026-10-05T16:02:40.933Z"
-    },
-    {
-      "id": "sess-1791216161341-cac4b30a",
-      "token": "tok-user-muvfurac-50b21eca-1f3e462b796f9c14790be09e66fb6b36",
-      "user_id": "user-muvfurac-50b21eca",
-      "expires_at": "2026-11-04T16:02:41.341Z",
-      "created_at": "2026-10-05T16:02:41.341Z"
-    },
-    {
-      "id": "sess-1791216161393-72d177b5",
-      "token": "tok-demo-user-123-1b9f2dc1c689f3d80a1a7d72ed03ef85",
-      "user_id": "demo-user-123",
-      "expires_at": "2026-11-04T16:02:41.393Z",
-      "created_at": "2026-10-05T16:02:41.393Z"
-    },
-    {
-      "id": "sess-1791217875872-84aa4087",
-      "token": "tok-user-muvgvijg-95afb4d9-1cd0d79b655ad6b34b4de50f774f2970",
-      "user_id": "user-muvgvijg-95afb4d9",
-      "expires_at": "2026-11-04T16:31:15.871Z",
-      "created_at": "2026-10-05T16:31:15.871Z"
-    },
-    {
-      "id": "sess-1791217876692-b3684c40",
-      "token": "tok-user-muvgvijg-95afb4d9-b0cc031cb96245dff70e9c21cf8638ba",
-      "user_id": "user-muvgvijg-95afb4d9",
-      "expires_at": "2026-11-04T16:31:16.692Z",
-      "created_at": "2026-10-05T16:31:16.692Z"
-    },
-    {
-      "id": "sess-1791217876822-cda9036d",
-      "token": "tok-demo-user-123-1849426369bcf729dc121d63ac7ade61",
-      "user_id": "demo-user-123",
-      "expires_at": "2026-11-04T16:31:16.821Z",
-      "created_at": "2026-10-05T16:31:16.821Z"
-    },
-    {
-      "id": "sess-1791219256074-2cb4904f",
-      "token": "tok-user-muvhp3ig-8f13cb0d-64e02e710bdf74d68a05ea635c2b8937",
-      "user_id": "user-muvhp3ig-8f13cb0d",
-      "expires_at": "2026-11-04T16:54:16.073Z",
-      "created_at": "2026-10-05T16:54:16.073Z"
-    },
-    {
-      "id": "sess-1791219256594-95150165",
-      "token": "tok-user-muvhp3ig-8f13cb0d-d2fa8fd931e441b5fc3849969154dccb",
-      "user_id": "user-muvhp3ig-8f13cb0d",
-      "expires_at": "2026-11-04T16:54:16.594Z",
-      "created_at": "2026-10-05T16:54:16.594Z"
-    },
-    {
-      "id": "sess-1791219256654-998775ac",
-      "token": "tok-demo-user-123-1a0b7f213a93cf39ade53457bf0a3555",
-      "user_id": "demo-user-123",
-      "expires_at": "2026-11-04T16:54:16.654Z",
-      "created_at": "2026-10-05T16:54:16.654Z"
+      "id": "session-admin-001",
+      "token": "admin-user-001",
+      "user_id": "admin-user-001",
+      "expires_at": "2027-01-01T00:00:00.000Z",
+      "created_at": "2026-10-05T14:56:58.190Z"
     }
   ],
   "profiles": [
@@ -308,114 +71,6 @@
       "onboarding_completed": true,
       "created_at": "2026-10-05T14:56:58.190Z",
       "updated_at": "2026-10-05T14:56:58.190Z"
-    },
-    {
-      "user_id": "user-muvdl7bb-15ab1dac",
-      "full_name": "API Tester",
-      "email": "api-test-1791212353217@test.com",
-      "home_currency": "INR",
-      "travel_pace": "moderate",
-      "interests": [],
-      "travel_style": "balanced",
-      "onboarding_completed": false,
-      "created_at": "2026-10-05T14:59:15.911Z",
-      "updated_at": "2026-10-05T14:59:15.911Z"
-    },
-    {
-      "user_id": "user-muvdq8sb-8c70f0b3",
-      "full_name": "API Tester",
-      "email": "api-test-1791212590958@test.com",
-      "home_currency": "INR",
-      "travel_pace": "moderate",
-      "interests": [],
-      "travel_style": "balanced",
-      "onboarding_completed": false,
-      "created_at": "2026-10-05T15:03:11.099Z",
-      "updated_at": "2026-10-05T15:03:11.099Z"
-    },
-    {
-      "user_id": "user-muve6uqo-0f8b797d",
-      "full_name": "API Tester",
-      "email": "api-test-1791213362664@test.com",
-      "home_currency": "INR",
-      "travel_pace": "moderate",
-      "interests": [],
-      "travel_style": "balanced",
-      "onboarding_completed": false,
-      "created_at": "2026-10-05T15:16:06.048Z",
-      "updated_at": "2026-10-05T15:16:06.048Z"
-    },
-    {
-      "user_id": "user-muvekitn-ab0252a7",
-      "full_name": "API Tester",
-      "email": "api-test-1791214002299@test.com",
-      "home_currency": "INR",
-      "travel_pace": "moderate",
-      "interests": [],
-      "travel_style": "balanced",
-      "onboarding_completed": false,
-      "created_at": "2026-10-05T15:26:43.787Z",
-      "updated_at": "2026-10-05T15:26:43.787Z"
-    },
-    {
-      "user_id": "user-muvfurac-50b21eca",
-      "full_name": "API Tester",
-      "email": "api-test-1791216159708@test.com",
-      "home_currency": "INR",
-      "travel_pace": "moderate",
-      "interests": [],
-      "travel_style": "balanced",
-      "onboarding_completed": false,
-      "created_at": "2026-10-05T16:02:40.932Z",
-      "updated_at": "2026-10-05T16:02:40.932Z"
-    },
-    {
-      "user_id": "user-muvgvijg-95afb4d9",
-      "full_name": "API Tester",
-      "email": "api-test-1791217874574@test.com",
-      "home_currency": "INR",
-      "travel_pace": "moderate",
-      "interests": [],
-      "travel_style": "balanced",
-      "onboarding_completed": false,
-      "created_at": "2026-10-05T16:31:15.868Z",
-      "updated_at": "2026-10-05T16:31:15.868Z"
-    },
-    {
-      "user_id": "user-muvhp3ig-8f13cb0d",
-      "full_name": "API Tester",
-      "email": "api-test-1791219255349@test.com",
-      "home_currency": "INR",
-      "travel_pace": "moderate",
-      "interests": [],
-      "travel_style": "balanced",
-      "onboarding_completed": false,
-      "created_at": "2026-10-05T16:54:16.072Z",
-      "updated_at": "2026-10-05T16:54:16.072Z"
-    },
-    {
-      "user_id": "user-muvoaql3-e2942f72",
-      "full_name": "Aryan Sharma",
-      "email": "traveler-1791230343445@test.com",
-      "home_currency": "INR",
-      "travel_pace": "moderate",
-      "interests": [],
-      "travel_style": "balanced",
-      "onboarding_completed": false,
-      "created_at": "2026-10-05T19:59:03.446Z",
-      "updated_at": "2026-10-05T19:59:03.446Z"
-    },
-    {
-      "user_id": "user-muvoaql7-4a551068",
-      "full_name": "Vikram Malhotra",
-      "email": "login-1791230343450@test.com",
-      "home_currency": "INR",
-      "travel_pace": "moderate",
-      "interests": [],
-      "travel_style": "balanced",
-      "onboarding_completed": false,
-      "created_at": "2026-10-05T19:59:03.451Z",
-      "updated_at": "2026-10-05T19:59:03.451Z"
     }
   ],
   "public_profiles": [
@@ -425,7 +80,7 @@
       "username": "priya_travels",
       "display_name": "Priya Sharma",
       "avatar_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-      "bio": "Heritage researcher and temple architecture enthusiast exploring living history across India.",
+      "bio": "Heritage architect traversing UNESCO circuits, stepwells, and ancient temple corridors across Rajasthan and Karnataka.",
       "home_city": "Jaipur, Rajasthan",
       "travel_style": "cultural",
       "visited_states_count": 24,
@@ -545,7 +200,7 @@
       "updated_at": "2026-10-01T12:00:00.000Z"
     },
     {
-      "id": "pub-prof-muvogjg6-ee2027c5",
+      "id": "pub-prof-muvpvkuz-898041f8",
       "user_id": "user-alice-101",
       "username": "alice_explorer",
       "display_name": "Alice Nomad Updated",
@@ -557,8 +212,8 @@
       "badges": [],
       "top_destinations": [],
       "is_public": true,
-      "created_at": "2026-10-05T20:03:34.134Z",
-      "updated_at": "2026-10-05T20:30:03.287Z"
+      "created_at": "2026-10-05T20:43:15.418Z",
+      "updated_at": "2026-10-05T20:43:15.422Z"
     }
   ]
 }

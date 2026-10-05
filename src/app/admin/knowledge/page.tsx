@@ -41,6 +41,7 @@ const DESTINATIONS = ["All India", "Goa", "Jaipur", "Sikkim", "Manali", "Darjeel
 export default function AdminKnowledgePage() {
   const [documents, setDocuments] = useState<KnowledgeDocument[]>([]);
   const [loading, setLoading] = useState(true);
+  const [forbidden, setForbidden] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDestination, setSelectedDestination] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -77,6 +78,10 @@ export default function AdminKnowledgePage() {
       if (selectedCategory) params.set("category", selectedCategory);
 
       const res = await fetch(`/api/admin/knowledge?${params.toString()}`);
+      if (res.status === 403) {
+        setForbidden(true);
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setDocuments(data.documents || []);
@@ -218,6 +223,28 @@ export default function AdminKnowledgePage() {
       setRagLoading(false);
     }
   };
+
+  if (forbidden) {
+    return (
+      <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
+        <Navigation />
+        <main className="flex-1 container mx-auto px-4 py-16 flex items-center justify-center">
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-8 max-w-md w-full text-center shadow-xs">
+            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <h2 className="font-instrument text-2xl font-normal text-slate-900 mb-2">Access Restricted</h2>
+            <p className="text-sm text-slate-600 mb-6">
+              Administrator role is required to manage the RAG knowledge base. Regular travelers cannot edit or seed authoritative documents.
+            </p>
+            <Button onClick={() => window.location.href = "/dashboard"} className="w-full">
+              Return to Dashboard
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">

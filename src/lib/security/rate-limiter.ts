@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { allowTestBypassHeaders } from "@/lib/security/sanitizer";
 
 export interface RateLimitConfig {
   windowMs: number;
@@ -99,10 +100,12 @@ export function enforceRateLimit(
     windowMs: number;
   }
 ): NextResponse | null {
-  // In test runners or internal development with mock IP bypass, allow if configured
-  const bypass = req.headers.get("x-test-bypass-ratelimit");
-  if (bypass === "true") {
-    return null;
+  // In test runners or internal development with mock IP bypass, allow if configured (DISABLED in production)
+  if (allowTestBypassHeaders()) {
+    const bypass = req.headers.get("x-test-bypass-ratelimit");
+    if (bypass === "true") {
+      return null;
+    }
   }
 
   const identifier = extractClientIdentifier(req, options.prefix);

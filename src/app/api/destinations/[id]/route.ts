@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDestinationById } from "@/lib/services/travel-data-service";
+import { sanitizeErrorMessage } from "@/lib/security/sanitizer";
 
 export async function GET(
   req: NextRequest,
@@ -23,7 +24,7 @@ export async function GET(
     return NextResponse.json(
       {
         error: "Failed to retrieve destination",
-        details: err instanceof Error ? err.message : "Unknown error",
+        details: sanitizeErrorMessage(err),
       },
       { status: 500 }
     );

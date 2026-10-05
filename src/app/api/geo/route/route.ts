@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { calculateRoute, RouteMode, GeoCoordinate } from "@/lib/geo/routing";
 import { enforceRateLimit } from "@/lib/security/rate-limiter";
+import { sanitizeErrorMessage } from "@/lib/security/sanitizer";
 
 export async function POST(req: NextRequest) {
   const rateLimitResponse = enforceRateLimit(req, {
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error: "Failed to calculate route",
-        details: err instanceof Error ? err.message : "Unknown routing error",
+        details: sanitizeErrorMessage(err),
       },
       { status: 500 }
     );

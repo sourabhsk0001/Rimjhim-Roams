@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { allowTestBypassHeaders } from "@/lib/security/sanitizer";
 
 export interface UserQuotaDetails {
   userId: string;
@@ -318,13 +319,15 @@ export function enforceGeminiQuota(
   userId: string,
   options: { consume?: boolean } = { consume: true }
 ): NextResponse | null {
-  // Test bypass check
-  const bypass =
-    req.headers.get("x-bypass-gemini-quota") === "true" ||
-    req.headers.get("x-test-bypass-quota") === "true";
+  // Test bypass check (STRICTLY disabled in production)
+  if (allowTestBypassHeaders()) {
+    const bypass =
+      req.headers.get("x-bypass-gemini-quota") === "true" ||
+      req.headers.get("x-test-bypass-quota") === "true";
 
-  if (bypass) {
-    return null;
+    if (bypass) {
+      return null;
+    }
   }
 
   const result = options.consume
@@ -353,9 +356,6 @@ export function enforceGeminiQuota(
           "X-Gemini-User-Limit": String(result.user.limit),
           "X-Gemini-User-Used": String(result.user.used),
           "X-Gemini-User-Remaining": String(result.user.remaining),
-          "X-Gemini-Server-Limit": String(result.server.limit),
-          "X-Gemini-Server-Used": String(result.server.used),
-          "X-Gemini-Server-Remaining": String(result.server.remaining),
           "X-Gemini-Reset": result.resetAt,
         },
       }

@@ -60,8 +60,10 @@ export async function middleware(request: NextRequest) {
         .getAll()
         .some((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"));
       const authHeader = request.headers.get("authorization");
-      const testHeader =
-        request.headers.get("x-user-id") || request.headers.get("x-test-user-id");
+      const isProd = process.env.NODE_ENV === "production";
+      const testHeader = !isProd
+        ? request.headers.get("x-user-id") || request.headers.get("x-test-user-id")
+        : null;
 
       const hasCredentials = Boolean(
         demoCookie || hasSupabaseCookie || authHeader || testHeader
@@ -79,10 +81,10 @@ export async function middleware(request: NextRequest) {
         const isAdmin =
           demoCookie === "admin-user-001" ||
           demoCookie === "admin@tripwise.ai" ||
-          (authHeader && authHeader.includes("admin")) ||
-          (testHeader && testHeader.includes("admin"));
+          (authHeader && authHeader.toLowerCase().includes("admin")) ||
+          (testHeader && testHeader.toLowerCase().includes("admin"));
 
-        if (!isAdmin && (demoCookie === "demo-user-123" || testHeader === "demo-user-123")) {
+        if (!isAdmin) {
           return NextResponse.json(
             { error: "Forbidden. Administrator role required to access admin endpoints." },
             { status: 403 }
@@ -111,7 +113,9 @@ export async function middleware(request: NextRequest) {
   const isProtectedRoute =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/profile") ||
-    pathname.startsWith("/trips");
+    pathname.startsWith("/trips") ||
+    pathname.startsWith("/memories") ||
+    pathname.startsWith("/admin");
 
   // In test / mock mode without configured live Supabase, check for a demo session cookie
   if (
@@ -127,6 +131,15 @@ export async function middleware(request: NextRequest) {
       url.pathname = "/login";
       url.searchParams.set("redirectTo", request.nextUrl.pathname);
       return NextResponse.redirect(url);
+    }
+    if (demoUser && pathname.startsWith("/admin")) {
+      const isAdmin =
+        demoUser === "admin-user-001" || demoUser === "admin@tripwise.ai";
+      if (!isAdmin) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/dashboard";
+        return NextResponse.redirect(url);
+      }
     }
     if (demoUser && isAuthRoute) {
       const url = request.nextUrl.clone();
@@ -177,6 +190,19 @@ export async function middleware(request: NextRequest) {
     url.pathname = "/login";
     url.searchParams.set("redirectTo", request.nextUrl.pathname);
     return NextResponse.redirect(url);
+  }
+
+  if (isAuthenticated && pathname.startsWith("/admin")) {
+    const isAdmin =
+      demoUser === "admin-user-001" ||
+      demoUser === "admin@tripwise.ai" ||
+      user?.email === "admin@tripwise.ai" ||
+      user?.app_metadata?.role === "admin";
+    if (!isAdmin) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
   }
 
   if (isAuthenticated && isAuthRoute) {

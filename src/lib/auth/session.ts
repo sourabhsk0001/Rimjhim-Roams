@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, isSupabaseLive } from "@/lib/supabase/server";
 import { appDb } from "@/lib/db/app-db";
+import { allowTestBypassHeaders } from "@/lib/security/sanitizer";
 
 export interface ActiveUser {
   id: string;
@@ -138,26 +139,28 @@ export async function resolveActiveUser(req: NextRequest): Promise<ActiveUser | 
     }
   }
 
-  // 4. Check explicit test / internal client bypass headers (used in unit test runner isolation)
-  const testUserId =
-    req.headers.get("x-test-user-id") || req.headers.get("x-user-id");
-  if (testUserId) {
-    const user = appDb.findUserById(testUserId);
-    if (user) {
+  // 4. Check explicit test bypass headers (STRICTLY restricted to non-production test runner environments)
+  if (allowTestBypassHeaders()) {
+    const testUserId =
+      req.headers.get("x-test-user-id") || req.headers.get("x-user-id");
+    if (testUserId) {
+      const user = appDb.findUserById(testUserId);
+      if (user) {
+        return {
+          id: user.id,
+          email: user.email,
+          fullName: user.full_name,
+          role: user.role,
+        };
+      }
+      const isTestAdmin = testUserId.includes("admin");
       return {
-        id: user.id,
-        email: user.email,
-        fullName: user.full_name,
-        role: user.role,
+        id: testUserId,
+        email: `${testUserId}@tripwise.ai`,
+        fullName: testUserId,
+        role: isTestAdmin ? "admin" : "traveler",
       };
     }
-    const isTestAdmin = testUserId.includes("admin");
-    return {
-      id: testUserId,
-      email: `${testUserId}@tripwise.ai`,
-      fullName: testUserId,
-      role: isTestAdmin ? "admin" : "traveler",
-    };
   }
 
   // 5. Unauthenticated — strictly return null

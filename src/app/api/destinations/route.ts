@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDestinations } from "@/lib/services/travel-data-service";
 import { enforceRateLimit } from "@/lib/security/rate-limiter";
+import { sanitizeErrorMessage } from "@/lib/security/sanitizer";
 
 export async function GET(req: NextRequest) {
   const rateLimitResponse = enforceRateLimit(req, {
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         error: "Failed to fetch destinations",
-        details: err instanceof Error ? err.message : "Unknown error",
+        details: sanitizeErrorMessage(err),
       },
       { status: 500 }
     );

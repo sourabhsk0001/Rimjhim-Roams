@@ -3,6 +3,7 @@ import { getGeminiClient, GEMINI_MODEL } from "@/lib/gemini/client";
 import { enforceRateLimit } from "@/lib/security/rate-limiter";
 import { requireAuth } from "@/lib/auth/session";
 import { enforceGeminiQuota } from "@/lib/security/gemini-quota";
+import { sanitizeErrorMessage } from "@/lib/security/sanitizer";
 
 export async function POST(req: NextRequest) {
   try {
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error: "Failed to generate trip plan",
-        details: error instanceof Error ? error.message : "Unknown error",
+        details: sanitizeErrorMessage(error),
       },
       { status: 500 }
     );

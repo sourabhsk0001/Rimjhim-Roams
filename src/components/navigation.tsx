@@ -24,6 +24,18 @@ export function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated && data.user?.role) {
+          setUserRole(data.user.role);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -50,7 +62,9 @@ export function Navigation() {
     { label: "My Trips", href: "/trips", icon: Map },
     { label: "AI Copilot", href: "/assistant", icon: Sparkles },
     { label: "Memories", href: "/memories", icon: Heart },
-    { label: "Knowledge RAG", href: "/admin/knowledge", icon: BookOpen },
+    ...(userRole === "admin"
+      ? [{ label: "Admin RAG", href: "/admin/knowledge", icon: BookOpen }]
+      : []),
     { label: "Profile", href: "/profile", icon: User },
   ];
 
