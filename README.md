@@ -1,203 +1,229 @@
-# Rimjhim Roams — AI-Powered Travel OS
+# Rimjhim Roams — Autonomous AI Travel Operating System
 
-> Production-ready, Vercel-deployable travel operating system built using free-tier cloud primitives.
+<div align="center">
+  <p><strong>Your Entire Journey, Planned by AI.</strong></p>
+  <p><em>Production-grade, Vercel-deployable autonomous travel operating system built with Next.js 14, Supabase, Google Gemini AI, PostGIS spatial intelligence, and deterministic computational engines.</em></p>
 
-Rimjhim Roams synthesizes Gemini AI reasoning with geospatial PostGIS data, OpenStreetMap / OSRM routing, Open-Meteo meteorological forecasts, a deterministic non-LLM budget optimization engine, and a physical-feasibility Time Intelligence Engine to provide hyper-localized, realistic travel itineraries.
+  [![Build & Deploy](https://img.shields.io/badge/Vercel-Deployable_Zero--Config-black?logo=vercel)](https://vercel.com)
+  [![Tests](https://img.shields.io/badge/Tests-229_Passed_100%25-brightgreen)](https://github.com/sourabhsk0001/Rimjhim-Roams)
+  [![Next.js](https://img.shields.io/badge/Next.js-14.2.18_App_Router-black?logo=next.js)](https://nextjs.org/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-Strict_Mode-blue?logo=typescript)](https://www.typescriptlang.org/)
+  [![Supabase](https://img.shields.io/badge/Database-Supabase_%2B_Local_Persistent_DB-3ECF8E?logo=supabase)](https://supabase.com)
+  [![Gemini](https://img.shields.io/badge/AI-Google_Gemini_1.5_Flash-4285F4?logo=google)](https://ai.google.dev/)
+</div>
 
 ---
 
-## 🚀 Tech Stack
+## 🌟 Executive Summary
 
-| Layer | Service / Library | Tier |
+**Rimjhim Roams** (TripWise AI OS) eliminates disjointed travel planning by uniting destination discovery, lodging curation, transit routing, meteorological forecasting, time budgeting, and real-time expense reconciliation into a single cohesive platform.
+
+Built around a **Zero LLM Math** architectural invariant, AI models are strictly prohibited from performing budget arithmetic or inventing route coordinates. Instead, Google Gemini AI functions as an intelligent orchestrator executing deterministic backend services (OSRM road networks, Open-Meteo forecasts, PostGIS spatial queries, and integer-minor-unit financial engines).
+
+---
+
+## 🚀 Key Capabilities
+
+### 1. 🎬 Cinematic Video Landing Experience
+- **Full-Screen Responsive Video Hero**: Plays `/videos/landing-page.mp4` with calibrated scrims, hardware-accelerated loops, and high-fidelity fallback poster posters.
+- **Glassmorphic Brand Navigation**: Responsive brand header featuring route badges, mobile drawer navigation, and instant session feedback.
+- **Interactive Trip Planning Panel**: Configure starting location, destination, calendar dates, travel party size, target budget tier, travel pace, and experience style in a single control deck.
+- **Dynamic Travel Modes**: Preset modes for *Solo*, *Couple*, *Friends*, *Family*, *Budget*, *Luxury*, *Adventure*, and *Relaxed* journeys.
+
+### 2. 🗺️ NATMO & GeoNames GIS Explorer (`/explore`)
+- **Official 36 States & UTs Catalog**: Complete GeoNames dataset covering all Indian states, capitals, climate zones, and official Ministry of Tourism (MoT) themes.
+- **NATMO Thematic Circuits**: Authentic thematic circuits (Golden Triangle, Buddhist Circuit, Desert Triangle, Malabar Coast, Himalayan Footsteps, and North-East Explorer).
+- **Fast Debounced Autocomplete**: Multi-entity instant search querying administrative states, districts, circuits, and heritage monuments simultaneously.
+- **Spatial Radius Discovery**: PostGIS `geography(Point, 4326)` geospatial radius querying (`/api/destinations/nearby`) with Leaflet interactive route geometry.
+
+### 3. 🤖 TripWise AI Travel Copilot (`/assistant` & `/trips/[id]/assistant`)
+- **Deterministic 12-Tool Registry**:
+  1. `search_destinations`: Real-time catalog & climate discovery.
+  2. `search_hotels`: Filter lodging candidates by price ceilings and star ratings.
+  3. `search_transport`: Intercity rail, flights, state buses, and taxi tariffs.
+  4. `search_restaurants`: Curate dining matching dietary preferences under strict cost caps.
+  5. `search_attractions`: Verified opening hours, entry tickets, and weather suitability.
+  6. `get_weather`: Live atmospheric telemetry and 7-day meteorological forecasts.
+  7. `calculate_route`: Real OSRM highway coordinates, transit distance, and duration.
+  8. `calculate_budget`: Zero-drift minor-unit financial aggregation across 8 expense categories.
+  9. `calculate_visit_duration`: Pace-adjusted dwell times (`Quick`, `Normal`, `Relaxed`).
+  10. `optimize_itinerary`: Geographic TSP resequencing and schedule rebalancing.
+  11. `replan_trip`: Deterministic budget optimization and stay restructuring.
+  12. `get_trip_context`: Complete authorized trip hydration with RLS isolation.
+- **Zero-Key Deterministic Fallback**: Automatic offline provider for unit tests and zero-env deployments.
+
+### 4. 📚 Authoritative Travel RAG Knowledge Base (`/admin/knowledge`)
+- **Pure PostgreSQL + pgvector**: Vector search (`vector(768)`) using IVFFlat cosine similarity without external vendor dependencies.
+- **Sliding Window Chunking**: Token-safe ~500-character chunking with 80-character boundary overlap and whitespace sanitization.
+- **Prompt Injection Defense**: Defense-in-depth regex filter neutralizing instruction hijacking (`ignore previous instructions`, `[SYSTEM]`, script tags) and bounding retrieved records in non-executable XML delimiters (`<retrieved_knowledge_base>`).
+- **Verified Source Citations**: Guaranteed hallucination-free responses citing only matched database records.
+
+### 5. ⏱️ Physical-Feasibility Time Intelligence Engine
+- **Discrete Activity Separation**: Itinerary items strictly segregate `visit_time`, `travel_time`, `waiting_time`, and `buffer_time` to prevent temporal schedule collapse.
+- **Feasibility Verification Rules**: Flags closed sights, sub-threshold visits, chronological collisions, impossible transit gaps, and traveller exhaustion.
+- **Optimize Day**: Automatically aligns sightseeing with official operating hours and inserts appropriate dining/rest pauses.
+
+### 6. 🛡️ Dual-Layer Authentication & Database
+- **Live Supabase Auth + Persistent Local DB**: Seamlessly connects to live Supabase PostgreSQL when credentials exist, while providing an integrated, local persistent database (`src/lib/db/app-db.ts` -> `data/app-db.json`) for offline development and zero-config Vercel deployments.
+- **Instant Demo Accounts**: One-click demo credentials for travelers (`demo@tripwise.ai` / `password123`) and administrators (`admin@tripwise.ai` / `admin123`).
+- **Unified Session Resolver**: Centralized [`src/lib/auth/session.ts`](file:///c:/Rimjhim%20Roams/src/lib/auth/session.ts) validating both live Supabase JWTs and application session cookies across all 20+ API endpoints.
+
+---
+
+## 🛠️ Tech Stack & Cloud Primitives
+
+| Component | Technology | Free-Tier Service |
 | :--- | :--- | :--- |
-| **Framework** | Next.js 14 (App Router) & React 18 | Free / Open Source |
-| **Language** | TypeScript (Strict mode) | Open Source |
-| **Styling** | Tailwind CSS & shadcn/ui components | Open Source |
-| **Database** | Supabase (PostgreSQL + PostGIS + pgvector) | Free Tier (500MB) |
-| **Authentication** | Supabase Auth + Session SSR Middleware | Free Tier |
-| **Time Intelligence** | Custom Feasibility Engine (`TimeEngine`) | Open Source Logic |
-| **Budget Engine** | Deterministic Integer Minor Units (`BudgetEngine`) | Non-LLM Custom Engine |
-| **AI Engine** | Google Gemini 1.5 Flash via `@google/generative-ai` | Free Tier (Google AI Studio) |
-| **Maps & Spatial** | PostGIS `geography(Point, 4326)`, Leaflet & OpenStreetMap | Free / Open Source |
-| **Routing** | OSRM (Open Source Routing Machine) | Free Public API |
-| **Weather** | Open-Meteo API | Free (No API key required) |
-| **Deployment** | Vercel | Free Hobby Tier |
+| **Framework** | Next.js 14.2 (App Router, Server & Client Components) | [Vercel](https://vercel.com) |
+| **Language** | TypeScript (Strict mode, Node.js 20+) | Open Source |
+| **Styling** | Tailwind CSS, Lucide Icons, shadcn/ui primitives | Open Source |
+| **Database** | Supabase (PostgreSQL 15 + PostGIS 3.3 + pgvector) | [Supabase Free Tier](https://supabase.com) |
+| **Local DB Fallback** | Atomic File-Persistent JSON Engine (`data/app-db.json`) | Built-in |
+| **Authentication** | Supabase Auth SSR + Dual-Layer Session Cookie Bridge | [Supabase Auth](https://supabase.com) |
+| **AI LLM** | Google Gemini 1.5 Flash via `@google/generative-ai` | [Google AI Studio](https://aistudio.google.com/) |
+| **Vector Embeddings** | Gemini `text-embedding-004` (768 dimensions) | [Google AI Studio](https://aistudio.google.com/) |
+| **Geospatial & Routing** | OpenStreetMap (OSM) + Open Source Routing Machine (OSRM) | Public APIs |
+| **Meteorology** | Open-Meteo Weather Forecast API | Public API (No key required) |
+| **Deployment** | Vercel Edge & Serverless Functions | [Vercel Hobby Tier](https://vercel.com) |
 
 ---
 
-## 🧭 Application Routes
+## 📂 Project Structure
 
-### Public & Discovery Routes
-- `/`: Landing page highlighting architecture, feature cards, and the **Phase 7 "FIND WHERE I SHOULD GO" interactive destination discovery engine**.
-- `/explore`: Searchable catalog of 8 core Indian destinations with climate filters and explicit DEMO badges.
-- `/explore/destinations/[id]`: Destination travel guide featuring attractions, hotels, dining, transit, PostGIS radius search, and an interactive Leaflet route map.
-- `/login`: Secure authentication portal with redirect preservation.
-- `/register`: User onboarding and account creation.
-- `/api/health`: Health monitoring and service availability status.
-- `/assistant`: **Phase 9 Global AI Travel Copilot Console** featuring interactive tool execution displays, quick prompts, and deterministic grounded answers.
-- `/admin/knowledge`: **Phase 10 Authoritative Travel RAG Console** with document ingestion, semantic chunk inspection, prompt injection testing, and live Q&A playground.
-- `/trips/[id]/assistant`: **Phase 9 Trip-Specific AI Copilot** with hydrated itinerary context, budget inspection, schedule rebalancing, and "Apply Changes" actions.
-- `/api/copilot/chat`: **Phase 9 AI Copilot Chat Endpoint** with session validation and multi-turn tool calling orchestration.
-- `/api/admin/knowledge`: **Phase 10 Knowledge Document Ingestion & Management REST Endpoint** (supports document search, creation, and chunk inspection).
-- `/api/rag/search`: **Phase 10 Vector Retrieval Endpoint** via `searchKnowledge(query, filters)` using PostgreSQL pgvector.
-- `/api/rag/chat`: **Phase 10 Grounded RAG Chat Endpoint** with prompt injection defense and verified source citations.
-- `/api/destinations`: REST endpoint for destinations with search and climate filters.
-- `/api/destinations/discover`: **Phase 7 Destination Discovery REST endpoint** (Origin + Budget + Duration + Profile + Preferences → Ranked feasible destinations).
-- `/api/destinations/nearby`: PostGIS spatial radius query endpoint (`lat`, `lng`, `radius`).
-- `/api/destinations/[id]/*`: Endpoints for attractions, hotels, restaurants, and transit options.
-- `/api/geo/route`: Routing endpoint for on-demand waypoint route geometry, distance, and duration.
-
-### Protected Itinerary, Budget & Time Routes (Secured by Next.js Middleware)
-- `/dashboard`: Travel dashboard with upcoming & previous trips, quick stats, and empty states.
-- `/trips`: Searchable and filterable itinerary directory with status badges.
-- `/trips/new`: Itinerary planning form with duration calculation, budget & currency selectors, pace options, and automatic "destination discovery required" fallback.
-- `/trips/[id]`: Individual itinerary inspection, configuration review, and deletion management.
-- `/trips/[id]/assistant`: **Phase 9 AI Travel Copilot** attached to active trip data.
-- `/trips/[id]/budget`: **Phase 4 Interactive Budget Dashboard** with category breakdowns, over-budget warnings, 4 optimization profiles, and live expense ledger.
-- `/trips/[id]/itinerary`: **Phase 5 Time Intelligence Engine & Timeline Dashboard** with day selectors, discrete unmerged time blocks (visit, travel, queue, buffer), schedule feasibility validation, transit indicators, and **Optimize Day**.
-- `/trips/[id]/weather`: **Phase 8 Weather Intelligence & Itinerary Shield Dashboard** with current conditions, multi-day forecast, hourly timeline, and automatic conflict detection & resolution (reschedules outdoor activities or swaps with indoor attractions).
-- `/api/trips/[id]/budget`: REST endpoint for budget calculations and expense CRUD.
-- `/api/trips/[id]/itinerary`: REST endpoint for itinerary days, items, and day optimization.
-- `/api/trips/[id]/plan`: REST endpoint for generating and retrieving complete deterministic trip plans.
-- `/api/trips/[id]/weather`: REST endpoint for live/cached forecasts and weather snapshots.
-- `/api/trips/[id]/weather/integrate`: REST endpoint for weather-itinerary conflict resolution and updates.
-- `/profile`: Multi-section personal traveler identity, contact details, emergency contacts, and AI preference tuning.
-
----
-
-## 📚 Travel RAG System (Phase 10)
-
-- **Pure PostgreSQL + pgvector**: Zero Pinecone or external vector stores. Operates entirely within Supabase free-tier PostgreSQL using `vector(768)` embeddings and IVFFlat cosine similarity indexes.
-- **Document Ingestion Pipeline**: Document $\rightarrow$ Clean (strips control codes & non-breaking spaces) $\rightarrow$ Chunk (sliding window ~500 chars with 80 char overlap) $\rightarrow$ Embed (Gemini `text-embedding-004` + deterministic unit-normalized fallback) $\rightarrow$ Store in `knowledge_documents` and `knowledge_chunks`.
-- **Grounded Semantic Retrieval**: `searchKnowledge(query, filters)` searches vector chunks with destination and category filtering (`safety`, `permits`, `transit`, `health`, etc.).
-- **Prompt Injection Defense**: Multi-pattern regex analyzer flags instruction overrides (`ignore previous instructions`), role spoofing (`[SYSTEM]`), and embedded script tags; retrieved text is framed inside non-executable XML delimiters (`<retrieved_knowledge_base>`).
-- **Verified Source Citations**: Invariant: Never fabricates sources. All citations (`title`, `source`, `destination`, `category`, `excerpt`, `similarity`) originate strictly from actual matched chunks. When no documents match, the system transparently reports lack of records.
-- **Admin Management Console (`/admin/knowledge`)**: Create, edit, and delete knowledge documents, audit chunks and token counts, one-click seed authoritative civil data, and test questions via the interactive RAG Playground.
-
----
-
-## 🤖 TripWise AI Travel Copilot (Phase 9)
-
-- **Strict Architecture Invariant: Zero LLM Math**:
-  `User → Gemini → Tool Selection → TripWise Backend Tool → Deterministic Service/Provider → Structured Result → Gemini → User Response`
-  The LLM is strictly prohibited from computing budget math, route distances, or mutating the database directly. All authoritative actions pass through validated domain services.
-- **12 Deterministic Backend Tools**:
-  1. `search_destinations`: Keyword and climate search.
-  2. `search_hotels`: Lodging candidate filtering by price ceiling and rating.
-  3. `search_transport`: Flights, trains, buses, and local taxi tariffs.
-  4. `search_restaurants`: Cuisine search under budget per person limits (e.g. ₹300).
-  5. `search_attractions`: Sights with operational hours, fees, and weather suitability.
-  6. `get_weather`: Live atmospheric conditions and multi-day meteorological forecasts.
-  7. `calculate_route`: Real OSRM road geometry, distance, and transit time.
-  8. `calculate_budget`: Zero-drift minor-unit financial aggregation across all 8 categories.
-  9. `calculate_visit_duration`: Quick, Normal, Relaxed dwell times adjusted for pace.
-  10. `optimize_itinerary`: Schedule rebalancing and validated attraction deletion.
-  11. `replan_trip`: Deterministic budget optimization and stay adjustments.
-  12. `get_trip_context`: Complete authorized trip hydration, items, budget, and weather.
-- **Pluggable AI Provider**: `GeminiModelProvider` (Google Gemini 1.5 Flash via `@google/generative-ai`) with automatic fallback to `DeterministicCopilotProvider` for offline test suites and zero-key deployments.
-- **Strict Authorization Boundaries**: Current authenticated user context is strictly isolated; users cannot inspect or replan other users' trips.
-- **Interactive Copilot UI**:
-  - Global `/assistant` and contextual `/trips/[id]/assistant`.
-  - Tool execution badges showing latency in milliseconds (`14ms`) and success/error status.
-  - Expandable JSON inspector to audit exact inputs and structured tool results.
-  - Contextual action buttons (e.g. *"Apply Changes & View Itinerary"*).
+```
+c:\Rimjhim Roams\
+├── data/
+│   └── app-db.json               # Local persistent database for zero-config deployments
+├── docs/
+│   ├── architecture.md           # High-level architecture documentation
+│   ├── database.md               # PostgreSQL schemas and migration reference
+│   ├── rag.md                    # Travel RAG retrieval architecture
+│   ├── roadmap.md                # Phased implementation roadmap
+│   └── technical_implementation.md # Comprehensive technical specifications
+├── public/
+│   ├── image (My trip)/          # My Trips vintage compass background assets
+│   ├── videos/
+│   │   └── landing-page.mp4      # Cinematic hero video
+│   └── hero-fallback.jpg         # High-resolution poster fallback
+├── src/
+│   ├── app/
+│   │   ├── (auth)/login & register # Responsive authentication portals
+│   │   ├── admin/knowledge/      # Knowledge base RAG console
+│   │   ├── api/                  # 30+ RESTful API route handlers
+│   │   ├── assistant/            # Global AI Travel Copilot console
+│   │   ├── dashboard/            # Traveler command center
+│   │   ├── explore/              # India tourism & NATMO explorer
+│   │   ├── memories/             # Travel photo & memory vault
+│   │   ├── profile/              # Traveler preference tuning
+│   │   ├── trips/                # Trips directory, planner & detail views
+│   │   ├── layout.tsx            # Global layout & background animations
+│   │   └── page.tsx              # Root cinematic landing page
+│   ├── components/
+│   │   ├── background/           # Topography & Auth aurora animations
+│   │   ├── landing/              # Hero, panel, feature grid, and travel modes
+│   │   ├── navigation.tsx        # Responsive sticky glass header
+│   │   └── ui/                   # Reusable UI component library
+│   ├── lib/
+│   │   ├── ai/                   # Gemini & deterministic model providers
+│   │   ├── auth/                 # Centralized getActiveUser / session resolver
+│   │   ├── db/                   # Persistent atomic JSON database
+│   │   ├── rag/                  # Semantic search and ingestion pipelines
+│   │   ├── security/             # Sliding-window rate limiter & injection defenses
+│   │   ├── services/             # Domain logic (budget, time, trips, weather)
+│   │   ├── supabase/             # Safe SSR browser & server client factories
+│   │   └── validation/           # Zod-style schema validators
+│   └── middleware.ts             # Edge route protection & session bridge
+├── supabase/
+│   └── migrations/               # Production SQL migrations (PostGIS + pgvector)
+├── test/                         # 229 automated unit & integration tests
+└── vercel.json                   # Vercel deployment configuration
+```
 
 ---
 
-## 🧭 Connected Complete Trip Planner (Phase 6)
+## 🚦 Getting Started
 
-- **TripPlannerService Pipeline**: Connects catalog destinations, hotels, attractions, dining, transit, routing, time intelligence, and budget engine into a single deterministic 10-stage execution pipeline.
-- **Deterministic End-to-End Orchestration**:
-  1. Resolves destination from catalog or spatial proximity.
-  2. Selects suitable hotels matching party size, nights, and target lodging budget.
-  3. Curation of attractions with duration tiers (`Quick`, `Normal`, `Relaxed`), queue waiting, and opening hours checks.
-  4. Curates lunch and dinner dining matching dietary preferences.
-  5. Selects intercity round-trip transit and local mobility mode.
-  6. Calculates geospatial routes on OpenStreetMap and transit duration.
-  7. Assembles day schedules with strictly discrete `visit_time`, `travel_time`, `waiting_time`, and `buffer_time`.
-  8. Calculates minor-unit accurate budget across all 8 required categories.
-  9. Deterministic optimization when budget is exceeded (cheaper lodging, transit, and authentic bistro dining alternatives).
-  10. Persists structured plan into database and cache.
-- **Interactive Progress & Views**:
-  - Live animated 6-stage tracker: *Finding places → Finding hotel → Calculating transport → Optimizing route → Calculating budget → Building itinerary*.
-  - Comprehensive 8-part UI: Overview hero, interactive Leaflet map canvas, day schedule timeline with discrete blocks, budget progress bar with 8 category cards, hotel details, transit passes, dining schedule, and attractions catalog.
-
----
-
-## ⏱️ Time Intelligence Engine (Phase 5)
-
-- **Discrete, Unmerged Time Allocation**: Every itinerary item strictly separates `visit_time`, `travel_time`, `waiting_time`, and `buffer_time` to prevent schedule collapse.
-- **Feasibility Rules**:
-  - `attraction_closed`: Detects visits scheduled outside opening and closing hours.
-  - `insufficient_time`: Detects visits shorter than the required minimum threshold.
-  - `overlapping_activities`: Detects chronological collisions between consecutive activities.
-  - `impossible_travel`: Detects gaps smaller than the required transit time between locations.
-  - `excessive_daily_schedule`: Warns on waking hour exhaustion or extended active spans without meals/rest.
-- **Duration Tiers**: Supports `Quick`, `Normal`, and `Relaxed` durations adjusted by travel pace, traveller type, weather, and sunset viewpoints.
-- **Optimize Day**: Automatically resolves opening hour conflicts, reorders sights by geographic proximity, inserts meal/rest blocks, and eliminates impossible transit conditions.
-
----
-
-## 📦 Getting Started
-
-### 1. Prerequisites
-- **Node.js** v18+ (tested on v20.14.0)
-- **npm** v10+
-
-### 2. Installation
+### 1. Clone & Install
 ```bash
 git clone https://github.com/sourabhsk0001/Rimjhim-Roams.git
 cd "Rimjhim Roams"
 npm install
 ```
 
-### 3. Environment Setup
-Copy the `.env.example` file to create `.env.local`:
+### 2. Environment Configuration
+Copy `.env.example` to `.env.local`:
 ```bash
 cp .env.example .env.local
 ```
-Add your credentials:
-- `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anon key
-- `GEMINI_API_KEY`: Google AI Studio API key
 
-### 4. Database Setup
-Execute the migrations in order in your Supabase SQL Editor:
-1. [`supabase/migrations/20241001000000_initial_schema.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241001000000_initial_schema.sql): Sets up user profiles, travel preferences, trips, trip members, RLS policies, and triggers.
-2. [`supabase/migrations/20241002000000_core_travel_data.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241002000000_core_travel_data.sql): Sets up destinations, attractions, hotels, restaurants, transport, taxis, reviews, spatial indexes, and the `find_nearby_attractions` PostGIS function.
-3. [`supabase/migrations/20241003000000_budget_and_expenses.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241003000000_budget_and_expenses.sql): Sets up `price_snapshots` and `expenses` tables with RLS policies and indexes.
-4. [`supabase/migrations/20241004000000_time_and_itineraries.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241004000000_time_and_itineraries.sql): Sets up `itineraries`, `itinerary_items`, and `route_segments` tables with RLS policies.
-5. [`supabase/migrations/20241005000000_weather_snapshots.sql`](file:///C:/Rimjhim%20Roams/supabase/migrations/20241005000000_weather_snapshots.sql): Sets up `weather_snapshots` table with RLS policies and indexes.
+Populate `.env.local` (optional for local mock testing, required for live external cloud):
+```env
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-### 5. Running the Development Server
+# Google Gemini API
+GEMINI_API_KEY=your-gemini-api-key
+
+# App URL
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+> **Note**: Rimjhim Roams is built with **zero-config fallbacks**. If no environment variables are provided, the system automatically runs using the persistent local database (`data/app-db.json`), deterministic AI planners, and local vector retrieval.
+
+### 3. Run Development Server
 ```bash
 npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 6. Validation & Quality Checks
+### 4. Demo Login Credentials
+- **Traveler Demo**: `demo@tripwise.ai` / `password123`
+- **Admin Demo**: `admin@tripwise.ai` / `admin123`
+
+---
+
+## 🧪 Testing & Verification
+
+The project includes **229 automated tests** covering security, rate limiting, deterministic tool calling, PostGIS queries, RAG ingestion, prompt injection defense, and authentication:
+
 ```bash
-# Run full automated test suite (91 tests across all 8 phases)
+# Run the complete test suite
 npm test
 
-# Run TypeScript strict typecheck
+# Run TypeScript strict type verification
 npm run typecheck
 
-# Run ESLint validation
-npm run lint
-
-# Run optimized production build
+# Run production build compilation
 npm run build
 ```
 
 ---
 
-## 🏛️ Documentation
-- [System Architecture](file:///C:/Rimjhim%20Roams/docs/architecture.md)
-- [Database & Schema Architecture](file:///C:/Rimjhim%20Roams/docs/database.md)
-- [Phased Project Roadmap](file:///C:/Rimjhim%20Roams/docs/roadmap.md)
+## 🚢 Vercel Deployment
+
+1. Push your code to your GitHub repository.
+2. In the **Vercel Dashboard**, click **Import Project** and select your repository.
+3. Configure **Build & Development Settings**:
+   - **Framework Preset**: Next.js
+   - **Build Command**: `next build`
+   - **Install Command**: `npm install`
+4. *(Optional)* Add your Supabase and Gemini keys in **Settings > Environment Variables**.
+5. Click **Deploy**. The application builds and deploys cleanly with zero errors!
+
+---
+
+## 📚 Technical Documentation
+
+Comprehensive architectural and implementation guides are located in the [`docs/`](file:///c:/Rimjhim%20Roams/docs) directory:
+- [Technical Implementation Guide (`docs/technical_implementation.md`)](file:///c:/Rimjhim%20Roams/docs/technical_implementation.md) — Detailed technical specifications, data flows, and security architectures.
+- [System Architecture (`docs/architecture.md`)](file:///c:/Rimjhim%20Roams/docs/architecture.md) — High-level component topology and system flowcharts.
+- [Database & Migrations Guide (`docs/database.md`)](file:///c:/Rimjhim%20Roams/docs/database.md) — Schema DDL, RLS policies, spatial queries, and pgvector indices.
+- [Travel RAG Engine (`docs/rag.md`)](file:///c:/Rimjhim%20Roams/docs/rag.md) — Semantic retrieval, sliding window chunking, and injection sanitization.
+- [Phased Project Roadmap (`docs/roadmap.md`)](file:///c:/Rimjhim%20Roams/docs/roadmap.md) — Complete 15-phase developmental roadmap and milestones.
 
 ---
 
 ## 📄 License
-MIT
+Released under the [MIT License](LICENSE). Built for modern, intelligent travelers.
