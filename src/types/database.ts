@@ -105,6 +105,55 @@ export interface Database {
           updated_at?: string;
         };
       };
+      public_profiles: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          username: string;
+          display_name: string;
+          bio: string | null;
+          avatar_url: string | null;
+          home_city: string | null;
+          travel_style: string;
+          visited_states_count: number;
+          badges: string[];
+          top_destinations: string[];
+          is_public: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          username: string;
+          display_name: string;
+          bio?: string | null;
+          avatar_url?: string | null;
+          home_city?: string | null;
+          travel_style?: string;
+          visited_states_count?: number;
+          badges?: string[];
+          top_destinations?: string[];
+          is_public?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          username?: string;
+          display_name?: string;
+          bio?: string | null;
+          avatar_url?: string | null;
+          home_city?: string | null;
+          travel_style?: string;
+          visited_states_count?: number;
+          badges?: string[];
+          top_destinations?: string[];
+          is_public?: boolean;
+          updated_at?: string;
+        };
+      };
       trips: {
         Row: {
           id: string;

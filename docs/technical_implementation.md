@@ -314,9 +314,11 @@ When Next.js statically builds pages on Vercel without environment variables:
 
 ---
 
+---
+
 ## 10. Test Harness & Quality Verification
 
-The test harness runs **229 automated tests** with Node.js built-in test runner (`tsx --test`):
+The test harness runs **242 automated tests** with Node.js built-in test runner (`tsx --test`):
 
 ```bash
 # Execute complete test suite
@@ -334,3 +336,75 @@ npm test
 - **Phase 10**: Travel RAG, vector retrieval, and prompt injection defense (21 tests).
 - **Phase 11–15**: Group collaboration, bill splitting, document vault, and memories (16 tests).
 - **Security Audit**: RLS policies, rate limiting, and client secret hygiene (12 tests).
+- **Public Profiles**: Clean-format validation, sample explorer data, and RLS privacy separation (13 tests).
+
+---
+
+## 11. Public Profiles, Clean-Format Invariants & RLS Separation
+
+### 11.1 Architectural Privacy Boundary
+To support community exploration, traveler badges, and discoverability without risking user privacy, Rimjhim Roams strictly decouples public explorer identities from private user profile entities:
+
+```mermaid
+flowchart LR
+    subgraph PrivateDomain ["Private User Identity (Zero Public Exposure)"]
+        Users["auth.users / appDb.users\n(id, email, password_hash, salt)"]
+        Profiles["public.profiles\n(email, full_name, avatar_url)"]
+        TravellerProfiles["public.traveller_profiles\n(phone_number, nationality, emergency_contact)"]
+        Preferences["public.travel_preferences\n(budget_tier, dietary_restrictions)"]
+    end
+
+    subgraph PublicDomain ["Public Community Explorer Identity"]
+        PublicProfiles["public.public_profiles\n(username, display_name, bio, travel_style,\nhome_city, visited_states_count, badges, top_destinations)"]
+    end
+
+    PrivateDomain -.->|"RLS Wall: auth.uid() = user_id (Never Public)"| SecurityBoundary{RLS Boundary}
+    SecurityBoundary -->|"Public SELECT (is_public = true)"| ExplorerDirectory["Public Explorer Discovery (/api/public-profiles)"]
+    SecurityBoundary -->|"Owner Mutation Only (auth.uid() = user_id)"| PublicProfiles
+```
+
+### 11.2 Row Level Security (RLS) Separation Policies
+In `supabase/migrations/20241011000000_public_profiles.sql`, RLS is strictly configured:
+```sql
+ALTER TABLE public.public_profiles ENABLE ROW LEVEL SECURITY;
+
+-- 1. Anyone (including anonymous travelers) can view public profiles
+CREATE POLICY "Public profiles are readable by everyone when public"
+  ON public.public_profiles FOR SELECT
+  USING (is_public = true OR (auth.uid() IS NOT NULL AND auth.uid() = user_id));
+
+-- 2. Authenticated users can insert their own public profile
+CREATE POLICY "Users can insert their own public profile"
+  ON public.public_profiles FOR INSERT
+  WITH CHECK (auth.uid() IS NOT NULL AND auth.uid() = user_id);
+
+-- 3. Authenticated users can update their own public profile
+CREATE POLICY "Users can update their own public profile"
+  ON public.public_profiles FOR UPDATE
+  USING (auth.uid() IS NOT NULL AND auth.uid() = user_id)
+  WITH CHECK (auth.uid() IS NOT NULL AND auth.uid() = user_id);
+
+-- 4. Authenticated users can delete their own public profile
+CREATE POLICY "Users can delete their own public profile"
+  ON public.public_profiles FOR DELETE
+  USING (auth.uid() IS NOT NULL AND auth.uid() = user_id);
+```
+
+### 11.3 Strict Clean-Format Invariants & Validation
+Data is strictly gated through both database-level `CHECK` constraints and application-level TypeScript validators (`src/lib/validation/public-profile.ts`):
+- **Username Clean Slug**: `^[a-z0-9_-]{3,30}$`. No spaces, uppercase letters, special symbols, or HTML injection. Reserved system usernames (`admin`, `api`, `auth`, `support`, etc.) are explicitly rejected.
+- **Display Name**: Trimmed string between 2 and 50 characters; strictly rejects angle brackets `<` and `>` to neutralize HTML/XSS injection.
+- **Bio**: Trimmed string up to 300 characters; strictly rejects `<` and `>`.
+- **Home City**: Optional string up to 80 characters; rejects `<` and `>`.
+- **Travel Style**: Strict enum check `IN ('backpacker', 'cultural', 'luxury', 'adventure', 'photographer', 'slow_travel', 'road_tripper', 'balanced')`.
+- **Visited States Count**: Integer constrained to `0 <= visited_states_count <= 36` (28 states + 8 Union Territories in India).
+- **Avatar URL**: Must be a valid absolute HTTP/HTTPS URL or clean relative path.
+
+### 11.4 Seeded Sample Profiles
+Five authentic traveler personas are pre-seeded in both SQL migrations and `data/app-db.json` for zero-config discovery:
+1. `priya_travels` (Priya Sharma, Jaipur) — Cultural & temple architecture researcher (24 states, "Heritage Curator").
+2. `kabir_peaks` (Kabir Singh, Manali) — Trans-Himalayan mountaineer and wilderness responder (14 states, "Himalayan Pioneer").
+3. `ananya_coastal` (Ananya Roy, Kolkata) — Marine & coastal monsoon photographer (19 states, "Coastal Nomad").
+4. `vikram_royal` (Vikramaditya Rathore, Udaipur) — Palace gastronomy and royal haveli connoisseur (18 states, "Palace Connoisseur").
+5. `zoya_slowroad` (Zoya Merchant, Pune) — Sustainable village tourism advocate (22 states, "Eco Wanderer").
+

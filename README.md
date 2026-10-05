@@ -5,7 +5,7 @@
   <p><em>Production-grade, Vercel-deployable autonomous travel operating system built with Next.js 14, Supabase, Google Gemini AI, PostGIS spatial intelligence, and deterministic computational engines.</em></p>
 
   [![Build & Deploy](https://img.shields.io/badge/Vercel-Deployable_Zero--Config-black?logo=vercel)](https://vercel.com)
-  [![Tests](https://img.shields.io/badge/Tests-229_Passed_100%25-brightgreen)](https://github.com/sourabhsk0001/Rimjhim-Roams)
+  [![Tests](https://img.shields.io/badge/Tests-242_Passed_100%25-brightgreen)](https://github.com/sourabhsk0001/Rimjhim-Roams)
   [![Next.js](https://img.shields.io/badge/Next.js-14.2.18_App_Router-black?logo=next.js)](https://nextjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-Strict_Mode-blue?logo=typescript)](https://www.typescriptlang.org/)
   [![Supabase](https://img.shields.io/badge/Database-Supabase_%2B_Local_Persistent_DB-3ECF8E?logo=supabase)](https://supabase.com)
@@ -67,6 +67,12 @@ Built around a **Zero LLM Math** architectural invariant, AI models are strictly
 - **Live Supabase Auth + Persistent Local DB**: Seamlessly connects to live Supabase PostgreSQL when credentials exist, while providing an integrated, local persistent database (`src/lib/db/app-db.ts` -> `data/app-db.json`) for offline development and zero-config Vercel deployments.
 - **Instant Demo Accounts**: One-click demo credentials for travelers (`demo@tripwise.ai` / `password123`) and administrators (`admin@tripwise.ai` / `admin123`).
 - **Unified Session Resolver**: Centralized [`src/lib/auth/session.ts`](file:///c:/Rimjhim%20Roams/src/lib/auth/session.ts) validating both live Supabase JWTs and application session cookies across all 20+ API endpoints.
+
+### 7. 🌐 Public Profiles & Community Explorer Directory (`/api/public-profiles`)
+- **Strict RLS & Privacy Separation**: Public profiles decouple community explorer cards from sensitive user identities (`profiles`, `traveller_profiles`). Private PII (email, phone, emergency contacts, budget) is strictly guarded behind `auth.uid() = user_id`.
+- **Clean-Format Invariants**: Enforces strict database `CHECK` constraints and TypeScript validators (lowercased alphanumeric username slugs, no XSS/HTML angle brackets, valid travel styles, 0–36 visited states).
+- **Pre-Configured Explorer Personas**: 5 diverse authentic Indian explorer cards pre-seeded in SQL and local DB (`priya_travels`, `kabir_peaks`, `ananya_coastal`, `vikram_royal`, `zoya_slowroad`).
+- **Public Discovery & Filter API**: Instant search across usernames, bios, and home cities with travel style filtering.
 
 ---
 

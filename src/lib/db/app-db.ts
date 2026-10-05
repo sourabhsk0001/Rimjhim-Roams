@@ -1,6 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import {
+  PublicProfileInput,
+  validatePublicProfileInput,
+} from "../validation/public-profile";
 
 export interface DbUser {
   id: string;
@@ -35,15 +39,116 @@ export interface DbUserProfile {
   updated_at: string;
 }
 
+export interface DbPublicProfile {
+  id: string;
+  user_id?: string | null;
+  username: string;
+  display_name: string;
+  avatar_url?: string | null;
+  bio?: string | null;
+  travel_style: string;
+  home_city?: string | null;
+  visited_states_count: number;
+  badges: string[];
+  top_destinations: string[];
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface DatabaseSchema {
   version: number;
   users: DbUser[];
   sessions: DbSession[];
   profiles: DbUserProfile[];
+  public_profiles: DbPublicProfile[];
 }
 
 const DATA_DIR = path.resolve(process.cwd(), "data");
 const DB_FILE = path.resolve(DATA_DIR, "app-db.json");
+
+export const SAMPLE_PUBLIC_PROFILES: DbPublicProfile[] = [
+  {
+    id: "pub-prof-priya-01",
+    user_id: null,
+    username: "priya_travels",
+    display_name: "Priya Sharma",
+    avatar_url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+    bio: "Heritage researcher and temple architecture enthusiast exploring living history across India.",
+    home_city: "Jaipur, Rajasthan",
+    travel_style: "cultural",
+    visited_states_count: 24,
+    badges: ["Heritage Curator", "Temple Architecture", "Golden Triangle Explorer"],
+    top_destinations: ["Jaipur", "Hampi", "Varanasi", "Khajuraho"],
+    is_public: true,
+    created_at: "2026-10-01T08:00:00.000Z",
+    updated_at: "2026-10-01T08:00:00.000Z",
+  },
+  {
+    id: "pub-prof-kabir-02",
+    user_id: null,
+    username: "kabir_peaks",
+    display_name: "Kabir Singh",
+    avatar_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+    bio: "High-altitude trekker, mountaineer, and certified wilderness first responder documenting trans-Himalayan passes.",
+    home_city: "Manali, Himachal Pradesh",
+    travel_style: "adventure",
+    visited_states_count: 14,
+    badges: ["Himalayan Pioneer", "Altitude Chaser", "Wilderness Certified"],
+    top_destinations: ["Spiti Valley", "Leh Ladakh", "Rohtang Pass", "Zanskar"],
+    is_public: true,
+    created_at: "2026-10-01T09:00:00.000Z",
+    updated_at: "2026-10-01T09:00:00.000Z",
+  },
+  {
+    id: "pub-prof-ananya-03",
+    user_id: null,
+    username: "ananya_coastal",
+    display_name: "Ananya Roy",
+    avatar_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80",
+    bio: "Landscape photographer chasing monsoons, coastal lighthouses, and pristine backwaters across the subcontinent.",
+    home_city: "Kolkata, West Bengal",
+    travel_style: "photographer",
+    visited_states_count: 19,
+    badges: ["Coastal Nomad", "Sunset Chaser", "Monsoon Chronicler"],
+    top_destinations: ["Gokarna", "Varkala", "Havelock Island", "Puri"],
+    is_public: true,
+    created_at: "2026-10-01T10:00:00.000Z",
+    updated_at: "2026-10-01T10:00:00.000Z",
+  },
+  {
+    id: "pub-prof-vikram-04",
+    user_id: null,
+    username: "vikram_royal",
+    display_name: "Vikramaditya Rathore",
+    avatar_url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
+    bio: "Culinary explorer and royal heritage enthusiast discovering heritage havelis and slow-cooked regional gastronomy.",
+    home_city: "Udaipur, Rajasthan",
+    travel_style: "luxury",
+    visited_states_count: 18,
+    badges: ["Palace Connoisseur", "Royal Gastronomy", "Heritage Restorer"],
+    top_destinations: ["Udaipur", "Jodhpur", "Gwalior", "Chettinad"],
+    is_public: true,
+    created_at: "2026-10-01T11:00:00.000Z",
+    updated_at: "2026-10-01T11:00:00.000Z",
+  },
+  {
+    id: "pub-prof-zoya-05",
+    user_id: null,
+    username: "zoya_slowroad",
+    display_name: "Zoya Merchant",
+    avatar_url: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80",
+    bio: "Advocate for sustainable village tourism, organic farm stays, and indigenous craft traditions across Northeast India.",
+    home_city: "Pune, Maharashtra",
+    travel_style: "slow_travel",
+    visited_states_count: 22,
+    badges: ["Eco Wanderer", "Living Root Bridges", "Village Chronicler"],
+    top_destinations: ["Mawlynnong", "Ziro Valley", "Coorg", "Majuli"],
+    is_public: true,
+    created_at: "2026-10-01T12:00:00.000Z",
+    updated_at: "2026-10-01T12:00:00.000Z",
+  },
+];
 
 function hashPassword(password: string, salt: string): string {
   return crypto.pbkdf2Sync(password, salt, 1000, 64, "sha512").toString("hex");
@@ -59,6 +164,7 @@ class AppDatabase {
       users: [],
       sessions: [],
       profiles: [],
+      public_profiles: [],
     };
     this.init();
   }
@@ -74,6 +180,14 @@ class AppDatabase {
       if (fs.existsSync(DB_FILE)) {
         const raw = fs.readFileSync(DB_FILE, "utf-8");
         this.data = JSON.parse(raw);
+        if (
+          !this.data.public_profiles ||
+          !Array.isArray(this.data.public_profiles) ||
+          this.data.public_profiles.length === 0
+        ) {
+          this.data.public_profiles = JSON.parse(JSON.stringify(SAMPLE_PUBLIC_PROFILES));
+          this.persist();
+        }
       } else {
         this.seedInitialData();
         this.persist();
@@ -153,6 +267,7 @@ class AppDatabase {
           updated_at: now,
         },
       ],
+      public_profiles: JSON.parse(JSON.stringify(SAMPLE_PUBLIC_PROFILES)),
     };
   }
 
@@ -342,12 +457,132 @@ class AppDatabase {
     return profile;
   }
 
+  // --- Public Profile Operations (Strict Clean Format & Public Community Discovery) ---
+
+  public getPublicProfiles(filter?: {
+    travelStyle?: string;
+    search?: string;
+    limit?: number;
+  }): DbPublicProfile[] {
+    this.init();
+    let results = (this.data.public_profiles || []).filter((p) => p.is_public);
+
+    if (filter?.travelStyle) {
+      const style = filter.travelStyle.toLowerCase();
+      results = results.filter((p) => p.travel_style.toLowerCase() === style);
+    }
+
+    if (filter?.search) {
+      const term = filter.search.toLowerCase();
+      results = results.filter(
+        (p) =>
+          p.username.toLowerCase().includes(term) ||
+          p.display_name.toLowerCase().includes(term) ||
+          (p.bio && p.bio.toLowerCase().includes(term)) ||
+          (p.home_city && p.home_city.toLowerCase().includes(term)) ||
+          (p.top_destinations && p.top_destinations.some((d) => d.toLowerCase().includes(term)))
+      );
+    }
+
+    const limit = filter?.limit ? Math.min(Math.max(1, filter.limit), 100) : 50;
+    return results.slice(0, limit);
+  }
+
+  public getPublicProfileByUsername(username: string): DbPublicProfile | null {
+    this.init();
+    const cleanUsername = username.trim().toLowerCase();
+    return (
+      (this.data.public_profiles || []).find(
+        (p) => p.username.toLowerCase() === cleanUsername && p.is_public
+      ) || null
+    );
+  }
+
+  public getPublicProfileByUserId(userId: string): DbPublicProfile | null {
+    this.init();
+    return (this.data.public_profiles || []).find((p) => p.user_id === userId) || null;
+  }
+
+  public upsertPublicProfile(
+    userId: string,
+    input: unknown
+  ): { success: boolean; profile?: DbPublicProfile; error?: string } {
+    this.init();
+
+    // 1. Strict Clean Format Validation
+    const validation = validatePublicProfileInput(input);
+    if (!validation.isValid || !validation.data) {
+      return {
+        success: false,
+        error: `Invalid public profile data: ${validation.errors.join("; ")}`,
+      };
+    }
+
+    const clean = validation.data;
+    const now = new Date().toISOString();
+
+    // 2. Ensure username uniqueness across distinct users
+    const existingWithUsername = (this.data.public_profiles || []).find(
+      (p) => p.username.toLowerCase() === clean.username.toLowerCase() && p.user_id !== userId
+    );
+    if (existingWithUsername) {
+      return {
+        success: false,
+        error: `Username '${clean.username}' is already taken by another explorer.`,
+      };
+    }
+
+    // 3. Find existing profile for this user
+    let profile = (this.data.public_profiles || []).find((p) => p.user_id === userId);
+
+    if (profile) {
+      // Update existing
+      profile.username = clean.username;
+      profile.display_name = clean.display_name;
+      profile.bio = clean.bio ?? null;
+      profile.avatar_url = clean.avatar_url ?? null;
+      profile.home_city = clean.home_city ?? null;
+      profile.travel_style = clean.travel_style || "balanced";
+      profile.visited_states_count = clean.visited_states_count ?? 0;
+      profile.badges = clean.badges || [];
+      profile.top_destinations = clean.top_destinations || [];
+      profile.is_public = clean.is_public !== undefined ? clean.is_public : true;
+      profile.updated_at = now;
+    } else {
+      // Create new
+      profile = {
+        id: `pub-prof-${Date.now().toString(36)}-${crypto.randomBytes(4).toString("hex")}`,
+        user_id: userId,
+        username: clean.username,
+        display_name: clean.display_name,
+        bio: clean.bio ?? null,
+        avatar_url: clean.avatar_url ?? null,
+        home_city: clean.home_city ?? null,
+        travel_style: clean.travel_style || "balanced",
+        visited_states_count: clean.visited_states_count ?? 0,
+        badges: clean.badges || [],
+        top_destinations: clean.top_destinations || [],
+        is_public: clean.is_public !== undefined ? clean.is_public : true,
+        created_at: now,
+        updated_at: now,
+      };
+      if (!this.data.public_profiles) {
+        this.data.public_profiles = [];
+      }
+      this.data.public_profiles.push(profile);
+    }
+
+    this.persist();
+    return { success: true, profile };
+  }
+
   public getStats() {
     this.init();
     return {
       usersCount: this.data.users.length,
       sessionsCount: this.data.sessions.length,
       profilesCount: this.data.profiles.length,
+      publicProfilesCount: (this.data.public_profiles || []).length,
       databaseFile: DB_FILE,
     };
   }

@@ -90,6 +90,26 @@
       "role": "traveler",
       "created_at": "2026-10-05T16:54:16.072Z",
       "updated_at": "2026-10-05T16:54:16.072Z"
+    },
+    {
+      "id": "user-muvoaql3-e2942f72",
+      "email": "traveler-1791230343445@test.com",
+      "full_name": "Aryan Sharma",
+      "password_hash": "913c1eace55ff80d8be21db7f28202c285c5f3a197c5206fa950f92ca6aa3b22839084c574f20ae83cae6e1ad87816a9777a2a1c2c787065e8588ab9c2024724",
+      "salt": "0af64103e2c9f71b94fcfcb2cbf43d7a",
+      "role": "traveler",
+      "created_at": "2026-10-05T19:59:03.446Z",
+      "updated_at": "2026-10-05T19:59:03.446Z"
+    },
+    {
+      "id": "user-muvoaql7-4a551068",
+      "email": "login-1791230343450@test.com",
+      "full_name": "Vikram Malhotra",
+      "password_hash": "56d702aada9e7da5621e17111d38216c65e2c35a44ea92adf9836a647c24153e3d0beb4ce0c4b2f23231740a9a4595d0130c1cf43d4c7d2f3efb683a7a2d7452",
+      "salt": "d29cc6b4869670c3be045b27e7edc4ed",
+      "role": "traveler",
+      "created_at": "2026-10-05T19:59:03.451Z",
+      "updated_at": "2026-10-05T19:59:03.451Z"
     }
   ],
   "sessions": [
@@ -372,6 +392,173 @@
       "onboarding_completed": false,
       "created_at": "2026-10-05T16:54:16.072Z",
       "updated_at": "2026-10-05T16:54:16.072Z"
+    },
+    {
+      "user_id": "user-muvoaql3-e2942f72",
+      "full_name": "Aryan Sharma",
+      "email": "traveler-1791230343445@test.com",
+      "home_currency": "INR",
+      "travel_pace": "moderate",
+      "interests": [],
+      "travel_style": "balanced",
+      "onboarding_completed": false,
+      "created_at": "2026-10-05T19:59:03.446Z",
+      "updated_at": "2026-10-05T19:59:03.446Z"
+    },
+    {
+      "user_id": "user-muvoaql7-4a551068",
+      "full_name": "Vikram Malhotra",
+      "email": "login-1791230343450@test.com",
+      "home_currency": "INR",
+      "travel_pace": "moderate",
+      "interests": [],
+      "travel_style": "balanced",
+      "onboarding_completed": false,
+      "created_at": "2026-10-05T19:59:03.451Z",
+      "updated_at": "2026-10-05T19:59:03.451Z"
+    }
+  ],
+  "public_profiles": [
+    {
+      "id": "pub-prof-priya-01",
+      "user_id": null,
+      "username": "priya_travels",
+      "display_name": "Priya Sharma",
+      "avatar_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+      "bio": "Heritage researcher and temple architecture enthusiast exploring living history across India.",
+      "home_city": "Jaipur, Rajasthan",
+      "travel_style": "cultural",
+      "visited_states_count": 24,
+      "badges": [
+        "Heritage Curator",
+        "Temple Architecture",
+        "Golden Triangle Explorer"
+      ],
+      "top_destinations": [
+        "Jaipur",
+        "Hampi",
+        "Varanasi",
+        "Khajuraho"
+      ],
+      "is_public": true,
+      "created_at": "2026-10-01T08:00:00.000Z",
+      "updated_at": "2026-10-01T08:00:00.000Z"
+    },
+    {
+      "id": "pub-prof-kabir-02",
+      "user_id": null,
+      "username": "kabir_peaks",
+      "display_name": "Kabir Singh",
+      "avatar_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+      "bio": "High-altitude trekker, mountaineer, and certified wilderness first responder documenting trans-Himalayan passes.",
+      "home_city": "Manali, Himachal Pradesh",
+      "travel_style": "adventure",
+      "visited_states_count": 14,
+      "badges": [
+        "Himalayan Pioneer",
+        "Altitude Chaser",
+        "Wilderness Certified"
+      ],
+      "top_destinations": [
+        "Spiti Valley",
+        "Leh Ladakh",
+        "Rohtang Pass",
+        "Zanskar"
+      ],
+      "is_public": true,
+      "created_at": "2026-10-01T09:00:00.000Z",
+      "updated_at": "2026-10-01T09:00:00.000Z"
+    },
+    {
+      "id": "pub-prof-ananya-03",
+      "user_id": null,
+      "username": "ananya_coastal",
+      "display_name": "Ananya Roy",
+      "avatar_url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80",
+      "bio": "Landscape photographer chasing monsoons, coastal lighthouses, and pristine backwaters across the subcontinent.",
+      "home_city": "Kolkata, West Bengal",
+      "travel_style": "photographer",
+      "visited_states_count": 19,
+      "badges": [
+        "Coastal Nomad",
+        "Sunset Chaser",
+        "Monsoon Chronicler"
+      ],
+      "top_destinations": [
+        "Gokarna",
+        "Varkala",
+        "Havelock Island",
+        "Puri"
+      ],
+      "is_public": true,
+      "created_at": "2026-10-01T10:00:00.000Z",
+      "updated_at": "2026-10-01T10:00:00.000Z"
+    },
+    {
+      "id": "pub-prof-vikram-04",
+      "user_id": null,
+      "username": "vikram_royal",
+      "display_name": "Vikramaditya Rathore",
+      "avatar_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
+      "bio": "Culinary explorer and royal heritage enthusiast discovering heritage havelis and slow-cooked regional gastronomy.",
+      "home_city": "Udaipur, Rajasthan",
+      "travel_style": "luxury",
+      "visited_states_count": 18,
+      "badges": [
+        "Palace Connoisseur",
+        "Royal Gastronomy",
+        "Heritage Restorer"
+      ],
+      "top_destinations": [
+        "Udaipur",
+        "Jodhpur",
+        "Gwalior",
+        "Chettinad"
+      ],
+      "is_public": true,
+      "created_at": "2026-10-01T11:00:00.000Z",
+      "updated_at": "2026-10-01T11:00:00.000Z"
+    },
+    {
+      "id": "pub-prof-zoya-05",
+      "user_id": null,
+      "username": "zoya_slowroad",
+      "display_name": "Zoya Merchant",
+      "avatar_url": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80",
+      "bio": "Advocate for sustainable village tourism, organic farm stays, and indigenous craft traditions across Northeast India.",
+      "home_city": "Pune, Maharashtra",
+      "travel_style": "slow_travel",
+      "visited_states_count": 22,
+      "badges": [
+        "Eco Wanderer",
+        "Living Root Bridges",
+        "Village Chronicler"
+      ],
+      "top_destinations": [
+        "Mawlynnong",
+        "Ziro Valley",
+        "Coorg",
+        "Majuli"
+      ],
+      "is_public": true,
+      "created_at": "2026-10-01T12:00:00.000Z",
+      "updated_at": "2026-10-01T12:00:00.000Z"
+    },
+    {
+      "id": "pub-prof-muvogjg6-ee2027c5",
+      "user_id": "user-alice-101",
+      "username": "alice_explorer",
+      "display_name": "Alice Nomad Updated",
+      "bio": null,
+      "avatar_url": null,
+      "home_city": null,
+      "travel_style": "cultural",
+      "visited_states_count": 6,
+      "badges": [],
+      "top_destinations": [],
+      "is_public": true,
+      "created_at": "2026-10-05T20:03:34.134Z",
+      "updated_at": "2026-10-05T20:05:02.863Z"
     }
   ]
 }
