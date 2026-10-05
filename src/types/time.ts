@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 5: Time Intelligence Engine Domain Types
+// Time Intelligence Engine Domain Types
 // ==============================================================================
 
 export type DurationTier = "Quick" | "Normal" | "Relaxed";

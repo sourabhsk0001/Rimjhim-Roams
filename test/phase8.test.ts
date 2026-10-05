@@ -209,10 +209,10 @@ test("WeatherService: Stores and retrieves persistent weather snapshots", async 
 });
 
 // ==============================================================================
-// Weather-Itinerary Integration Tests (Prompt Scenarios)
+// Weather-Itinerary Integration Tests (Rescheduling Scenarios)
 // ==============================================================================
 
-test("Weather Integration: Prompt Scenario — Rain at 3 PM moves beach from 3 PM to 5 PM", () => {
+test("Weather Integration: Rescheduling Scenario — Rain at 3 PM moves beach from 3 PM to 5 PM", () => {
   const date = "2026-11-10";
 
   // Scheduled Beach visit from 15:00 (3 PM) to 16:30
@@ -300,7 +300,7 @@ test("Weather Integration: Prompt Scenario — Rain at 3 PM moves beach from 3 P
   assert(conflict.explanation.includes("17:00"), "Explanation should detail the 5 PM time shift");
 });
 
-test("Weather Integration: Prompt Scenario — Replaces outdoor activity with indoor attraction during sustained rain", () => {
+test("Weather Integration: Rescheduling Scenario — Replaces outdoor activity with indoor attraction during sustained rain", () => {
   const date = "2026-11-12";
 
   // Scheduled Outdoor Fort visit from 14:00 to 16:30

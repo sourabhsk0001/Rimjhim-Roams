@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 14: Travel Management Layer Domain Models
+// Travel Management Layer Domain Models
 // Packing Lists, Supabase Storage Documents, and Booking Records
 // ==============================================================================
 

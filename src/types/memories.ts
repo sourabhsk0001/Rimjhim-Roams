@@ -1,5 +1,5 @@
 /**
- * Type definitions for Phase 15: TripWise Travel Memories
+ * Type definitions for TripWise Travel Memories
  * Stores useful, non-sensitive personal travel preferences (Likes and Avoids).
  */
 

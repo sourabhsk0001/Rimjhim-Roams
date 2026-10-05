@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 8: Weather Intelligence & Itinerary Integration Domain Types
+// Weather Intelligence & Itinerary Integration Domain Types
 // ==============================================================================
 
 export type WeatherConfidenceTier =

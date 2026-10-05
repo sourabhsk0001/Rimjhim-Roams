@@ -61,7 +61,7 @@ export interface RouteGeometry {
 }
 
 // ==============================================================================
-// Phase 2: Core Travel Domain Entities
+// Core Travel Domain Entities
 // ==============================================================================
 
 export interface Destination {

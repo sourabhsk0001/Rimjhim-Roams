@@ -86,7 +86,7 @@ export async function getTripBudgetDetails(
   } else {
     // Standard baseline distribution
     if (totalBudgetMajor === 20000 && currency === "INR") {
-      // Matches the exact example in prompt:
+      // Standard baseline distribution for ₹20,000 INR budget:
       // Transport: ₹6,000, Hotel: ₹6,000, Food: ₹3,000, Local transport: ₹1,500, Activities: ₹2,000, Emergency: ₹1,000 = Total ₹19,500
       categoryCostsMinor = {
         transport: toMinorUnits(6000),

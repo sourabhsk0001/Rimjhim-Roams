@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 12: Deterministic Expense Splitting & Debt Settlement Engine
+// Deterministic Expense Splitting & Debt Settlement Engine
 // ==============================================================================
 
 import {

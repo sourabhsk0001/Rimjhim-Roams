@@ -236,10 +236,10 @@ test("Group Voting: Unauthorized user cannot vote", async () => {
 });
 
 // ==============================================================================
-// 4. Deterministic Expense Splitting & Settlement (Prompt Example: Hotel ₹6,000)
+// 4. Deterministic Expense Splitting & Settlement (Example: Hotel ₹6,000)
 // ==============================================================================
 
-test("Expense Splitting: Prompt Example — Hotel ₹6,000 paid by A split equally among A, B, C", async () => {
+test("Expense Splitting: Baseline Example — Hotel ₹6,000 paid by A split equally among A, B, C", async () => {
   // Amount: ₹6,000 (600,000 paise)
   const amountMinor = toMinorUnits(6000);
 

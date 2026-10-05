@@ -426,7 +426,7 @@ export default function TripDetailPage() {
             <div className="relative overflow-hidden shadow-sm border border-slate-200/80 rounded-3xl bg-gradient-to-br from-[#071324] via-[#0f172a] to-[#1e293b] text-white p-6 sm:p-8">
               <div
                 className="absolute inset-0 bg-cover bg-center opacity-20 pointer-events-none mix-blend-luminosity"
-                style={{ backgroundImage: "url('/image/my-trip.jpg')" }}
+                style={{ backgroundImage: "url('/images/my-trip.jpg')" }}
                 aria-hidden="true"
               />
               <div className="relative z-10 flex flex-wrap items-start justify-between gap-6">

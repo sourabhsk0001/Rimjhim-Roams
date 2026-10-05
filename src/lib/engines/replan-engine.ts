@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 11: Real-time Itinerary Replanning Engine
+// Real-time Itinerary Replanning Engine
 //
 // Invariant:
 // 1. Never simply regenerate the entire trip randomly.

@@ -4,6 +4,8 @@
   <p><strong>Your Entire Journey, Planned by AI.</strong></p>
   <p><em>Production-grade, Vercel-deployable autonomous travel operating system built with Next.js 14, Supabase, Google Gemini AI, PostGIS spatial intelligence, and deterministic computational engines.</em></p>
 
+  [![Version](https://img.shields.io/badge/version-0.5-blue.svg)](package.json)
+  [![License](https://img.shields.io/badge/License-Apache_2.0-orange.svg)](LICENSE)
   [![Build & Deploy](https://img.shields.io/badge/Vercel-Deployable_Zero--Config-black?logo=vercel)](https://vercel.com)
   [![Tests](https://img.shields.io/badge/Tests-261_Passed_100%25-brightgreen)](https://github.com/sourabhsk0001/Rimjhim-Roams)
   [![Next.js](https://img.shields.io/badge/Next.js-14.2.18_App_Router-black?logo=next.js)](https://nextjs.org/)
@@ -244,5 +246,11 @@ Comprehensive architectural and implementation guides are located in the [`docs/
 
 ---
 
-## 📄 License
-Released under the [MIT License](LICENSE). Built for modern, intelligent travelers.
+## 📄 License & Attribution
+Released under the [Apache License, Version 2.0](LICENSE).
+
+### Attribution Requirement
+When using, reproducing, modifying, or distributing this codebase, software, or any derivative works, you **MUST** prominently credit the project owner and cite the original repository:
+- **Project Owner**: Sourabh Kumar ([@sourabhsk0001](https://github.com/sourabhsk0001))
+- **Repository**: [https://github.com/sourabhsk0001/Rimjhim-Roams](https://github.com/sourabhsk0001/Rimjhim-Roams)
+- **Notice Specification**: See [`NOTICE`](NOTICE) for Section 4(d) attribution details.

@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 12: Trip Collaboration, Membership & Invitations Service
+// Trip Collaboration, Membership & Invitations Service
 // ==============================================================================
 
 import { createClient as createServerSupabase } from "@/lib/supabase/server";

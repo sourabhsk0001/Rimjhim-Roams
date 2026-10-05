@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 11: Real-time Itinerary Replanning Domain Types
+// Real-time Itinerary Replanning Domain Types
 // ==============================================================================
 
 import {

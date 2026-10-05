@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 12: Trip Collaboration, Group Voting & Expense Splitting Domain Types
+// Trip Collaboration, Group Voting & Expense Splitting Domain Types
 // ==============================================================================
 
 export type TripMemberRole = "owner" | "editor" | "viewer";

@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 14: Packing Service
+// Packing Service
 // Manages trip packing lists, item persistence, checkbox state, and custom items
 // ==============================================================================
 

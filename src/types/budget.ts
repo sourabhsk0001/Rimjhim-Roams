@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 4: Deterministic Travel Budget & Optimization Types
+// Deterministic Travel Budget & Optimization Types
 // ==============================================================================
 
 export type BudgetCategory =

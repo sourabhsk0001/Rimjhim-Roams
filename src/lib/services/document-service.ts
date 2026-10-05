@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 14: Document Service (Supabase Private Storage + Signed URLs)
+// Document Service (Supabase Private Storage + Signed URLs)
 // Access control:
 //   - Members (owner, editor, viewer) can view and generate signed URLs
 //   - Editors and owners can upload and delete documents

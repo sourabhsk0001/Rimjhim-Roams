@@ -308,7 +308,7 @@ export default function TripExpensesPage() {
                 Expense Splitting & Debt Settlement
               </h1>
               <span className="text-[10px] uppercase font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                Phase 12
+                Settlement Engine
               </span>
             </div>
             <p className="text-[17px] text-[hsl(215,25%,32%)] font-normal mt-1">

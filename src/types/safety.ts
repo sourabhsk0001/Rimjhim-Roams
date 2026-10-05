@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 13: Source-Backed Safety Center & Emergency Mode Domain Types
+// Source-Backed Safety Center & Emergency Mode Domain Types
 // Strict Rule: No arbitrary safety scores. No fabricated alerts.
 // Every record includes source, retrieved_at, and updated_at.
 // ==============================================================================

@@ -204,10 +204,10 @@ test("BudgetEngine: calculateOverBudget detects excess and calculates percentage
 });
 
 // ==============================================================================
-// 3. Prompt Exact Example Verification
+// 3. Baseline Budget Allocation Verification
 // ==============================================================================
 
-test("Prompt Example Match: Budget ₹20,000 -> Total ₹19,500 with exact breakdown", () => {
+test("Baseline Budget Distribution Match: Budget ₹20,000 -> Total ₹19,500 with exact breakdown", () => {
   const result = budgetEngine.calculateFullTripBudget({
     totalBudget: 20000,
     isMinor: false,

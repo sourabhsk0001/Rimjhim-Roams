@@ -84,7 +84,6 @@ export function LandingHero() {
           className="absolute inset-0 w-full h-full object-cover opacity-100 filter brightness-[0.98] contrast-[1.03] saturate-[1.06]"
         >
           <source src="/videos/landing-page.mp4" type="video/mp4" />
-          <source src="/LANDING PAGE.mp4" type="video/mp4" />
         </video>
 
         {/* Fallback Static Poster ONLY if video completely fails to load */}

@@ -100,7 +100,7 @@ export default function TripsPage() {
         {/* Background Image: Antique world map with compass & pushpins - Enhanced */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 transform scale-105 transition-transform duration-1000 filter brightness-110 contrast-105 saturate-115"
-          style={{ backgroundImage: "url('/image/my-trip.jpg')" }}
+          style={{ backgroundImage: "url('/images/my-trip.jpg')" }}
           role="img"
           aria-label="Vintage world map background with compass"
         />
@@ -192,7 +192,7 @@ export default function TripsPage() {
         {/* Background Image: Airplane shadow flying across world map (Pointing.jpg) - Enhanced */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 filter brightness-115 contrast-105 saturate-115"
-          style={{ backgroundImage: "url('/image/pointing.jpg')" }}
+          style={{ backgroundImage: "url('/images/pointing.jpg')" }}
           role="img"
           aria-label="Airplane shadow flying over world map"
         />

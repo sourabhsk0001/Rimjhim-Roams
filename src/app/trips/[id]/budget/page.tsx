@@ -306,7 +306,7 @@ export default function TripBudgetPage() {
                 Budget & Optimization Engine
               </h1>
               <span className="text-[10px] uppercase font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                Phase 4 Deterministic
+                Deterministic Engine
               </span>
             </div>
             {budgetData && (

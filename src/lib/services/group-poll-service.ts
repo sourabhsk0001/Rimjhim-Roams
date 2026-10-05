@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 12: Group Voting & Polls Service
+// Group Voting & Polls Service
 // ==============================================================================
 
 import { createClient as createServerSupabase } from "@/lib/supabase/server";

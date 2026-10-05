@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 4: Money & Integer Minor Units Precision Helpers
+// Money & Integer Minor Units Precision Helpers
 // Ensures zero floating-point drift (e.g. 0.1 + 0.2 != 0.3) across calculations.
 // ==============================================================================
 

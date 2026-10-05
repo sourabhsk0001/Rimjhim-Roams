@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 14: Booking Service
+// Booking Service
 // Manages trip bookings (flights, trains, buses, hotels, taxis, activities, restaurants)
 // Strict Invariant: Do NOT claim confirmation without actual provider confirmation.
 // ==============================================================================

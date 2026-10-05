@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 14: Deterministic Travel Packing Engine
+// Deterministic Travel Packing Engine
 // Generates intelligent, adaptive packing checklists using:
 //   - Destination & Climate
 //   - Duration (Days)

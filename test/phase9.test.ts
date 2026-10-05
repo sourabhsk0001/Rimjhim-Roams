@@ -34,7 +34,7 @@ before(async () => {
   // Initialize itinerary days
   await getTripItineraries(testTripId, authorizedUserId);
 
-  // Seed museum activity on Day 1 for Prompt Scenario 2
+  // Seed museum activity on Day 1 for Scenario 2
   await addItineraryItem(testTripId, 1, authorizedUserId, {
     title: "Goa State Museum",
     category: "activity",
@@ -290,10 +290,10 @@ test("Authorization: CopilotService rejects unauthorized trip context requests",
 });
 
 // ==============================================================================
-// 3. User Prompt Scenarios Execution
+// 3. Copilot Assistant Scenarios Execution
 // ==============================================================================
 
-test("Prompt Scenario 1: 'Make today's trip cheaper' triggers calculate_budget and replan_trip", async () => {
+test("Copilot Scenario 1: 'Make today's trip cheaper' triggers calculate_budget and replan_trip", async () => {
   const service = new CopilotService();
   const response = await service.processMessage(
     {
@@ -316,7 +316,7 @@ test("Prompt Scenario 1: 'Make today's trip cheaper' triggers calculate_budget a
   }
 });
 
-test("Prompt Scenario 2: 'I don't want to visit the museum' removes item and reoptimizes schedule", async () => {
+test("Copilot Scenario 2: 'I don't want to visit the museum' removes item and reoptimizes schedule", async () => {
   const service = new CopilotService();
   const response = await service.processMessage(
     {
@@ -334,7 +334,7 @@ test("Prompt Scenario 2: 'I don't want to visit the museum' removes item and reo
   assert.strictEqual(optimizeEvent.status, "success");
 });
 
-test("Prompt Scenario 3: 'Find a restaurant near my hotel under ₹300' filters strictly by price limit", async () => {
+test("Copilot Scenario 3: 'Find a restaurant near my hotel under ₹300' filters strictly by price limit", async () => {
   const service = new CopilotService();
   const response = await service.processMessage(
     {

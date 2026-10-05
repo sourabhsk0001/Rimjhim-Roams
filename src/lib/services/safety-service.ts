@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 13: Source-Backed Safety Center & Emergency Mode Service
+// Source-Backed Safety Center & Emergency Mode Service
 // Strict Rules:
 //   1. Do NOT create arbitrary safety scores.
 //   2. Do NOT fabricate alerts.

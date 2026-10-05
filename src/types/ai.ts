@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 9: AI Travel Copilot Domain Types & Tool Schemas
+// AI Travel Copilot Domain Types & Tool Schemas
 // ==============================================================================
 
 export type MessageRole = "user" | "assistant" | "system" | "tool";

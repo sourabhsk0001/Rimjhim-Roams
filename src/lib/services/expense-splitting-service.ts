@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 12: Collaborative Expense Splitting & Settlement Service
+// Collaborative Expense Splitting & Settlement Service
 // ==============================================================================
 
 import { createClient as createServerSupabase } from "@/lib/supabase/server";

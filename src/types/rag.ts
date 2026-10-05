@@ -1,5 +1,5 @@
 // ==============================================================================
-// Phase 10: Travel RAG Domain Types, Schemas & Security Models
+// Travel RAG Domain Types, Schemas & Security Models
 // ==============================================================================
 
 export type KnowledgeCategory =
