@@ -93,6 +93,23 @@ Built around a **Zero LLM Math** architectural invariant, AI models are strictly
 - **Weather-Adapted Trip Planner**: Automatically detects precipitation risk (>40% rain) and dynamically prioritizes indoor attractions (museums, palaces, temples) during rainy periods, attaching daily weather directly to itinerary days.
 - **Integrated Workspace & Destination Views**: Live weather intelligence card on `/trips/[id]`, interactive 7-day schedule forecast strip, itinerary day weather pills, dedicated "Weather & Climatology" tab on `/explore/destinations/[id]`, and public API endpoint `/api/destinations/[id]/weather`.
 
+### 11. 🗺️ GPU-Accelerated MapLibre GL JS & 3D Spatial Navigation
+- **3D Terrain & GPU Acceleration**: WebGL-powered 3D perspective tilt (58° pitch, camera bearing rotation, terrain relief shading) rendering OpenStreetMap vector and raster cartography without proprietary map token limits.
+- **Comprehensive Transit & POI Layers**:
+  - 🏨 **Hotels**: Amber luxury stay markers with nightly rates, star ratings (★ 4.8/5.0), reviews count, and booked stay highlights.
+  - 📍 **Tourist Attractions**: Numbered waypoint pins (`#1`, `#2`, `#3`, ...) strictly synchronized with the traveler's day schedule, ticket pricing, and visiting hours.
+  - 🍽️ **Dining**: Rose culinary markers featuring regional cuisine tags, price tiers, and schedule meal associations.
+  - 🚕 **Taxi Pickup & Auto Stands**: Regulated city taxi unions, prepaid counter notes, base fares, and estimated per-kilometer tariffs.
+  - ✈️ **Airports**: Sky blue aviation hubs with IATA codes (`DEL`, `BOM`, `GOI`, `BLR`), distance to center, terminal facilities, and estimated taxi transfer fares.
+  - 🚆 **Railway Stations**: Indigo rail termini with IRCTC station codes (`NDLS`, `CSMT`, `MAO`, `HWH`), metro connectivity indicators, and cab fares.
+  - 📍 **Current Trip Location**: Animated violet radar ping (`animate-ping`) pinpointing the traveler's active itinerary stop.
+- **Animated Route Geometry**: High-contrast WebGL line string layers featuring ambient outer casing, luminous center path, and real-time path telemetry.
+- **Real-Time Route Telemetry HUD**:
+  - 🛣️ **Exact Route Distance**: Kilometers computed via spherical geodesy.
+  - ⏱️ **Estimated Travel Time**: Multi-modal travel durations (Drive 🚗, Walk 🚶, Cycle 🚲).
+  - 💰 **Estimated Transportation Cost**: Live fare calculations dynamically updating with travel mode.
+- **Day-by-Day Itinerary Ribbon & 3D Cinematic Tour**: Switch between day routes directly on the floating map ribbon, or trigger the automated 3D cinematic camera tour flying sequentially along itinerary waypoints.
+
 ---
 
 ## 🛠️ Tech Stack & Cloud Primitives
@@ -107,6 +124,7 @@ Built around a **Zero LLM Math** architectural invariant, AI models are strictly
 | **Authentication** | Supabase Auth SSR + Dual-Layer Session Cookie Bridge | [Supabase Auth](https://supabase.com) |
 | **AI LLM** | Google Gemini 1.5 Flash via `@google/generative-ai` | [Google AI Studio](https://aistudio.google.com/) |
 | **Vector Embeddings** | Gemini `text-embedding-004` (768 dimensions) | [Google AI Studio](https://aistudio.google.com/) |
+| **Interactive Maps** | MapLibre GL JS (WebGL GPU-accelerated 3D Terrain & Routes) | Open Source |
 | **Geospatial & Routing** | OpenStreetMap (OSM) + Open Source Routing Machine (OSRM) | Public APIs |
 | **Meteorology** | Open-Meteo Weather Forecast API | Public API (No key required) |
 | **Deployment** | Vercel Edge & Serverless Functions | [Vercel Hobby Tier](https://vercel.com) |

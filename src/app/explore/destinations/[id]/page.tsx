@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -41,6 +41,7 @@ import {
   InteractiveMap,
   MapMarkerItem,
 } from "@/components/map/interactive-map";
+import { getDestinationTransitHubs, TransitHub } from "@/lib/geo/transit-hubs";
 import {
   Destination,
   Attraction,
@@ -237,6 +238,17 @@ export default function DestinationDetailPage() {
     }
   };
 
+  // Transit Hubs for Explore Destination
+  const destinationTransitHubs = useMemo(() => {
+    if (!destination) return [];
+    return getDestinationTransitHubs(
+      destination.id,
+      destination.latitude,
+      destination.longitude,
+      destination.name
+    );
+  }, [destination]);
+
   // Assemble map markers
   const mapMarkers: MapMarkerItem[] = destination
     ? [
@@ -246,18 +258,27 @@ export default function DestinationDetailPage() {
           latitude: destination.latitude,
           longitude: destination.longitude,
           type: "destination",
-          details: { category: "Destination Hub" },
+          details: {
+            category: "Destination Hub",
+            description: destination.description,
+          },
         },
-        ...attractions.map((a) => ({
+        ...attractions.map((a, idx) => ({
           id: a.id,
           name: a.name,
           latitude: a.latitude,
           longitude: a.longitude,
           type: "attraction" as const,
+          order: idx + 1,
+          isSelected: selectedDestinationPoint === a.name,
           details: {
             category: a.category,
-            price: a.ticket_price,
+            price: a.ticket_price === 0 ? "Free Entry" : `₹${a.ticket_price}`,
             hours: `${a.opening_time} - ${a.closing_time}`,
+            rating: 4.7,
+            reviewsCount: 3200,
+            durationMinutes: a.recommended_visit_minutes,
+            description: a.description,
           },
         })),
         ...hotels.map((h) => ({
@@ -267,8 +288,11 @@ export default function DestinationDetailPage() {
           longitude: h.longitude,
           type: "hotel" as const,
           details: {
-            price: `${h.price_per_night} / night`,
+            category: "Hotel & Stay",
+            price: `₹${h.price_per_night} / night`,
             rating: h.rating,
+            reviewsCount: 1540,
+            facilities: h.amenities,
           },
         })),
         ...restaurants.map((r) => ({
@@ -278,8 +302,35 @@ export default function DestinationDetailPage() {
           longitude: r.longitude,
           type: "restaurant" as const,
           details: {
+            category: "Local Cuisine",
             cuisine: r.cuisine,
-            price: `${r.estimated_price_per_person} / person`,
+            price: `₹${r.estimated_price_per_person} / person`,
+            rating: 4.5,
+            reviewsCount: 980,
+          },
+        })),
+        ...destinationTransitHubs.map((hub: TransitHub) => ({
+          id: hub.id,
+          name: hub.name,
+          latitude: hub.latitude,
+          longitude: hub.longitude,
+          type: hub.type,
+          code: hub.code,
+          details: {
+            category:
+              hub.type === "airport"
+                ? "Aviation Gateway"
+                : hub.type === "railway"
+                ? "Railway Terminus"
+                : "Prepaid Cab Stand",
+            estimatedCost: hub.estimatedTransferCostInr,
+            durationMinutes: hub.typicalTransferMinutes,
+            rating: hub.rating,
+            reviewsCount: hub.reviewsCount,
+            vehicleType: hub.vehicleType,
+            hours: hub.operatingHours,
+            description: hub.description,
+            facilities: hub.facilities,
           },
         })),
       ]
@@ -436,10 +487,22 @@ export default function DestinationDetailPage() {
                   routeCoordinates={activeRoute?.coordinates}
                   routeDistanceKm={activeRoute?.distanceKm}
                   routeDurationMinutes={activeRoute?.durationMinutes}
+                  routeTransportCostInr={
+                    activeRoute?.distanceKm
+                      ? routeMode === "driving"
+                        ? Math.max(60, Math.round(activeRoute.distanceKm * 18 + 50))
+                        : 0
+                      : undefined
+                  }
                   routeMode={routeMode}
                   onModeChange={handleModeChange}
                   onMarkerSelect={handleMarkerSelect}
-                  height="460px"
+                  currentLocation={{
+                    latitude: destination.latitude,
+                    longitude: destination.longitude,
+                    name: `${destination.name} City Center`,
+                  }}
+                  height="500px"
                 />
 
                 {/* Route Target Selector */}

@@ -20,7 +20,7 @@ const DynamicMap = dynamic(() => import("./map-inner"), {
   ),
 });
 
-export type { MapMarkerItem, MapInnerProps as InteractiveMapProps };
+export type { MapMarkerItem, MapMarkerType, ItineraryDayOption, MapInnerProps as InteractiveMapProps } from "./map-inner";
 
 export function InteractiveMap(props: MapInnerProps) {
   return <DynamicMap {...props} />;

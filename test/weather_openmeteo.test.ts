@@ -37,7 +37,19 @@ test("Open-Meteo: Activity Suitability Matrix generates valid travel activity sc
     isDay: true,
   };
   const clearDaily = [
-    { date: "2026-11-01", tempMin: 20, tempMax: 26, condition: "Clear Sky", precipitationProbability: 0 },
+    {
+      date: "2026-11-01",
+      tempMin: 20,
+      tempMax: 26,
+      condition: "Clear Sky",
+      precipitationProbability: 0,
+      precipitationSum: 0,
+      windSpeedMax: 10,
+      sunrise: "06:00",
+      sunset: "18:00",
+      weatherCode: 0,
+      confidenceTier: "high_confidence" as const,
+    },
   ];
   const clearAqi = { aqiUs: 35, aqiEu: 15, pm2_5: 8, pm10: 16, category: "Good" as const, advisory: "Clean air" };
 
@@ -65,7 +77,19 @@ test("Open-Meteo: Activity Suitability Matrix generates valid travel activity sc
     isDay: true,
   };
   const rainyDaily = [
-    { date: "2026-11-01", tempMin: 19, tempMax: 23, condition: "Heavy Rain", precipitationProbability: 90 },
+    {
+      date: "2026-11-01",
+      tempMin: 19,
+      tempMax: 23,
+      condition: "Heavy Rain",
+      precipitationProbability: 90,
+      precipitationSum: 45,
+      windSpeedMax: 30,
+      sunrise: "06:00",
+      sunset: "18:00",
+      weatherCode: 65,
+      confidenceTier: "high_confidence" as const,
+    },
   ];
   const rainySuitability = computeSuitability(rainyCurrent, rainyDaily, clearAqi);
   const indoor = rainySuitability.find((s) => s.category === "indoor_heritage");
@@ -91,7 +115,19 @@ test("Open-Meteo: Summary advisory synthesizes actionable travel guidance", () =
     isDay: true,
   };
   const dummyDailyRain = [
-    { date: "2026-11-01", tempMin: 20, tempMax: 25, condition: "Rainy", precipitationProbability: 75 },
+    {
+      date: "2026-11-01",
+      tempMin: 20,
+      tempMax: 25,
+      condition: "Rainy",
+      precipitationProbability: 75,
+      precipitationSum: 15,
+      windSpeedMax: 15,
+      sunrise: "06:00",
+      sunset: "18:00",
+      weatherCode: 61,
+      confidenceTier: "high_confidence" as const,
+    },
   ];
 
   const rainAdvisory = computeSummaryAdvisory(dummyCurrentRain, dummyDailyRain, "Goa", {
@@ -118,7 +154,19 @@ test("Open-Meteo: Summary advisory synthesizes actionable travel guidance", () =
     isDay: true,
   };
   const dummyDailyHeat = [
-    { date: "2026-11-01", tempMin: 28, tempMax: 39, condition: "Clear Sky", precipitationProbability: 5 },
+    {
+      date: "2026-11-01",
+      tempMin: 28,
+      tempMax: 39,
+      condition: "Clear Sky",
+      precipitationProbability: 5,
+      precipitationSum: 0,
+      windSpeedMax: 12,
+      sunrise: "06:00",
+      sunset: "18:00",
+      weatherCode: 0,
+      confidenceTier: "high_confidence" as const,
+    },
   ];
 
   const heatAdvisory = computeSummaryAdvisory(dummyCurrentHeat, dummyDailyHeat, "Jaipur", {
