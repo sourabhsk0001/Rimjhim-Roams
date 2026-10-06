@@ -91,6 +91,7 @@ export class CopilotService {
         content: aiResponse.content,
         timestamp: new Date().toISOString(),
         toolCalls: aiResponse.toolCalls,
+        rawModelParts: aiResponse.rawModelParts,
       });
 
       // Execute each tool deterministically through the ToolRegistry

@@ -268,7 +268,8 @@ export class ToolRegistry {
     args: Record<string, unknown>,
     context: CopilotContext
   ): Promise<Record<string, unknown>> {
-    switch (name) {
+    const cleanName = (name || "").replace(/^(?:default_api|tools?):/, "").trim();
+    switch (cleanName) {
       case "search_destinations":
         return this.searchDestinations(args);
 

@@ -400,3 +400,104 @@ test("DeterministicCopilotProvider: Generates valid tool calls without external 
   assert(resp.toolCalls && resp.toolCalls.length > 0);
   assert.strictEqual(resp.toolCalls[0].name, "search_destinations");
 });
+
+test("ToolRegistry: Executes namespaced tool calls (e.g. default_api:search_destinations)", async () => {
+  const result = await toolRegistry.executeTool(
+    "default_api:search_destinations",
+    { query: "Goa" },
+    { userId: authorizedUserId, isAuthorized: true }
+  );
+
+  assert.strictEqual(typeof result.count, "number");
+  assert(Array.isArray(result.destinations));
+});
+
+test("GeminiModelProvider: Converts message history and preserves thought_signature on functionCall parts", async () => {
+  const provider = new GeminiModelProvider("dummy-test-key-for-unit-test");
+
+  // Verify internal thought_signature preservation logic
+  const mockMessages: any[] = [
+    {
+      id: "u1",
+      role: "user",
+      content: "Recommend beaches",
+      timestamp: new Date().toISOString(),
+    },
+    {
+      id: "a1",
+      role: "assistant",
+      content: "",
+      timestamp: new Date().toISOString(),
+      toolCalls: [
+        {
+          id: "call_123",
+          name: "search_destinations",
+          arguments: { query: "Goa" },
+          thoughtSignature: "test_thought_signature_token_xyz",
+        },
+      ],
+    },
+    {
+      id: "t1",
+      role: "tool",
+      content: "",
+      timestamp: new Date().toISOString(),
+      toolResults: [
+        {
+          toolCallId: "call_123",
+          name: "search_destinations",
+          result: { count: 1, destinations: [{ name: "Goa" }] },
+        },
+      ],
+    },
+  ];
+
+  // Access history building by calling generateResponse with a mock
+  let capturedContents: any[] = [];
+  (provider as any).client = {
+    getGenerativeModel: () => ({
+      generateContent: async ({ contents }: any) => {
+        capturedContents = contents;
+        return {
+          response: {
+            candidates: [
+              {
+                content: {
+                  parts: [
+                    {
+                      thought: true,
+                      text: "Thinking about recommending Calangute beach...",
+                    },
+                    {
+                      text: "I recommend visiting Goa for its beautiful beaches.",
+                    },
+                  ],
+                },
+              },
+            ],
+            text: () => "I recommend visiting Goa for its beautiful beaches.",
+          },
+        };
+      },
+    }),
+  };
+
+  const response = await provider.generateResponse(mockMessages, COPILOT_TOOL_DEFINITIONS);
+  assert.strictEqual(response.content, "I recommend visiting Goa for its beautiful beaches.");
+
+  // Verify that the model turn in contents included thoughtSignature and thought_signature
+  const modelTurn = capturedContents.find((c) => c.role === "model");
+  assert.ok(modelTurn, "Model turn must exist in captured contents");
+  assert.ok(modelTurn.parts[0].functionCall, "Must have functionCall part");
+  assert.strictEqual(
+    modelTurn.parts[0].thoughtSignature,
+    "test_thought_signature_token_xyz",
+    "Must preserve thoughtSignature"
+  );
+  assert.strictEqual(
+    modelTurn.parts[0].thought_signature,
+    "test_thought_signature_token_xyz",
+    "Must preserve thought_signature"
+  );
+});
+

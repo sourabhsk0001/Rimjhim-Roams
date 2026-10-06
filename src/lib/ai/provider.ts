@@ -34,6 +34,7 @@ export class GeminiModelProvider implements AIModelProvider {
   ): Promise<{
     content: string;
     toolCalls?: ToolCallPayload[];
+    rawModelParts?: any[];
   }> {
     // 1. Format tools into Gemini FunctionDeclaration format
     const functionDeclarations: FunctionDeclaration[] = tools.map((t) => {
@@ -83,19 +84,56 @@ User Context: Authorized UserId: ${context?.userId || "anonymous"}, Active TripI
       if (msg.role === "user") {
         contents.push({ role: "user", parts: [{ text: msg.content }] });
       } else if (msg.role === "assistant") {
-        const parts: any[] = [];
-        if (msg.content) parts.push({ text: msg.content });
-        if (msg.toolCalls && msg.toolCalls.length > 0) {
-          for (const tc of msg.toolCalls) {
-            parts.push({
-              functionCall: {
-                name: tc.name,
-                args: tc.arguments,
-              },
-            });
+        if (msg.rawModelParts && msg.rawModelParts.length > 0) {
+          // If raw model parts from previous turn exist, echo them back directly,
+          // ensuring every functionCall part has valid thought_signature fields.
+          const sanitizedParts = msg.rawModelParts.map((p: any) => {
+            if (p.functionCall) {
+              const sig =
+                p.thought_signature ||
+                p.thoughtSignature ||
+                p.functionCall?.thought_signature ||
+                p.functionCall?.thoughtSignature ||
+                "skip_thought_signature_validator";
+              return {
+                ...p,
+                thought_signature: sig,
+                thoughtSignature: sig,
+              };
+            }
+            return p;
+          });
+          contents.push({ role: "model", parts: sanitizedParts });
+        } else {
+          const parts: any[] = [];
+          if (msg.content) parts.push({ text: msg.content });
+          if (msg.toolCalls && msg.toolCalls.length > 0) {
+            for (const tc of msg.toolCalls) {
+              if (tc.rawPart) {
+                const raw = { ...tc.rawPart };
+                const sig =
+                  (raw as any).thought_signature ||
+                  (raw as any).thoughtSignature ||
+                  tc.thoughtSignature ||
+                  "skip_thought_signature_validator";
+                (raw as any).thought_signature = sig;
+                (raw as any).thoughtSignature = sig;
+                parts.push(raw);
+              } else {
+                const sig = tc.thoughtSignature || "skip_thought_signature_validator";
+                parts.push({
+                  functionCall: {
+                    name: tc.name,
+                    args: tc.arguments,
+                  },
+                  thought_signature: sig,
+                  thoughtSignature: sig,
+                });
+              }
+            }
           }
+          contents.push({ role: "model", parts });
         }
-        contents.push({ role: "model", parts });
       } else if (msg.role === "tool" && msg.toolResults) {
         for (const tr of msg.toolResults) {
           contents.push({
@@ -126,14 +164,32 @@ User Context: Authorized UserId: ${context?.userId || "anonymous"}, Active TripI
     let textContent = "";
 
     for (const part of candidate.content.parts) {
+      // Filter out internal thinking summaries from user-facing text
+      if ((part as any).thought) {
+        continue;
+      }
       if (part.text) {
         textContent += part.text;
       }
       if (part.functionCall) {
+        const anyPart = part as any;
+        const sig =
+          anyPart.thought_signature ||
+          anyPart.thoughtSignature ||
+          anyPart.functionCall?.thought_signature ||
+          anyPart.functionCall?.thoughtSignature ||
+          "skip_thought_signature_validator";
+
         toolCalls.push({
           id: `call_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
           name: part.functionCall.name,
           arguments: (part.functionCall.args as Record<string, unknown>) || {},
+          thoughtSignature: sig,
+          rawPart: {
+            ...part,
+            thought_signature: sig,
+            thoughtSignature: sig,
+          },
         });
       }
     }
@@ -141,6 +197,7 @@ User Context: Authorized UserId: ${context?.userId || "anonymous"}, Active TripI
     return {
       content: textContent.trim(),
       toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+      rawModelParts: candidate.content.parts,
     };
   }
 }
@@ -160,6 +217,7 @@ export class DeterministicCopilotProvider implements AIModelProvider {
   ): Promise<{
     content: string;
     toolCalls?: ToolCallPayload[];
+    rawModelParts?: any[];
   }> {
     const lastMessage = messages[messages.length - 1];
 
@@ -425,6 +483,7 @@ export class GroqModelProvider implements AIModelProvider {
   ): Promise<{
     content: string;
     toolCalls?: ToolCallPayload[];
+    rawModelParts?: any[];
   }> {
     const formattedTools = tools.map((t) => ({
       type: "function",

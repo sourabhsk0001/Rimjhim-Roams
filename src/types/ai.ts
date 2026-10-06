@@ -8,6 +8,8 @@ export interface ToolCallPayload {
   id: string;
   name: string;
   arguments: Record<string, unknown>;
+  thoughtSignature?: string;
+  rawPart?: Record<string, unknown>;
 }
 
 export interface ToolResultPayload {
@@ -23,6 +25,7 @@ export interface ChatMessage {
   timestamp: string;
   toolCalls?: ToolCallPayload[];
   toolResults?: ToolResultPayload[];
+  rawModelParts?: any[];
 }
 
 export interface ToolDefinition {
@@ -82,5 +85,6 @@ export interface AIModelProvider {
   ): Promise<{
     content: string;
     toolCalls?: ToolCallPayload[];
+    rawModelParts?: any[];
   }>;
 }
