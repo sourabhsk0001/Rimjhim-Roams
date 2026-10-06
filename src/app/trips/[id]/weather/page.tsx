@@ -26,6 +26,7 @@ import {
   Thermometer,
   ShieldCheck,
   Eye,
+  HeartPulse,
 } from "lucide-react";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
@@ -319,6 +320,155 @@ export default function TripWeatherPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Open-Meteo Air Quality & Environmental Telemetry Card */}
+            {weather.airQuality && (
+              <Card className="border-emerald-200/80 shadow-sm bg-gradient-to-br from-emerald-50/40 via-white to-sky-50/30">
+                <CardHeader className="pb-3 border-b border-emerald-100">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 bg-emerald-100 text-emerald-800 rounded-xl">
+                        <HeartPulse className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-base sm:text-lg font-bold text-slate-900">
+                          Real-Time Air Quality & Atmospheric Purity
+                        </CardTitle>
+                        <CardDescription className="text-xs text-slate-500">
+                          Direct Open-Meteo atmospheric dispersion & particulate model
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <Badge
+                      className={`text-xs px-3 py-1 font-semibold ${
+                        weather.airQuality.category === "Good"
+                          ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                          : weather.airQuality.category === "Moderate"
+                          ? "bg-amber-100 text-amber-800 border-amber-200"
+                          : "bg-rose-100 text-rose-800 border-rose-200"
+                      }`}
+                    >
+                      {weather.airQuality.category} Air Quality
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6 space-y-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 text-center">
+                      <span className="text-[11px] font-medium text-slate-500 block">US AQI Index</span>
+                      <span className="text-3xl font-extrabold text-slate-900 mt-1 block">
+                        {weather.airQuality.aqiUs}
+                      </span>
+                      <span className="text-[10px] text-slate-400 mt-0.5 block">0 - 500 Scale</span>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 text-center">
+                      <span className="text-[11px] font-medium text-slate-500 block">European AQI</span>
+                      <span className="text-3xl font-extrabold text-slate-900 mt-1 block">
+                        {weather.airQuality.aqiEu}
+                      </span>
+                      <span className="text-[10px] text-slate-400 mt-0.5 block">0 - 100 Scale</span>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 text-center">
+                      <span className="text-[11px] font-medium text-slate-500 block">Fine PM2.5</span>
+                      <span className="text-3xl font-extrabold text-slate-900 mt-1 block">
+                        {weather.airQuality.pm2_5}
+                      </span>
+                      <span className="text-[10px] text-slate-400 mt-0.5 block">µg/m³</span>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 text-center">
+                      <span className="text-[11px] font-medium text-slate-500 block">Coarse PM10</span>
+                      <span className="text-3xl font-extrabold text-slate-900 mt-1 block">
+                        {weather.airQuality.pm10}
+                      </span>
+                      <span className="text-[10px] text-slate-400 mt-0.5 block">µg/m³</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-white/90 border border-emerald-200/80 flex items-start gap-2.5 text-xs text-slate-700">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="text-emerald-950 font-semibold">Travel Health Advisory: </strong>
+                      <span>{weather.airQuality.advisory}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Activity Weather Suitability Matrix */}
+            {weather.suitability && weather.suitability.length > 0 && (
+              <Card className="border-sky-200/80 shadow-sm bg-white">
+                <CardHeader className="pb-3 border-b border-sky-100">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 bg-sky-100 text-sky-800 rounded-xl">
+                        <Compass className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-base sm:text-lg font-bold text-slate-900">
+                          Activity Weather Suitability Matrix
+                        </CardTitle>
+                        <CardDescription className="text-xs text-slate-500">
+                          Automated readiness scores for outdoor & indoor excursions based on Open-Meteo telemetry
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="text-xs text-sky-700 bg-sky-50 border-sky-200">
+                      Climatological Match
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {weather.suitability.map((suit) => (
+                      <div
+                        key={suit.category}
+                        className="p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 hover:bg-slate-50 transition-all flex flex-col justify-between"
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-sm text-slate-900">{suit.label}</span>
+                            <Badge
+                              className={`text-[10px] font-semibold ${
+                                suit.badgeColor === "emerald"
+                                  ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                                  : suit.badgeColor === "blue"
+                                  ? "bg-sky-100 text-sky-800 border-sky-200"
+                                  : suit.badgeColor === "amber"
+                                  ? "bg-amber-100 text-amber-800 border-amber-200"
+                                  : "bg-rose-100 text-rose-800 border-rose-200"
+                              }`}
+                            >
+                              {suit.status} ({suit.score}%)
+                            </Badge>
+                          </div>
+                          <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full ${
+                                suit.badgeColor === "emerald"
+                                  ? "bg-emerald-500"
+                                  : suit.badgeColor === "blue"
+                                  ? "bg-sky-500"
+                                  : suit.badgeColor === "amber"
+                                  ? "bg-amber-500"
+                                  : "bg-rose-500"
+                              }`}
+                              style={{ width: `${suit.score}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                            {suit.tips}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Weather-Itinerary Intelligence & Conflict Shield */}
             <Card className="border-amber-200 shadow-sm overflow-hidden bg-amber-50/30 dark:bg-amber-950/10">

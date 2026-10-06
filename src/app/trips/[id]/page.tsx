@@ -37,6 +37,10 @@ import {
   Receipt,
   Calculator,
   AlertTriangle,
+  Sun,
+  CloudRain,
+  Droplets,
+  Wind,
 } from "lucide-react";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
@@ -107,7 +111,21 @@ export default function TripDetailPage() {
         if (planRes.ok) {
           const planData = await planRes.json();
           if (planData.plan) {
-            setPlan(planData.plan);
+            let loadedPlan = planData.plan;
+            if (!loadedPlan.weatherForecast) {
+              try {
+                const weatherRes = await fetch(`/api/trips/${tripId}/weather`);
+                if (weatherRes.ok) {
+                  const weatherJson = await weatherRes.json();
+                  if (weatherJson.weather) {
+                    loadedPlan = { ...loadedPlan, weatherForecast: weatherJson.weather };
+                  }
+                }
+              } catch {
+                // Weather fallback handled gracefully
+              }
+            }
+            setPlan(loadedPlan);
           }
         }
       } catch (err: unknown) {
@@ -533,6 +551,164 @@ export default function TripDetailPage() {
             {/* When Plan is Present: Render Complete Architecture */}
             {plan && (
               <div className="space-y-8">
+                {/* 1.5 Open-Meteo Weather Intelligence Card */}
+                {plan.weatherForecast && (
+                  <Card className="shadow-md rounded-3xl overflow-hidden border-sky-100 bg-gradient-to-br from-sky-50/60 via-white to-blue-50/30">
+                    <CardHeader className="pb-3 border-b border-sky-100/80">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-2xl bg-sky-500/10 text-sky-600 flex items-center justify-center font-bold">
+                            <CloudSun className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <CardTitle className="text-base sm:text-lg font-bold text-slate-900">
+                                Live Weather Intelligence
+                              </CardTitle>
+                              <Badge variant="outline" className="text-[10px] bg-white border-sky-200 text-sky-700 font-medium">
+                                Open-Meteo Climatology
+                              </Badge>
+                            </div>
+                            <CardDescription className="text-xs text-slate-500">
+                              Atmospheric metrics, air quality, and day-by-day forecast for {plan.destination.name}
+                            </CardDescription>
+                          </div>
+                        </div>
+
+                        <Link
+                          href={`/trips/${trip.id}/weather`}
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-700 hover:text-sky-900 bg-sky-100/60 hover:bg-sky-100 px-3 py-1.5 rounded-full transition-all"
+                        >
+                          Detailed Weather Center <ChevronRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                      {/* Current Conditions & Air Quality Banner */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="p-3.5 rounded-2xl bg-white border border-sky-100/80 shadow-xs flex items-center justify-between">
+                          <div>
+                            <span className="text-[11px] font-medium text-slate-500 block">Current Temperature</span>
+                            <div className="flex items-baseline gap-1.5 mt-0.5">
+                              <span className="text-2xl font-bold text-slate-900">
+                                {plan.weatherForecast.current?.temperature ?? 26}°C
+                              </span>
+                              <span className="text-xs text-slate-500">
+                                Feels like {plan.weatherForecast.current?.apparentTemperature ?? 27}°C
+                              </span>
+                            </div>
+                            <span className="text-xs font-medium text-sky-700 mt-1 block">
+                              {plan.weatherForecast.current?.condition || "Pleasant & Clear"}
+                            </span>
+                          </div>
+                          <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center">
+                            <Sun className="w-5 h-5" />
+                          </div>
+                        </div>
+
+                        <div className="p-3.5 rounded-2xl bg-white border border-sky-100/80 shadow-xs flex items-center justify-between">
+                          <div>
+                            <span className="text-[11px] font-medium text-slate-500 block">Air Quality (AQI)</span>
+                            <div className="flex items-baseline gap-2 mt-0.5">
+                              <span className="text-2xl font-bold text-slate-900">
+                                {plan.weatherForecast.airQuality?.aqiUs ?? 42}
+                              </span>
+                              <Badge
+                                className={`text-[10px] ${
+                                  (plan.weatherForecast.airQuality?.category || "Good") === "Good"
+                                    ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                                    : (plan.weatherForecast.airQuality?.category || "Moderate") === "Moderate"
+                                    ? "bg-amber-100 text-amber-800 border-amber-200"
+                                    : "bg-rose-100 text-rose-800 border-rose-200"
+                                }`}
+                              >
+                                {plan.weatherForecast.airQuality?.category || "Good"}
+                              </Badge>
+                            </div>
+                            <span className="text-[11px] text-slate-500 mt-1 line-clamp-1">
+                              PM2.5: {plan.weatherForecast.airQuality?.pm2_5 ?? 12} µg/m³
+                            </span>
+                          </div>
+                          <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <ShieldCheck className="w-5 h-5" />
+                          </div>
+                        </div>
+
+                        <div className="p-3.5 rounded-2xl bg-white border border-sky-100/80 shadow-xs flex items-center justify-between">
+                          <div>
+                            <span className="text-[11px] font-medium text-slate-500 block">Atmospheric Metrics</span>
+                            <div className="text-xs text-slate-700 space-y-1 mt-1">
+                              <div className="flex items-center gap-1.5">
+                                <Droplets className="w-3.5 h-3.5 text-sky-500" />
+                                <span>Humidity: {plan.weatherForecast.current?.humidity ?? 60}%</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <Wind className="w-3.5 h-3.5 text-slate-500" />
+                                <span>Wind: {plan.weatherForecast.current?.windSpeed ?? 12} km/h</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                            <Droplets className="w-5 h-5" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Advisory & Recommendations */}
+                      {plan.weatherForecast.summaryAdvisory && (
+                        <div className="p-3 rounded-2xl bg-sky-100/50 border border-sky-200/60 text-xs text-sky-900 flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-sky-600 shrink-0" />
+                          <span>{plan.weatherForecast.summaryAdvisory}</span>
+                        </div>
+                      )}
+
+                      {/* Daily Forecast Strip */}
+                      <div className="space-y-1.5">
+                        <span className="text-xs font-semibold text-slate-700 block">
+                          Trip Schedule Forecast Strip:
+                        </span>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+                          {plan.weatherForecast.daily?.slice(0, 7).map((d, idx) => (
+                            <button
+                              type="button"
+                              key={d.date}
+                              onClick={() => {
+                                setSelectedDayNumber(idx + 1);
+                                setSelectedItemId(null);
+                              }}
+                              className={`p-2.5 rounded-2xl border text-center transition-all cursor-pointer ${
+                                idx + 1 === selectedDayNumber
+                                  ? "bg-sky-600 text-white border-sky-700 shadow-xs"
+                                  : "bg-white border-slate-200/80 hover:bg-slate-50 text-slate-800"
+                              }`}
+                            >
+                              <span className={`text-[10px] font-bold block ${idx + 1 === selectedDayNumber ? "text-sky-100" : "text-slate-500"}`}>
+                                Day {idx + 1}
+                              </span>
+                              <span className="text-[11px] font-medium block truncate mt-0.5">
+                                {d.date.substring(5)}
+                              </span>
+                              <div className="my-1 flex justify-center">
+                                {d.precipitationProbability > 40 ? (
+                                  <CloudRain className={`w-4 h-4 ${idx + 1 === selectedDayNumber ? "text-sky-200" : "text-blue-500"}`} />
+                                ) : (
+                                  <Sun className={`w-4 h-4 ${idx + 1 === selectedDayNumber ? "text-amber-300" : "text-amber-500"}`} />
+                                )}
+                              </div>
+                              <span className="text-xs font-bold block">
+                                {Math.round(d.tempMin)}° - {Math.round(d.tempMax)}°C
+                              </span>
+                              <span className={`text-[9px] block mt-0.5 ${idx + 1 === selectedDayNumber ? "text-sky-200" : "text-slate-500"}`}>
+                                {d.precipitationProbability}% rain
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* 2. Interactive Map Section */}
                 <Card className="shadow-md rounded-3xl overflow-hidden">
                   <CardHeader className="pb-3 border-b bg-card/60">
@@ -608,7 +784,13 @@ export default function TripDetailPage() {
                             <span className="font-bold text-foreground">Day {activeDay.dayNumber}: {activeDay.theme}</span>
                             <span className="text-muted-foreground text-xs block">{activeDay.date} • {activeDay.dayStartTime} to {activeDay.dayEndTime}</span>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {activeDay.weather && (
+                              <Badge variant="outline" className="bg-sky-50 text-sky-800 border-sky-200 gap-1 text-xs">
+                                <CloudSun className="w-3.5 h-3.5 text-sky-600" />
+                                {activeDay.weather.condition} • {Math.round(activeDay.weather.tempMin)}°–{Math.round(activeDay.weather.tempMax)}°C
+                              </Badge>
+                            )}
                             <Badge className="bg-emerald-600/10 text-emerald-700 border-emerald-300 gap-1 text-xs">
                               <ShieldCheck className="w-3.5 h-3.5" />
                               Schedule Validated

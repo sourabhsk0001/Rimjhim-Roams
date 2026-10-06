@@ -51,6 +51,29 @@ export interface DailyWeather {
   confidenceTier: WeatherConfidenceTier;
 }
 
+export interface AirQualityData {
+  aqiUs: number;
+  aqiEu?: number;
+  pm2_5: number;
+  pm10: number;
+  category: "Good" | "Moderate" | "Sensitive" | "Unhealthy" | "Very Unhealthy" | "Hazardous";
+  advisory: string;
+}
+
+export interface ActivityWeatherSuitability {
+  category:
+    | "outdoor_sightseeing"
+    | "beach_water"
+    | "mountain_trekking"
+    | "indoor_heritage"
+    | "photography";
+  label: string;
+  score: number; // 0 - 100
+  status: "Optimal" | "Suitable" | "Fair" | "Challenging" | "Not Recommended";
+  badgeColor: string;
+  tips: string;
+}
+
 export interface WeatherForecastResponse {
   locationName: string;
   latitude: number;
@@ -59,6 +82,9 @@ export interface WeatherForecastResponse {
   current: CurrentWeather;
   daily: DailyWeather[];
   hourly: HourlyWeather[];
+  airQuality?: AirQualityData;
+  suitability?: ActivityWeatherSuitability[];
+  summaryAdvisory?: string;
   isCached: boolean;
   isFallback: boolean;
   fetchedAt: string;

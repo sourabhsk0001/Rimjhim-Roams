@@ -394,9 +394,39 @@ This roadmap outlines the phased development plan for Rimjhim Roams (TripWise AI
 
 ---
 
+## Weather-Based Trip Planning & Open-Meteo Integration (Completed)
+- [x] **Open-Meteo Climatology & Forecast Integration (`src/lib/weather/provider.ts`)**:
+  - Leverages Open-Meteo API for real-time weather, 7–16 day numerical weather prediction (NWP), and climatological averages without requiring API keys.
+  - Connected to Open-Meteo Air Quality API (`air-quality-api.open-meteo.com`) capturing US AQI (0–500), European AQI (0–100), fine PM2.5, and coarse PM10 with category classifications and health advisories.
+- [x] **Activity Weather Suitability Matrix (`src/types/weather.ts`, `src/lib/weather/provider.ts`)**:
+  - Automated activity readiness evaluation across 5 travel categories: Sightseeing & City Walks, Beaches & Water Sports, Treks & Hill Trails, Museums & Cultural Sites, and Golden Hour Photography.
+  - Scores (0–100%), status ratings (`Optimal`, `Suitable`, `Fair`, `Challenging`, `Not Recommended`), badge styling, and actionable travel tips based on temperature, rain probability, wind speed, visibility, and AQI.
+- [x] **Weather-Adapted Trip Planner Pipeline (`src/lib/services/trip-planner-service.ts`)**:
+  - Stage 6 & 7 integrates Open-Meteo forecasts during generation.
+  - Automatically identifies precipitation risk (>40% rain) and dynamically prioritizes indoor attractions (museums, palaces, temples) during rainy periods.
+  - Attaches `weather: DailyWeather` to each `PlannedDayItinerary` and `weatherForecast` to the root `PlannedTripResult`.
+- [x] **Public Destination Weather API (`src/app/api/destinations/[id]/weather/route.ts`)**:
+  - REST endpoint delivering live Open-Meteo forecast, air quality metrics, and activity suitability matrix for any catalog destination with rate limiting and input sanitization.
+- [x] **Trip Workspace Weather Card (`src/app/trips/[id]/page.tsx`)**:
+  - Added real-time atmospheric metrics card: temperature, feels-like, US AQI badge, PM2.5 particulate count, humidity, wind, and advisory banner.
+  - Interactive 7-day schedule forecast strip with click-to-jump day selection and condition icons.
+  - Attached day-specific weather badges to the itinerary day headers.
+- [x] **Destination Catalog Weather Tab (`src/app/explore/destinations/[id]/page.tsx`)**:
+  - Hero banner live weather & AQI badge display.
+  - Dedicated "Weather & Climatology" tab featuring current conditions, air quality particulate breakdown, 7-day forecast cards, and activity suitability matrix.
+- [x] **Dedicated Weather Center (`src/app/trips/[id]/weather/page.tsx`)**:
+  - Enhanced with real-time Air Quality & Environmental Telemetry (US AQI, European AQI, PM2.5, PM10).
+  - Activity Weather Suitability Matrix with visual progress bars.
+  - Existing Itinerary Weather Shield conflict detection and one-tap auto-rescheduling.
+- [x] **Comprehensive Testing (`test/weather_openmeteo.test.ts`)**:
+  - 5 dedicated unit and integration tests verifying AQI categorization, suitability scoring, advisory generation, and trip planner weather integration (266 automated tests passing).
+
+---
+
 ## Phase 16: Production Polish, PWA Offline Support & Monitoring
 - [ ] Offline caching for emergency cards and destination safety data via Service Workers.
 - [ ] Multi-region CDN asset delivery and static optimization.
 - [ ] Continuous integration automated deployment pipeline.
+
 
 

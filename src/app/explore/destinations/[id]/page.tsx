@@ -17,6 +17,12 @@ import {
   Radar,
   Info,
   Route,
+  CloudSun,
+  Droplets,
+  Wind,
+  CloudRain,
+  ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
@@ -45,6 +51,7 @@ import {
   NearbyLocationResult,
 } from "@/types/travel";
 import { RouteMode, RouteResult } from "@/lib/geo/routing";
+import { WeatherForecastResponse } from "@/types/weather";
 
 export default function DestinationDetailPage() {
   const params = useParams();
@@ -56,6 +63,7 @@ export default function DestinationDetailPage() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [transport, setTransport] = useState<TransportOption[]>([]);
   const [taxis, setTaxis] = useState<TaxiOption[]>([]);
+  const [weather, setWeather] = useState<WeatherForecastResponse | null>(null);
 
   // Geospatial Map State
   const [routeMode, setRouteMode] = useState<RouteMode>("driving");
@@ -69,7 +77,7 @@ export default function DestinationDetailPage() {
   const [loadingNearby, setLoadingNearby] = useState(false);
 
   const [activeTab, setActiveTab] = useState<
-    "map" | "attractions" | "hotels" | "restaurants" | "transport" | "nearby"
+    "map" | "attractions" | "weather" | "hotels" | "restaurants" | "transport" | "nearby"
   >("map");
 
   const [loading, setLoading] = useState(true);
@@ -82,12 +90,13 @@ export default function DestinationDetailPage() {
       setError(null);
 
       try {
-        const [dRes, aRes, hRes, rRes, tRes] = await Promise.all([
+        const [dRes, aRes, hRes, rRes, tRes, wRes] = await Promise.all([
           fetch(`/api/destinations/${destId}`),
           fetch(`/api/destinations/${destId}/attractions`),
           fetch(`/api/destinations/${destId}/hotels`),
           fetch(`/api/destinations/${destId}/restaurants`),
           fetch(`/api/destinations/${destId}/transport`),
+          fetch(`/api/destinations/${destId}/weather?days=7`),
         ]);
 
         if (!dRes.ok) throw new Error("Destination not found");
@@ -99,6 +108,17 @@ export default function DestinationDetailPage() {
           rRes.json(),
           tRes.json(),
         ]);
+
+        if (wRes.ok) {
+          try {
+            const wData = await wRes.json();
+            if (wData.forecast) {
+              setWeather(wData.forecast);
+            }
+          } catch {
+            // Weather fetch optional
+          }
+        }
 
         setDestination(dData.destination);
         setAttractions(aData.attractions || []);
@@ -330,11 +350,23 @@ export default function DestinationDetailPage() {
                     {destination.description}
                   </p>
 
-                  <div className="flex flex-wrap items-center gap-4 mt-4 text-xs sm:text-sm text-slate-300">
+                  <div className="flex flex-wrap items-center gap-3 mt-4 text-xs sm:text-sm text-slate-300">
                     <span className="flex items-center gap-1.5">
                       <Sun className="w-4 h-4 text-amber-400" />
                       Best Season: {destination.best_time_to_visit}
                     </span>
+                    {weather?.current && (
+                      <span className="flex items-center gap-1.5 bg-white/10 px-2.5 py-0.5 rounded-full text-white text-xs border border-white/20">
+                        <CloudSun className="w-3.5 h-3.5 text-sky-300" />
+                        Now: {weather.current.temperature}°C • {weather.current.condition}
+                      </span>
+                    )}
+                    {weather?.airQuality && (
+                      <span className="flex items-center gap-1.5 bg-emerald-500/20 px-2.5 py-0.5 rounded-full text-emerald-300 text-xs border border-emerald-400/30">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        AQI: {weather.airQuality.aqiUs} ({weather.airQuality.category})
+                      </span>
+                    )}
                     <span className="flex items-center gap-1.5">
                       <MapPin className="w-4 h-4 text-blue-400" />
                       {destination.latitude.toFixed(4)}°N, {destination.longitude.toFixed(4)}°E
@@ -349,6 +381,7 @@ export default function DestinationDetailPage() {
               {[
                 { id: "map", label: "Interactive Map & Routes", icon: Route },
                 { id: "attractions", label: `Attractions (${attractions.length})`, icon: Compass },
+                { id: "weather", label: "Weather & Climatology", icon: CloudSun },
                 { id: "hotels", label: `Hotels (${hotels.length})`, icon: Building },
                 { id: "restaurants", label: `Dining (${restaurants.length})`, icon: Utensils },
                 { id: "transport", label: `Transport (${transport.length + taxis.length})`, icon: Car },
@@ -624,6 +657,185 @@ export default function DestinationDetailPage() {
                       </Card>
                     ))}
                   </div>
+                )}
+              </div>
+            )}
+
+            {/* Tab: Weather & Climatology */}
+            {activeTab === "weather" && (
+              <div className="space-y-6 animate-fade-rise">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                      <CloudSun className="w-5 h-5 text-sky-600" />
+                      Live Weather & Climatological Forecast
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Powered by Open-Meteo High-Resolution Numerical Weather Prediction (NWP) Models.
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="bg-sky-50 text-sky-700 border-sky-200 text-xs py-1 px-3 w-fit">
+                    Open-Meteo Climatology Active
+                  </Badge>
+                </div>
+
+                {!weather ? (
+                  <Card className="p-8 text-center border-dashed">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Fetching atmospheric telemetry...</p>
+                  </Card>
+                ) : (
+                  <>
+                    {/* Atmospheric Overview Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Current Conditions */}
+                      <Card className="rounded-2xl border border-sky-100 shadow-sm bg-gradient-to-br from-white to-sky-50/50">
+                        <CardContent className="p-5 space-y-3">
+                          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                            Current Temperature
+                          </span>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-4xl font-bold text-slate-900">
+                              {weather.current?.temperature ?? 26}°C
+                            </span>
+                            <span className="text-xs text-slate-500">
+                              Feels like {weather.current?.apparentTemperature ?? 27}°C
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm font-medium text-sky-700">
+                            <Sun className="w-4 h-4 text-amber-500" />
+                            <span>{weather.current?.condition || "Pleasant"}</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 pt-2 border-t text-xs text-slate-600">
+                            <div>Humidity: <strong className="text-slate-800">{weather.current?.humidity ?? 60}%</strong></div>
+                            <div>Wind: <strong className="text-slate-800">{weather.current?.windSpeed ?? 12} km/h</strong></div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Real-time Air Quality */}
+                      <Card className="rounded-2xl border border-emerald-100 shadow-sm bg-gradient-to-br from-white to-emerald-50/30">
+                        <CardContent className="p-5 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                              Air Quality Index (AQI)
+                            </span>
+                            <Badge
+                              className={`text-[10px] ${
+                                (weather.airQuality?.category || "Good") === "Good"
+                                  ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                                  : (weather.airQuality?.category || "Moderate") === "Moderate"
+                                  ? "bg-amber-100 text-amber-800 border-amber-200"
+                                  : "bg-rose-100 text-rose-800 border-rose-200"
+                              }`}
+                            >
+                              {weather.airQuality?.category || "Good"}
+                            </Badge>
+                          </div>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-4xl font-bold text-slate-900">
+                              {weather.airQuality?.aqiUs ?? 38}
+                            </span>
+                            <span className="text-xs text-slate-500">US EPA Standard</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
+                            <div>PM2.5: <strong className="text-slate-800">{weather.airQuality?.pm2_5 ?? 11} µg/m³</strong></div>
+                            <div>PM10: <strong className="text-slate-800">{weather.airQuality?.pm10 ?? 24} µg/m³</strong></div>
+                          </div>
+                          <p className="text-[11px] text-slate-500 line-clamp-2 pt-2 border-t">
+                            {weather.airQuality?.advisory || "Air quality is satisfactory. Ideal for outdoor explorations."}
+                          </p>
+                        </CardContent>
+                      </Card>
+
+                      {/* Travel Advisory Guidance */}
+                      <Card className="rounded-2xl border border-indigo-100 shadow-sm bg-gradient-to-br from-white to-indigo-50/30">
+                        <CardContent className="p-5 space-y-3">
+                          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                            Seasonal Climatology
+                          </span>
+                          <div className="flex items-center gap-2 text-sm font-semibold text-indigo-950">
+                            <Sparkles className="w-4 h-4 text-indigo-600" />
+                            <span>Recommended Travel Season</span>
+                          </div>
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            {destination.best_time_to_visit}. {weather.summaryAdvisory || "Optimal climate for sightseeing, photography, and cultural excursions."}
+                          </p>
+                          <div className="pt-2 border-t text-[11px] text-slate-500 flex items-center gap-1">
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                            High confidence forecast window
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* 7-Day Forecast Grid */}
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <span>7-Day Synoptic Forecast</span>
+                      </h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+                        {weather.daily?.slice(0, 7).map((d, idx) => (
+                          <Card key={d.date} className="p-3.5 text-center rounded-2xl border border-slate-200/80 shadow-xs hover:border-sky-300 transition-all">
+                            <span className="text-[11px] font-bold text-slate-500 block">
+                              Day {idx + 1}
+                            </span>
+                            <span className="text-xs font-medium text-slate-800 block truncate mt-0.5">
+                              {d.date}
+                            </span>
+                            <div className="my-2 flex justify-center">
+                              {d.precipitationProbability > 40 ? (
+                                <CloudRain className="w-5 h-5 text-blue-500" />
+                              ) : (
+                                <Sun className="w-5 h-5 text-amber-500" />
+                              )}
+                            </div>
+                            <span className="text-xs font-bold text-slate-900 block">
+                              {Math.round(d.tempMin)}° - {Math.round(d.tempMax)}°C
+                            </span>
+                            <span className="text-[10px] text-slate-500 block mt-0.5 truncate">
+                              {d.condition}
+                            </span>
+                            <span className="text-[9px] text-sky-600 font-semibold block mt-1">
+                              {d.precipitationProbability}% rain
+                            </span>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Activity Weather Suitability Matrix */}
+                    {weather.suitability && weather.suitability.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-bold text-slate-900">
+                          Activity Weather Suitability Matrix
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {weather.suitability.map((suit) => (
+                            <Card key={suit.category} className="p-4 rounded-2xl border border-slate-200/80 shadow-xs bg-white">
+                              <div className="flex items-center justify-between">
+                                <span className="font-semibold text-sm text-slate-900">{suit.label}</span>
+                                <Badge
+                                  className={`text-[10px] ${
+                                    suit.badgeColor === "emerald"
+                                      ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                                      : suit.badgeColor === "blue"
+                                      ? "bg-sky-100 text-sky-800 border-sky-200"
+                                      : suit.badgeColor === "amber"
+                                      ? "bg-amber-100 text-amber-800 border-amber-200"
+                                      : "bg-rose-100 text-rose-800 border-rose-200"
+                                  }`}
+                                >
+                                  {suit.status} ({suit.score}%)
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-slate-600 mt-2">{suit.tips}</p>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}

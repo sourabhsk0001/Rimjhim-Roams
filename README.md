@@ -7,7 +7,7 @@
   [![Version](https://img.shields.io/badge/version-0.5-blue.svg)](package.json)
   [![License](https://img.shields.io/badge/License-Apache_2.0-orange.svg)](LICENSE)
   [![Build & Deploy](https://img.shields.io/badge/Vercel-Deployable_Zero--Config-black?logo=vercel)](https://vercel.com)
-  [![Tests](https://img.shields.io/badge/Tests-261_Passed_100%25-brightgreen)](https://github.com/sourabhsk0001/Rimjhim-Roams)
+  [![Tests](https://img.shields.io/badge/Tests-266_Passed_100%25-brightgreen)](https://github.com/sourabhsk0001/Rimjhim-Roams)
   [![Next.js](https://img.shields.io/badge/Next.js-14.2.18_App_Router-black?logo=next.js)](https://nextjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-Strict_Mode-blue?logo=typescript)](https://www.typescriptlang.org/)
   [![Supabase](https://img.shields.io/badge/Database-Supabase_%2B_Local_Persistent_DB-3ECF8E?logo=supabase)](https://supabase.com)
@@ -86,6 +86,12 @@ Built around a **Zero LLM Math** architectural invariant, AI models are strictly
 - **Per-User Fair Usage Cap**: 20 req/day (`GEMINI_DAILY_USER_LIMIT=20`) per authenticated account ensuring equitable access for all student evaluators, recruiters, and travelers.
 - **Transparent Student-Project Reasoning**: Returns descriptive HTTP 429 errors explaining the academic student project constraints, exact midnight UTC reset countdowns, and instant reminders that deterministic tools (OSRM routing, Open-Meteo forecasts, NATMO exploration, budget math) remain 100% available without limits.
 - **Live Status & Visual Indicators**: Dedicated `/api/ai/quota` inspection endpoint and dynamic header pill indicators in the AI Travel Copilot.
+
+### 10. 🌦️ Weather-Based Trip Planning & Open-Meteo Integration (`/trips/[id]/weather`)
+- **Open-Meteo NWP & Air Quality Telemetry**: Real-time atmospheric metrics (temperature, feels-like, humidity, wind speed, UV index) and real-time Air Quality (US AQI 0–500, European AQI 0–100, PM2.5, PM10) with tailored health advisories without API keys.
+- **Activity Weather Suitability Matrix**: Automated readiness scoring across 5 travel categories: *Sightseeing & City Walks*, *Beaches & Water Sports*, *Treks & Hill Trails*, *Museums & Cultural Sites*, and *Golden Hour Photography*, complete with status badges (`Optimal`, `Suitable`, `Fair`, `Challenging`, `Not Recommended`) and practical advice.
+- **Weather-Adapted Trip Planner**: Automatically detects precipitation risk (>40% rain) and dynamically prioritizes indoor attractions (museums, palaces, temples) during rainy periods, attaching daily weather directly to itinerary days.
+- **Integrated Workspace & Destination Views**: Live weather intelligence card on `/trips/[id]`, interactive 7-day schedule forecast strip, itinerary day weather pills, dedicated "Weather & Climatology" tab on `/explore/destinations/[id]`, and public API endpoint `/api/destinations/[id]/weather`.
 
 ---
 

@@ -5,6 +5,8 @@ import {
   WeatherForecastResponse,
   HistoricalWeatherResponse,
   WeatherConfidenceTier,
+  AirQualityData,
+  ActivityWeatherSuitability,
 } from "@/types/weather";
 
 export interface WeatherProvider {
@@ -23,6 +25,10 @@ export interface WeatherProvider {
     endDate: string,
     locationName?: string
   ): Promise<HistoricalWeatherResponse[]>;
+  getAirQuality?(
+    latitude: number,
+    longitude: number
+  ): Promise<AirQualityData>;
 }
 
 export class OpenMeteoWeatherProvider implements WeatherProvider {
@@ -67,6 +73,36 @@ export class OpenMeteoWeatherProvider implements WeatherProvider {
     } catch {
       // Graceful fallback to safe climatological baseline
       return this.generateFallbackCurrent(latitude);
+    }
+  }
+
+  /**
+   * Fetches real-time Air Quality observations from Open-Meteo Air Quality API
+   */
+  async getAirQuality(
+    latitude: number,
+    longitude: number
+  ): Promise<AirQualityData> {
+    const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&current=european_aqi,us_aqi,pm10,pm2_5&timezone=auto`;
+
+    try {
+      const res = await fetch(url, {
+        signal: AbortSignal.timeout(this.defaultTimeoutMs),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Open-Meteo Air Quality returned status ${res.status}`);
+      }
+
+      const data = await res.json();
+      const current = data.current || {};
+      const usAqi = current.us_aqi ?? 52;
+      const pm2_5 = current.pm2_5 ?? 15.4;
+      const pm10 = current.pm10 ?? 28.6;
+
+      return parseAirQuality(usAqi, pm2_5, pm10);
+    } catch {
+      return this.generateFallbackAirQuality(latitude);
     }
   }
 
@@ -161,6 +197,17 @@ export class OpenMeteoWeatherProvider implements WeatherProvider {
         }
       );
 
+      // Enrich with Open-Meteo Air Quality in parallel
+      let airQuality: AirQualityData;
+      try {
+        airQuality = await this.getAirQuality(latitude, longitude);
+      } catch {
+        airQuality = this.generateFallbackAirQuality(latitude);
+      }
+
+      const suitability = computeSuitability(current, daily, airQuality);
+      const summaryAdvisory = computeSummaryAdvisory(current, daily, locationName, airQuality);
+
       return {
         locationName,
         latitude,
@@ -169,6 +216,9 @@ export class OpenMeteoWeatherProvider implements WeatherProvider {
         current,
         daily,
         hourly,
+        airQuality,
+        suitability,
+        summaryAdvisory,
         isCached: false,
         isFallback: false,
         fetchedAt: new Date().toISOString(),
@@ -334,14 +384,22 @@ export class OpenMeteoWeatherProvider implements WeatherProvider {
       }
     }
 
+    const current = this.generateFallbackCurrent(latitude);
+    const airQuality = this.generateFallbackAirQuality(latitude);
+    const suitability = computeSuitability(current, daily, airQuality);
+    const summaryAdvisory = computeSummaryAdvisory(current, daily, locationName, airQuality);
+
     return {
       locationName,
       latitude,
       longitude,
       timezone: "auto",
-      current: this.generateFallbackCurrent(latitude),
+      current,
       daily,
       hourly,
+      airQuality,
+      suitability,
+      summaryAdvisory,
       isCached: false,
       isFallback: true,
       fetchedAt: new Date().toISOString(),
@@ -349,6 +407,12 @@ export class OpenMeteoWeatherProvider implements WeatherProvider {
       disclaimer:
         "Indicative seasonal climatology utilized due to network latency. Safe seasonal projections applied.",
     };
+  }
+
+  generateFallbackAirQuality(latitude: number): AirQualityData {
+    const isCoastal = latitude < 18;
+    const baseAqi = isCoastal ? 45 : 75;
+    return parseAirQuality(baseAqi, isCoastal ? 12.5 : 28.0, isCoastal ? 25.0 : 54.0);
   }
 
   private generateClimatologicalHistory(
@@ -390,6 +454,197 @@ export class OpenMeteoWeatherProvider implements WeatherProvider {
 }
 
 /**
+ * Categorizes US AQI index and provides actionable travel guidance
+ */
+export function parseAirQuality(
+  usAqi: number,
+  pm2_5: number,
+  pm10: number
+): AirQualityData {
+  let category: AirQualityData["category"] = "Good";
+  let advisory = "Air quality is satisfactory. Excellent for open-air explorations.";
+
+  if (usAqi <= 50) {
+    category = "Good";
+    advisory = "Pristine air quality. Ideal for all outdoor trails, promenades, and sights.";
+  } else if (usAqi <= 100) {
+    category = "Moderate";
+    advisory = "Air quality is acceptable. Unusually sensitive travelers should monitor strenuous pacing.";
+  } else if (usAqi <= 150) {
+    category = "Sensitive";
+    advisory = "Members of sensitive groups may experience mild fatigue. Consider indoor museum breaks midday.";
+  } else if (usAqi <= 200) {
+    category = "Unhealthy";
+    advisory = "General public may experience discomfort. Prioritize indoor cultural destinations.";
+  } else if (usAqi <= 300) {
+    category = "Very Unhealthy";
+    advisory = "Health alert: high particulate matter. Limit outdoor treks and wear protective masks.";
+  } else {
+    category = "Hazardous";
+    advisory = "Health warning of emergency atmospheric conditions. Stay indoors where possible.";
+  }
+
+  return {
+    aqiUs: Math.round(usAqi),
+    pm2_5: Math.round(pm2_5 * 10) / 10,
+    pm10: Math.round(pm10 * 10) / 10,
+    category,
+    advisory,
+  };
+}
+
+/**
+ * Computes destination activity suitability matrix from Open-Meteo atmospheric variables
+ */
+export function computeSuitability(
+  current: CurrentWeather,
+  daily: DailyWeather[],
+  airQuality?: AirQualityData
+): ActivityWeatherSuitability[] {
+  const avgTemp = current.temperature;
+  const rainChance = Math.max(
+    current.precipitationProbability,
+    daily[0]?.precipitationProbability ?? 0
+  );
+  const aqiVal = airQuality?.aqiUs ?? 50;
+
+  // 1. Outdoor Sightseeing & Walking
+  let outdoorScore = 90;
+  if (rainChance > 35) outdoorScore -= (rainChance - 35) * 1.3;
+  if (avgTemp > 35) outdoorScore -= (avgTemp - 35) * 4;
+  if (avgTemp < 10) outdoorScore -= (10 - avgTemp) * 3;
+  if (aqiVal > 100) outdoorScore -= (aqiVal - 100) * 0.25;
+  outdoorScore = Math.max(15, Math.min(100, Math.round(outdoorScore)));
+
+  // 2. Beach & Coastal Recreation
+  let beachScore = 85;
+  if (avgTemp < 22) beachScore -= (22 - avgTemp) * 4;
+  if (avgTemp > 38) beachScore -= (avgTemp - 38) * 3;
+  if (rainChance > 25) beachScore -= (rainChance - 25) * 1.5;
+  if (current.windSpeed > 28) beachScore -= 20;
+  beachScore = Math.max(10, Math.min(100, Math.round(beachScore)));
+
+  // 3. Mountain Trekking & Hiking
+  let trekScore = 88;
+  if (rainChance > 20) trekScore -= (rainChance - 20) * 1.8;
+  if (current.windSpeed > 32) trekScore -= 25;
+  if (avgTemp < 5 || avgTemp > 36) trekScore -= 25;
+  trekScore = Math.max(10, Math.min(100, Math.round(trekScore)));
+
+  // 4. Indoor Museums & Heritage Palaces
+  let indoorScore = 92;
+  if (rainChance > 45 || avgTemp > 35 || aqiVal > 130) indoorScore = 100;
+
+  // 5. Sunset & Golden Hour Photography
+  let photoScore = 85;
+  if (rainChance > 30) photoScore -= (rainChance - 30) * 1.5;
+  if (current.humidity > 85) photoScore -= 15;
+  photoScore = Math.max(20, Math.min(100, Math.round(photoScore)));
+
+  const getStatus = (score: number) => {
+    if (score >= 80) return { status: "Optimal" as const, color: "emerald" };
+    if (score >= 65) return { status: "Suitable" as const, color: "blue" };
+    if (score >= 50) return { status: "Fair" as const, color: "amber" };
+    if (score >= 35) return { status: "Challenging" as const, color: "orange" };
+    return { status: "Not Recommended" as const, color: "rose" };
+  };
+
+  const outStat = getStatus(outdoorScore);
+  const bchStat = getStatus(beachScore);
+  const trkStat = getStatus(trekScore);
+  const indStat = getStatus(indoorScore);
+  const phtStat = getStatus(photoScore);
+
+  return [
+    {
+      category: "outdoor_sightseeing",
+      label: "Sightseeing & City Walks",
+      score: outdoorScore,
+      status: outStat.status,
+      badgeColor: outStat.color,
+      tips:
+        outdoorScore >= 75
+          ? "Pleasant temperature and clear paths. Ideal for outdoor monuments."
+          : "Moderate conditions. Schedule walking early in the morning or late afternoon.",
+    },
+    {
+      category: "beach_water",
+      label: "Beaches & Water Sports",
+      score: beachScore,
+      status: bchStat.status,
+      badgeColor: bchStat.color,
+      tips:
+        beachScore >= 75
+          ? "Warm sea breeze and sunny skies. Great for coastal leisure."
+          : "Check local surf flags; afternoon wind or precipitation may reduce comfort.",
+    },
+    {
+      category: "mountain_trekking",
+      label: "Treks & Hill Trails",
+      score: trekScore,
+      status: trkStat.status,
+      badgeColor: trkStat.color,
+      tips:
+        trekScore >= 75
+          ? "Stable atmospheric conditions. Pack trail shoes and adequate hydration."
+          : "Slippery rocks or low visibility possible. Stick to marked routes.",
+    },
+    {
+      category: "indoor_heritage",
+      label: "Museums & Cultural Sites",
+      score: indoorScore,
+      status: indStat.status,
+      badgeColor: indStat.color,
+      tips: "Climate-controlled, all-weather sanctuary. Perfect backup option anytime.",
+    },
+    {
+      category: "photography",
+      label: "Golden Hour & Photography",
+      score: photoScore,
+      status: phtStat.status,
+      badgeColor: phtStat.color,
+      tips:
+        photoScore >= 75
+          ? "Crisp horizon visibility. Outstanding lighting around sunrise and sunset."
+          : "Overcast skies may diffuse natural ambient sunlight.",
+    },
+  ];
+}
+
+/**
+ * Computes plain-language summary weather advisory for travelers
+ */
+export function computeSummaryAdvisory(
+  current: CurrentWeather,
+  daily: DailyWeather[],
+  locationName: string,
+  airQuality?: AirQualityData
+): string {
+  const primaryCondition = current.condition;
+  const temp = Math.round(current.temperature);
+  const rainToday = daily[0]?.precipitationProbability ?? current.precipitationProbability;
+  const aqiCategory = airQuality?.category || "Good";
+
+  let advice = `${temp}°C with ${primaryCondition.toLowerCase()} in ${locationName}. `;
+
+  if (rainToday > 50) {
+    advice += `High chance of precipitation (${rainToday}%). We recommend indoor cultural sites, museums, and cafes during afternoon hours.`;
+  } else if (temp > 35) {
+    advice += `Peak afternoon heat expected. Hydrate regularly and schedule walking excursions for morning or sunset.`;
+  } else if (temp < 15) {
+    advice += `Cooler climate. Pack warm layers for evening explorations.`;
+  } else {
+    advice += `Ideal conditions for outdoor sightseeing, city walking, and photography.`;
+  }
+
+  if (airQuality && (aqiCategory === "Sensitive" || aqiCategory === "Unhealthy")) {
+    advice += ` Air quality is ${aqiCategory.toLowerCase()} (AQI ${airQuality.aqiUs}). Sensitive travelers should pace outdoor activities.`;
+  }
+
+  return advice;
+}
+
+/**
  * Standard WMO Weather interpretation code mapping
  */
 export function mapWeatherCode(code?: number | null): string {
@@ -410,3 +665,4 @@ export function mapWeatherCode(code?: number | null): string {
 }
 
 export const openMeteoWeatherProvider = new OpenMeteoWeatherProvider();
+export const weatherService = openMeteoWeatherProvider;

@@ -1,6 +1,7 @@
 import { Destination, Attraction, Hotel, Restaurant, TransportOption, TaxiOption } from "./travel";
 import { ItineraryItem, ScheduleValidationResult, DurationTier } from "./time";
 import { BudgetCategory } from "./budget";
+import { DailyWeather, WeatherForecastResponse } from "./weather";
 
 export type PlanningProgressStep =
   | "finding_places"
@@ -68,6 +69,7 @@ export interface PlannedDayItinerary {
   totalWaitingMinutes: number;
   totalBufferMinutes: number;
   validation: ScheduleValidationResult;
+  weather?: DailyWeather;
 }
 
 export interface PlannedTripResult {
@@ -91,6 +93,7 @@ export interface PlannedTripResult {
   };
   attractions: SelectedAttractionPlan[];
   itinerary: PlannedDayItinerary[];
+  weatherForecast?: WeatherForecastResponse;
   budget: {
     allocatedBudget: number;
     totalCost: number;

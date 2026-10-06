@@ -23,6 +23,8 @@ import {
   PlannedDayItinerary,
   PlannerStepInfo,
 } from "@/types/planner";
+import { WeatherForecastResponse } from "@/types/weather";
+import { weatherService } from "@/lib/weather/provider";
 import {
   DEMO_DESTINATIONS,
   DEMO_ATTRACTIONS,
@@ -186,9 +188,16 @@ export class TripPlannerService {
     });
 
     // --------------------------------------------------------------------------
-    // Stage 6 & 7: Route Calculation & Daily Itinerary Construction
+    // Stage 6 & 7: Weather Intelligence, Route Calculation & Daily Itinerary Construction
     // (Keeps visit_time, travel_time, waiting_time, and buffer_time separate!)
     // --------------------------------------------------------------------------
+    const weatherForecast = await weatherService.getForecast(
+      destination.latitude,
+      destination.longitude,
+      durationDays,
+      destination.name
+    );
+
     const plannedDays = await this.buildDaySchedules(
       input.tripId,
       startDate,
@@ -198,13 +207,14 @@ export class TripPlannerService {
       selectedAttractions,
       selectedMeals,
       travelPace,
-      travellerType
+      travellerType,
+      weatherForecast
     );
 
     steps.push({
       step: "optimizing_route",
       label: "Optimizing route",
-      detail: `Geospatial routing optimized for all ${durationDays} days. Schedule validated with zero conflicts.`,
+      detail: `Geospatial routing and Open-Meteo weather intelligence integrated for all ${durationDays} days. Schedule validated with zero conflicts.`,
       completed: true,
     });
 
@@ -357,6 +367,7 @@ export class TripPlannerService {
       },
       attractions: selectedAttractions,
       itinerary: plannedDays,
+      weatherForecast,
       budget: budgetBreakdown,
       optimization: {
         wasOptimized,
@@ -704,7 +715,8 @@ export class TripPlannerService {
     attractions: SelectedAttractionPlan[],
     meals: SelectedMealPlan[],
     pace: "relaxed" | "moderate" | "fast",
-    travellerType: string
+    travellerType: string,
+    weatherForecast?: WeatherForecastResponse
   ): Promise<PlannedDayItinerary[]> {
     const startDate = new Date(startDateStr);
     const plannedDays: PlannedDayItinerary[] = [];
@@ -717,6 +729,11 @@ export class TripPlannerService {
       const currentDate = new Date(startDate);
       currentDate.setDate(startDate.getDate() + (dayNum - 1));
       const dateStr = currentDate.toISOString().split("T")[0];
+
+      const dayWeather = weatherForecast?.daily?.find((d) => d.date === dateStr) || weatherForecast?.daily?.[dayNum - 1];
+      const isRainRisk = dayWeather
+        ? dayWeather.precipitationProbability >= 40 || dayWeather.condition.toLowerCase().includes("rain")
+        : false;
 
       const dayAttractions = attractions.filter((a) => a.dayNumber === dayNum);
       const dayLunch = meals.find((m) => m.dayNumber === dayNum && m.mealType === "lunch");
@@ -734,8 +751,28 @@ export class TripPlannerService {
       };
       routeCoordinates.push([hotel.longitude, hotel.latitude]);
 
-      // Sort attractions so earlier-closing sights come earlier in the schedule
+      // Helper to identify indoor attractions for weather-aware scheduling
+      const isIndoor = (category: string, name: string) => {
+        const text = (category + " " + name).toLowerCase();
+        return (
+          text.includes("museum") ||
+          text.includes("palace") ||
+          text.includes("temple") ||
+          text.includes("indoor") ||
+          text.includes("gallery") ||
+          text.includes("market")
+        );
+      };
+
+      // Sort attractions: if rain risk is high, prioritize indoor attractions first;
+      // otherwise sort so earlier-closing sights come earlier in the schedule
       const sortedDayAttractions = [...dayAttractions].sort((a, b) => {
+        if (isRainRisk) {
+          const indoorA = isIndoor(a.attraction.category, a.attraction.name);
+          const indoorB = isIndoor(b.attraction.category, b.attraction.name);
+          if (indoorA && !indoorB) return -1;
+          if (!indoorA && indoorB) return 1;
+        }
         const closeA = a.attraction.closing_time ? timeToMinutes(a.attraction.closing_time) : 1439;
         const closeB = b.attraction.closing_time ? timeToMinutes(b.attraction.closing_time) : 1439;
         return closeA - closeB;
@@ -958,17 +995,19 @@ export class TripPlannerService {
       const totalWaitingMinutes = finalItems.reduce((acc, it) => acc + it.waiting_minutes, 0);
       const totalBufferMinutes = finalItems.reduce((acc, it) => acc + it.buffer_minutes, 0);
 
+      const baseTheme =
+        dayNum === 1
+          ? "Arrival & Iconic Heritage Sights"
+          : dayNum === 2
+          ? "Cultural Exploration & Flavors"
+          : dayNum === 3
+          ? "Scenic Views & Coastal Leisure"
+          : `Exploration Day ${dayNum}`;
+
       plannedDays.push({
         dayNumber: dayNum,
         date: dateStr,
-        theme:
-          dayNum === 1
-            ? "Arrival & Iconic Heritage Sights"
-            : dayNum === 2
-            ? "Cultural Exploration & Flavors"
-            : dayNum === 3
-            ? "Scenic Views & Coastal Leisure"
-            : `Exploration Day ${dayNum}`,
+        theme: isRainRisk ? `${baseTheme} (Weather Adapted)` : baseTheme,
         dayStartTime,
         dayEndTime,
         items: finalItems,
@@ -978,6 +1017,7 @@ export class TripPlannerService {
         totalWaitingMinutes,
         totalBufferMinutes,
         validation,
+        weather: dayWeather,
       });
     }
 
