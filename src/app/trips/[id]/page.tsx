@@ -549,7 +549,7 @@ export default function TripDetailPage() {
                         </div>
                       </div>
                       <Badge variant="outline" className="text-xs font-mono">
-                        OSM & OSRM
+                        MapLibre GL & OSM
                       </Badge>
                     </div>
                   </CardHeader>

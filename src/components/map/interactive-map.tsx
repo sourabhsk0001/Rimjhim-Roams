@@ -14,7 +14,7 @@ const DynamicMap = dynamic(() => import("./map-inner"), {
       </div>
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Loader2 className="w-4 h-4 animate-spin text-primary" />
-        <span>Loading interactive OpenStreetMap canvas...</span>
+        <span>Loading interactive MapLibre GL JS & OpenStreetMap canvas...</span>
       </div>
     </div>
   ),
