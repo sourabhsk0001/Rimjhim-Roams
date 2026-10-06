@@ -623,6 +623,17 @@ export default function MapInner({
           ${starsHtml ? `<div class="pt-1 flex items-center justify-between border-t border-slate-50">${starsHtml}</div>` : ""}
 
           ${
+            marker.type === "attraction"
+              ? `<div class="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px]">
+                  <span class="inline-flex items-center gap-1 text-emerald-800 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">
+                    🛡️ Signals: 🟢 🟡
+                  </span>
+                  <span class="text-slate-500 font-medium">9 AM–6 PM Opt.</span>
+                </div>`
+              : ""
+          }
+
+          ${
             marker.details?.facilities && marker.details.facilities.length > 0
               ? `<div class="flex flex-wrap gap-1 pt-1">
                   ${marker.details.facilities

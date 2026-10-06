@@ -33,6 +33,7 @@ import {
   TransportOption,
   TaxiOption,
 } from "@/types/travel";
+import { PlaceComfortBadge } from "@/components/travel/place-comfort-badge";
 
 export function DemoBadge({ className }: { className?: string }) {
   return (
@@ -158,6 +159,15 @@ export function AttractionCard({ attraction }: { attraction: Attraction }) {
             {attraction.weather_suitability}
           </span>
         </div>
+
+        <PlaceComfortBadge
+          placeId={attraction.id}
+          placeName={attraction.name}
+          category={attraction.category}
+          latitude={attraction.latitude}
+          longitude={attraction.longitude}
+          variant="banner"
+        />
       </CardContent>
     </Card>
   );

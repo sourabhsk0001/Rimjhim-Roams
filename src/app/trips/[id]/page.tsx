@@ -59,6 +59,7 @@ import { InteractiveMap, MapMarkerItem } from "@/components/map/interactive-map"
 import { getDestinationTransitHubs } from "@/lib/geo/transit-hubs";
 import { LostModeModal } from "@/components/travel/lost-mode-modal";
 import { EmergencyModeModal } from "@/components/travel/emergency-mode-modal";
+import { PlaceComfortBadge } from "@/components/travel/place-comfort-badge";
 import { TripWorkspaceNav } from "@/components/travel/trip-workspace-nav";
 import { ConfirmationModal } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
@@ -1078,6 +1079,16 @@ export default function TripDetailPage() {
                                         <MapPin className="w-3.5 h-3.5 text-primary" />
                                         <span>{item.location.name}</span>
                                       </p>
+                                      <div className="pt-0.5">
+                                        <PlaceComfortBadge
+                                          placeName={item.location.name || item.title}
+                                          destination={plan.destination.name}
+                                          category={item.category}
+                                          latitude={item.location.latitude}
+                                          longitude={item.location.longitude}
+                                          variant="compact"
+                                        />
+                                      </div>
                                     </div>
 
                                     <div className="text-right">

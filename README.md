@@ -7,7 +7,7 @@
   [![Version](https://img.shields.io/badge/version-0.5-blue.svg)](package.json)
   [![License](https://img.shields.io/badge/License-Apache_2.0-orange.svg)](LICENSE)
   [![Build & Deploy](https://img.shields.io/badge/Vercel-Deployable_Zero--Config-black?logo=vercel)](https://vercel.com)
-  [![Tests](https://img.shields.io/badge/Tests-287_Passed_100%25-brightgreen)](https://github.com/sourabhsk0001/Rimjhim-Roams)
+  [![Tests](https://img.shields.io/badge/Tests-291_Passed_100%25-brightgreen)](https://github.com/sourabhsk0001/Rimjhim-Roams)
   [![Next.js](https://img.shields.io/badge/Next.js-14.2.18_App_Router-black?logo=next.js)](https://nextjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-Strict_Mode-blue?logo=typescript)](https://www.typescriptlang.org/)
   [![Supabase](https://img.shields.io/badge/Database-Supabase_%2B_Local_Persistent_DB-3ECF8E?logo=supabase)](https://supabase.com)
@@ -133,6 +133,20 @@ Built around a **Zero LLM Math** architectural invariant, AI models are strictly
 - **📲 "Share My Location" with Emergency Contacts**: One-click location broadcast via WhatsApp, SMS, Web Share API, and clipboard copy targeting selected personal emergency contacts.
 - **⚖️ Decision-Support Invariant**: Prominently displays legal/ethical notices clarifying that this is an offline decision-support tool, not an emergency dispatch replacement, directing immediate 112/108 calling in life-threatening scenarios.
 
+### 14. 🛡️ “Is This Place Safe for Me?” Travel Comfort & Environmental Signals Profile
+- **📊 Factual Public Signals Over Black-Box Scores**: Replaces arbitrary AI pseudo-safety scores with verifiable, transparent public signals derived from municipal registries, Archaeological Survey of India (ASI) operating hours, OpenStreetMap (OSM) transit nodes, and Open-Meteo atmospheric telemetry:
+  - 🟢 / 🟡 / 🔴 **Crowd Level**: Hourly pedestrian density, ticket queue delays, and peak congestion windows.
+  - 🟢 / 🟡 / 🔴 **Late-Night Access & Illumination**: Street lighting infrastructure, commercial corridor activity, and closing gates.
+  - 🟢 / 🟡 / 🔴 **Public & Emergency Transit Connectivity**: Proximity to metro stations, bus terminals, autorickshaw stands, and arterial corridors.
+  - 🟢 / 🟡 / 🔴 **Tourist Density & Community Presence**: Verified presence of state tourist police kiosks, family-friendly dwell zones, and licensed guides.
+  - 🟢 / 🟡 / 🔴 **Weather & Environmental Exposure**: Real-time heat stress, torrential precipitation risk, unshaded exposure, and wave advisories.
+- **⏰ Actionable "Better Time to Visit" Windows**: Explicit guidance (e.g. *9:00 AM – 6:00 PM* for heritage monuments, *6:30 AM – 10:30 AM & 4:30 PM – 7:30 PM* for coastal beaches) coupled with clear operational rationales (daylight illumination, heat avoidance, active lifeguard supervision).
+- **🔎 Ubiquitous Availability**:
+  - Embedded as interactive comfort badges (`PlaceComfortBadge`) in attraction catalog cards.
+  - Embedded in scheduled itinerary stop timelines (`/trips/[id]`).
+  - Integrated into interactive MapLibre map popups with instant modal triggers.
+- **🛡️ Transparency & Anti-Harm Invariant**: Prominently cites official authorities (ASI, Incredible India, OpenStreetMap, Open-Meteo) and explicitly disclaims authoritative certainty to reinforce traveler situational awareness.
+
 ---
 
 ## 🛠️ Tech Stack & Cloud Primitives
@@ -201,7 +215,7 @@ c:\Rimjhim Roams\
 │   └── middleware.ts             # Edge route protection & session bridge
 ├── supabase/
 │   └── migrations/               # Production SQL migrations (PostGIS + pgvector)
-├── test/                         # 261 automated unit & integration tests
+├── test/                         # 291 automated unit & integration tests across 31 test suites
 └── vercel.json                   # Vercel deployment configuration
 ```
 
@@ -254,7 +268,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🧪 Testing & Verification
 
-The project includes **261 automated tests** covering security, Gemini daily quotas, sliding-window rate limiting, role-based access control, deterministic tool calling, PostGIS queries, RAG ingestion, prompt injection defense, and authentication:
+The project includes **291 automated tests** covering security, Gemini daily quotas, sliding-window rate limiting, role-based access control, deterministic tool calling, PostGIS queries, RAG ingestion, prompt injection defense, and authentication:
 
 ```bash
 # Run the complete test suite
