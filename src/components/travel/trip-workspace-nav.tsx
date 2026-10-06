@@ -16,6 +16,7 @@ import {
   CalendarCheck,
   Bot,
   LayoutDashboard,
+  AlertTriangle,
 } from "lucide-react";
 
 export interface TripWorkspaceNavProps {
@@ -32,6 +33,7 @@ export function TripWorkspaceNav({ tripId, className }: TripWorkspaceNavProps) {
     { id: "budget", label: "Budget", href: `/trips/${tripId}/budget`, icon: Wallet },
     { id: "weather", label: "Weather", href: `/trips/${tripId}/weather`, icon: CloudSun },
     { id: "safety", label: "Safety Center", href: `/trips/${tripId}/safety`, icon: ShieldAlert },
+    { id: "lost", label: "🆘 I'm Lost", href: `/trips/${tripId}/lost`, icon: AlertTriangle, isAlert: true },
     { id: "group", label: "Group & Polls", href: `/trips/${tripId}/group`, icon: Users },
     { id: "expenses", label: "Split Expenses", href: `/trips/${tripId}/expenses`, icon: Scale },
     { id: "packing", label: "Packing List", href: `/trips/${tripId}/packing`, icon: Luggage },
@@ -52,17 +54,29 @@ export function TripWorkspaceNav({ tripId, className }: TripWorkspaceNavProps) {
             ? pathname === item.href
             : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
+          const alertClasses = item.isAlert
+            ? isActive
+              ? "bg-red-600 text-white shadow-xs font-bold scale-[1.02]"
+              : "bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 font-bold"
+            : isActive
+            ? "bg-black text-white shadow-xs font-medium scale-[1.02]"
+            : "text-[hsl(215,25%,32%)] hover:bg-slate-100 hover:text-[#0f172a]";
+
           return (
             <Link
               key={item.id}
               href={item.href}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${
-                isActive
-                  ? "bg-black text-white shadow-xs font-medium scale-[1.02]"
-                  : "text-[hsl(215,25%,32%)] hover:bg-slate-100 hover:text-[#0f172a]"
-              }`}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${alertClasses}`}
             >
-              <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-white" : "text-slate-500"}`} />
+              <Icon
+                className={`w-3.5 h-3.5 shrink-0 ${
+                  isActive
+                    ? "text-white"
+                    : item.isAlert
+                    ? "text-red-600"
+                    : "text-slate-500"
+                }`}
+              />
               <span>{item.label}</span>
             </Link>
           );

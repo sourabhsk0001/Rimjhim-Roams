@@ -7,7 +7,7 @@
   [![Version](https://img.shields.io/badge/version-0.5-blue.svg)](package.json)
   [![License](https://img.shields.io/badge/License-Apache_2.0-orange.svg)](LICENSE)
   [![Build & Deploy](https://img.shields.io/badge/Vercel-Deployable_Zero--Config-black?logo=vercel)](https://vercel.com)
-  [![Tests](https://img.shields.io/badge/Tests-266_Passed_100%25-brightgreen)](https://github.com/sourabhsk0001/Rimjhim-Roams)
+  [![Tests](https://img.shields.io/badge/Tests-275_Passed_100%25-brightgreen)](https://github.com/sourabhsk0001/Rimjhim-Roams)
   [![Next.js](https://img.shields.io/badge/Next.js-14.2.18_App_Router-black?logo=next.js)](https://nextjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-Strict_Mode-blue?logo=typescript)](https://www.typescriptlang.org/)
   [![Supabase](https://img.shields.io/badge/Database-Supabase_%2B_Local_Persistent_DB-3ECF8E?logo=supabase)](https://supabase.com)
@@ -109,6 +109,16 @@ Built around a **Zero LLM Math** architectural invariant, AI models are strictly
   - ⏱️ **Estimated Travel Time**: Multi-modal travel durations (Drive 🚗, Walk 🚶, Cycle 🚲).
   - 💰 **Estimated Transportation Cost**: Live fare calculations dynamically updating with travel mode.
 - **Day-by-Day Itinerary Ribbon & 3D Cinematic Tour**: Switch between day routes directly on the floating map ribbon, or trigger the automated 3D cinematic camera tour flying sequentially along itinerary waypoints.
+
+### 12. 🧭 “I'm Lost / What Now?” Emergency Wayfinding & Recovery Mode (`/trips/[id]/lost`)
+- **🆘 Instant One-Touch Emergency Trigger**: Prominently accessible via dedicated `"🆘 I'm Lost"` buttons in the trip header, workspace sub-nav, interactive map controls, and as a dedicated emergency command center route (`/trips/[id]/lost`).
+- **📍 Live GPS Lock & Off-Route Deviation Detection**: Browser HTML5 Geolocation lock with fallback simulation (~1.1 km off-route offset) calculating exact distance deviation and 8-point compass bearing (e.g. `North-East (45°)`).
+- **🎯 Real-Time Scheduled Stop Synchronization**: Cross-references traveler's active itinerary to show exactly where they are supposed to be right now (e.g. Amber Fort, 10:00 AM – 12:30 PM), along with the subsequent destination.
+- **🚶 High-Contrast Turn-by-Turn Wayfinding**: Step-by-step pedestrian walking route with turn directions (`straight`, `left`, `right`, `destination`), segment distances, estimated walking time, and clock arrival time.
+- **🚕 Alternative Cab / Auto Route**: Direct motorized route option with live OSRM driving duration and regulated Indian fare estimates (in ₹ INR).
+- **🏥 Verified Nearby Safe Public Havens**: Distance-sorted proximity directory of 24/7 Police Stations, Hospitals, Transit Hubs (Metro/Bus/Auto stands), and well-lit Public Cafes with direct `tel:` tap-to-call actions.
+- **🗣️ AI Conversational Reassurance & Audio Read-Aloud**: Voice synthesis (Web Speech API) and conversational reassuring guidance: *"You're 1.2 km away from your planned destination. Walk straight for 600 m, then turn left at the main crossing..."*
+- **📲 One-Tap Emergency SOS Broadcast**: Instant WhatsApp and SMS distress message sharing featuring exact GPS coordinates, direct Google Maps link, planned destination context, and national emergency helplines (Tourist Helpline 1363, Police 112).
 
 ---
 

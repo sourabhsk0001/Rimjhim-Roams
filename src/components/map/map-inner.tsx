@@ -25,6 +25,7 @@ import {
   Coins,
   Star,
   Navigation as NavIcon,
+  AlertTriangle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { RouteMode } from "@/lib/geo/routing";
@@ -96,6 +97,8 @@ export interface MapInnerProps {
     longitude: number;
     name?: string;
   };
+  // Emergency "I'm Lost" trigger
+  onLostModeClick?: () => void;
 }
 
 export type MapStyleKey = "voyager" | "standard" | "positron" | "dark" | "topo";
@@ -182,6 +185,7 @@ export default function MapInner({
   selectedDayNumber,
   onDaySelect,
   currentLocation,
+  onLostModeClick,
 }: MapInnerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -913,6 +917,19 @@ export default function MapInner({
               </>
             )}
           </button>
+
+          {/* I'm Lost SOS Quick Trigger */}
+          {onLostModeClick && (
+            <button
+              type="button"
+              onClick={onLostModeClick}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold shadow-xs transition-all hover:scale-[1.03] active:scale-[0.98]"
+              title="I'm Lost / What Now? Rescue Wayfinder"
+            >
+              <AlertTriangle className="w-3 h-3 text-white animate-pulse" />
+              <span>🆘 Lost?</span>
+            </button>
+          )}
 
           {/* Focus Current Location Button */}
           {currentLocation && (

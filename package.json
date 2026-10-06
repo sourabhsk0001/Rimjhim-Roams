@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test test/health.test.mjs test/phase1.test.ts test/phase2.test.ts test/phase3.test.ts test/phase4.test.ts test/phase5.test.ts test/phase6.test.ts test/phase7.test.ts test/phase8.test.ts test/phase9.test.ts test/phase10.test.ts test/phase11.test.ts test/phase12.test.ts test/phase13.test.ts test/phase14.test.ts test/phase15.test.ts test/security_audit.test.ts test/e2e_critical_flow.test.ts test/topography.test.ts test/india_tourism_kb.test.ts test/recommendation_engine.test.ts test/landing_page.test.ts test/responsive_auth_database.test.ts test/public_profiles.test.ts test/api_authorization_and_ratelimit.test.ts test/gemini_daily_quota.test.ts test/weather_openmeteo.test.ts test/maplibre_features.test.ts",
+    "test": "tsx --test test/health.test.mjs test/phase1.test.ts test/phase2.test.ts test/phase3.test.ts test/phase4.test.ts test/phase5.test.ts test/phase6.test.ts test/phase7.test.ts test/phase8.test.ts test/phase9.test.ts test/phase10.test.ts test/phase11.test.ts test/phase12.test.ts test/phase13.test.ts test/phase14.test.ts test/phase15.test.ts test/security_audit.test.ts test/e2e_critical_flow.test.ts test/topography.test.ts test/india_tourism_kb.test.ts test/recommendation_engine.test.ts test/landing_page.test.ts test/responsive_auth_database.test.ts test/public_profiles.test.ts test/api_authorization_and_ratelimit.test.ts test/gemini_daily_quota.test.ts test/weather_openmeteo.test.ts test/maplibre_features.test.ts test/lost_mode.test.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {

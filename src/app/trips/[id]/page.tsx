@@ -56,6 +56,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { InteractiveMap, MapMarkerItem } from "@/components/map/interactive-map";
 import { getDestinationTransitHubs } from "@/lib/geo/transit-hubs";
+import { LostModeModal } from "@/components/travel/lost-mode-modal";
 import { TripWorkspaceNav } from "@/components/travel/trip-workspace-nav";
 import { ConfirmationModal } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
@@ -85,6 +86,7 @@ export default function TripDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showLostModal, setShowLostModal] = useState(false);
 
   // Generation state
   const [isGenerating, setIsGenerating] = useState(false);
@@ -445,6 +447,16 @@ export default function TripDetailPage() {
 
           {trip && (
             <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => setShowLostModal(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold shadow-md hover:scale-[1.03] active:scale-[0.98] transition-all"
+                title="I'm Lost Wayfinding Rescue Mode"
+              >
+                <AlertTriangle className="w-3.5 h-3.5 text-white animate-pulse" />
+                <span>🆘 I&apos;m Lost</span>
+              </button>
+
               <button
                 type="button"
                 onClick={handleGenerateTrip}
@@ -836,9 +848,20 @@ export default function TripDetailPage() {
                           </CardDescription>
                         </div>
                       </div>
-                      <Badge variant="outline" className="text-xs font-mono">
-                        MapLibre GL & OSM
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowLostModal(true)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 text-xs font-bold transition-all hover:scale-[1.02]"
+                          title="I'm Lost Wayfinding Rescue Mode"
+                        >
+                          <AlertTriangle className="w-3.5 h-3.5 text-red-600 animate-pulse" />
+                          <span>🆘 I&apos;m Lost</span>
+                        </button>
+                        <Badge variant="outline" className="text-xs font-mono hidden sm:inline-flex">
+                          MapLibre GL & OSM
+                        </Badge>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
@@ -872,6 +895,7 @@ export default function TripDetailPage() {
                       }}
                       currentLocation={currentLocationPoint}
                       onMarkerSelect={(m) => setSelectedItemId(m.id)}
+                      onLostModeClick={() => setShowLostModal(true)}
                       height="500px"
                     />
                   </CardContent>
@@ -1432,6 +1456,16 @@ export default function TripDetailPage() {
           onConfirm={confirmDeleteTrip}
           onCancel={() => setShowDeleteModal(false)}
         />
+
+        {/* I'm Lost / What Now? Emergency Recovery Wayfinding Modal */}
+        {trip && (
+          <LostModeModal
+            tripId={trip.id}
+            isOpen={showLostModal}
+            onClose={() => setShowLostModal(false)}
+            destinationName={trip.destination}
+          />
+        )}
       </main>
     </div>
   );
