@@ -399,16 +399,164 @@ export class DeterministicCopilotProvider implements AIModelProvider {
 }
 
 /**
+ * GroqModelProvider integrates with Groq's ultra-fast LPU inference API.
+ * Adheres strictly to the zero-authoritative-math rule:
+ * Dispatches to backend deterministic tools for all calculations and mutations.
+ */
+export class GroqModelProvider implements AIModelProvider {
+  public readonly name: string;
+  private apiKey: string;
+  private modelName: string;
+
+  constructor(apiKey?: string, modelName?: string) {
+    this.apiKey = apiKey || process.env.GROQ_API_KEY || "";
+    this.modelName = modelName || process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+    this.name = `Groq LPU (${this.modelName})`;
+    if (!this.apiKey) {
+      throw new Error("GROQ_API_KEY environment variable is required for GroqModelProvider.");
+    }
+  }
+
+  async generateResponse(
+    messages: ChatMessage[],
+    tools: ToolDefinition[],
+    context?: CopilotContext
+  ): Promise<{
+    content: string;
+    toolCalls?: ToolCallPayload[];
+  }> {
+    const formattedTools = tools.map((t) => ({
+      type: "function",
+      function: {
+        name: t.name,
+        description: t.description,
+        parameters: {
+          type: "object",
+          properties: t.parameters.properties,
+          required: t.parameters.required || [],
+        },
+      },
+    }));
+
+    const systemInstruction = `You are TripWise AI Travel Copilot, an intelligent, deterministic travel assistant running at ultra-fast Groq LPU speed.
+You have access to 12 deterministic backend tools for calculations, database searches, weather, routing, and itinerary optimization.
+CRITICAL RULES:
+1. NEVER do travel calculations or budget math yourself. ALWAYS call the appropriate tool.
+2. NEVER invent itinerary changes or prices. All changes MUST be executed via tools.
+3. Keep answers concise, clear, and actionable. Use bullet points and currency format (₹).
+User Context: Authorized UserId: ${context?.userId || "anonymous"}, Active TripId: ${context?.tripId || "none"}.`;
+
+    const openAiMessages: any[] = [
+      { role: "system", content: systemInstruction },
+    ];
+
+    for (const msg of messages) {
+      if (msg.role === "user") {
+        openAiMessages.push({ role: "user", content: msg.content });
+      } else if (msg.role === "assistant") {
+        const item: any = { role: "assistant", content: msg.content || "" };
+        if (msg.toolCalls && msg.toolCalls.length > 0) {
+          item.tool_calls = msg.toolCalls.map((tc) => ({
+            id: tc.id,
+            type: "function",
+            function: {
+              name: tc.name,
+              arguments: JSON.stringify(tc.arguments),
+            },
+          }));
+        }
+        openAiMessages.push(item);
+      } else if (msg.role === "tool" && msg.toolResults) {
+        for (const tr of msg.toolResults) {
+          openAiMessages.push({
+            role: "tool",
+            tool_call_id: tr.toolCallId,
+            content: JSON.stringify(tr.result),
+          });
+        }
+      }
+    }
+
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${this.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: this.modelName,
+        messages: openAiMessages,
+        tools: formattedTools.length > 0 ? formattedTools : undefined,
+        tool_choice: formattedTools.length > 0 ? "auto" : undefined,
+        temperature: 0.2,
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      throw new Error(`Groq API error (${res.status}): ${errText}`);
+    }
+
+    const data = await res.json();
+    const choice = data.choices?.[0];
+    const message = choice?.message;
+    const content = message?.content || "";
+
+    const toolCalls: ToolCallPayload[] = (message?.tool_calls || []).map((tc: any) => {
+      let args: Record<string, any> = {};
+      try {
+        args = typeof tc.function.arguments === "string" ? JSON.parse(tc.function.arguments) : tc.function.arguments;
+      } catch {
+        args = {};
+      }
+      return {
+        id: tc.id,
+        name: tc.function.name,
+        arguments: args,
+      };
+    });
+
+    return {
+      content,
+      toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+    };
+  }
+}
+
+/**
  * Factory to get the active AI model provider.
- * Allows swapping provider dynamically or falling back when API key is not present.
+ * Allows swapping provider dynamically (Groq / Gemini) or falling back when API key is not present.
  */
 export function getAIModelProvider(preferredProvider?: string): AIModelProvider {
-  if (preferredProvider === "gemini" || (!preferredProvider && process.env.GEMINI_API_KEY)) {
+  const provider = preferredProvider || process.env.AI_PROVIDER;
+
+  // 1. Explicit Groq preference or Groq configured as default
+  if (provider === "groq" || (!provider && process.env.GROQ_API_KEY && !process.env.GEMINI_API_KEY)) {
+    try {
+      return new GroqModelProvider();
+    } catch {
+      // Fall through to other providers
+    }
+  }
+
+  // 2. Explicit Gemini preference or Gemini key available
+  if (provider === "gemini" || (!provider && process.env.GEMINI_API_KEY)) {
     try {
       return new GeminiModelProvider();
     } catch {
       return new DeterministicCopilotProvider();
     }
   }
+
+  // 3. Fallback to Groq if key exists
+  if (process.env.GROQ_API_KEY) {
+    try {
+      return new GroqModelProvider();
+    } catch {
+      return new DeterministicCopilotProvider();
+    }
+  }
+
+  // 4. Deterministic offline fallback
   return new DeterministicCopilotProvider();
 }

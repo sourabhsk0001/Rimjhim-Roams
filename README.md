@@ -7,7 +7,8 @@
   [![Version](https://img.shields.io/badge/version-0.5-blue.svg)](package.json)
   [![License](https://img.shields.io/badge/License-Apache_2.0-orange.svg)](LICENSE)
   [![Build & Deploy](https://img.shields.io/badge/Vercel-Deployable_Zero--Config-black?logo=vercel)](https://vercel.com)
-  [![Tests](https://img.shields.io/badge/Tests-291_Passed_100%25-brightgreen)](https://github.com/sourabhsk0001/Rimjhim-Roams)
+  [![Tests](https://img.shields.io/badge/Tests-297_Passed_100%25-brightgreen)](https://github.com/sourabhsk0001/Rimjhim-Roams)
+  [![Groq](https://img.shields.io/badge/AI-Groq_LPU_Llama_3.3_70B-f55036?logo=groq)](https://groq.com)
   [![Next.js](https://img.shields.io/badge/Next.js-14.2.18_App_Router-black?logo=next.js)](https://nextjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-Strict_Mode-blue?logo=typescript)](https://www.typescriptlang.org/)
   [![Supabase](https://img.shields.io/badge/Database-Supabase_%2B_Local_Persistent_DB-3ECF8E?logo=supabase)](https://supabase.com)
@@ -147,6 +148,14 @@ Built around a **Zero LLM Math** architectural invariant, AI models are strictly
   - Integrated into interactive MapLibre map popups with instant modal triggers.
 - **🛡️ Transparency & Anti-Harm Invariant**: Prominently cites official authorities (ASI, Incredible India, OpenStreetMap, Open-Meteo) and explicitly disclaims authoritative certainty to reinforce traveler situational awareness.
 
+### 15. ⚡ Groq LPU Travel Search & Multi-Provider Engine (`/explore` & `/api/tourism/search/ai`)
+- **🚀 High-Speed LPU Inference**: Integrates Groq API (`llama-3.3-70b-versatile` & `llama-3.1-8b-instant`) delivering sub-second natural language reasoning over travel intent.
+- **🧠 Natural-Language Intent Extraction**: Parses freeform travel queries (e.g. *"quiet mountain retreats under ₹3000/day"* or *"peaceful beaches in Goa with coastal dining"*) into structured travel styles, pacing, seasonal windows, and budget tiers.
+- **🗺️ Authoritative Catalog Mapping**: Cross-references AI intent against verified Ministry of Tourism (MoT) locations, OpenStreetMap (OSM) nodes, and NATMO thematic circuits.
+- **🤖 Dual-Provider AI Copilot Architecture**: Extends `getAIModelProvider` with `GroqModelProvider`, allowing seamless switching between Google Gemini (`gemini-1.5-flash`) and Groq (`llama-3.3-70b-versatile`) while preserving the strict zero-authoritative-math invariant.
+- **⚡ Interactive AI Search Deck**: Dedicated interactive search experience in `/explore` featuring LPU latency metrics, intent pills, curated place cards with `PlaceComfortBadge`, and clickable suggested follow-up inquiries.
+- **🛡️ Deterministic Offline Fallback**: Works with zero keys or network access, ensuring reliable continuous integration and offline test execution.
+
 ---
 
 ## 🛠️ Tech Stack & Cloud Primitives
@@ -160,6 +169,7 @@ Built around a **Zero LLM Math** architectural invariant, AI models are strictly
 | **Local DB Fallback** | Atomic File-Persistent JSON Engine (`data/app-db.json`) | Built-in |
 | **Authentication** | Supabase Auth SSR + Dual-Layer Session Cookie Bridge | [Supabase Auth](https://supabase.com) |
 | **AI LLM** | Google Gemini 1.5 Flash via `@google/generative-ai` | [Google AI Studio](https://aistudio.google.com/) |
+| **AI Fast Inference** | Groq LPU (Llama 3.3 70B Versatile) | [Groq Console](https://console.groq.com) |
 | **Vector Embeddings** | Gemini `text-embedding-004` (768 dimensions) | [Google AI Studio](https://aistudio.google.com/) |
 | **Interactive Maps** | MapLibre GL JS (WebGL GPU-accelerated 3D Terrain & Routes) | Open Source |
 | **Geospatial & Routing** | OpenStreetMap (OSM) + Open Source Routing Machine (OSRM) | Public APIs |
@@ -215,7 +225,7 @@ c:\Rimjhim Roams\
 │   └── middleware.ts             # Edge route protection & session bridge
 ├── supabase/
 │   └── migrations/               # Production SQL migrations (PostGIS + pgvector)
-├── test/                         # 291 automated unit & integration tests across 31 test suites
+├── test/                         # 297 automated unit & integration tests across 32 test suites
 └── vercel.json                   # Vercel deployment configuration
 ```
 
@@ -248,6 +258,10 @@ GEMINI_API_KEY=your-gemini-api-key
 GEMINI_DAILY_USER_LIMIT=20
 GEMINI_DAILY_SERVER_LIMIT=1000
 
+# Groq LPU API (Ultra-Fast Inference & Natural Language Search)
+GROQ_API_KEY=your-groq-api-key
+GROQ_MODEL=llama-3.3-70b-versatile
+
 # App URL
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
@@ -268,7 +282,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🧪 Testing & Verification
 
-The project includes **291 automated tests** covering security, Gemini daily quotas, sliding-window rate limiting, role-based access control, deterministic tool calling, PostGIS queries, RAG ingestion, prompt injection defense, and authentication:
+The project includes **297 automated tests** covering Groq AI natural language search, security, Gemini daily quotas, sliding-window rate limiting, role-based access control, deterministic tool calling, PostGIS queries, RAG ingestion, prompt injection defense, and authentication:
 
 ```bash
 # Run the complete test suite

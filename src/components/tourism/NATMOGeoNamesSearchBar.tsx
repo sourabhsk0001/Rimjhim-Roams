@@ -1,18 +1,20 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Search, MapPin, Compass, Landmark, Mountain, X, Loader2 } from "lucide-react";
+import { Search, MapPin, Compass, Landmark, Mountain, X, Loader2, Zap } from "lucide-react";
 import { AutocompleteSuggestion } from "@/types/recommendations";
 
 interface NATMOGeoNamesSearchBarProps {
   placeholder?: string;
   onSelect?: (suggestion: AutocompleteSuggestion) => void;
+  onGroqSearch?: (query: string) => void;
   className?: string;
 }
 
 export function NATMOGeoNamesSearchBar({
   placeholder = "Search States (GeoNames), Circuits (NATMO), or Sights...",
   onSelect,
+  onGroqSearch,
   className = "",
 }: NATMOGeoNamesSearchBarProps) {
   const [query, setQuery] = useState("");
@@ -71,6 +73,18 @@ export function NATMOGeoNamesSearchBar({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      if (selectedIndex >= 0 && suggestions[selectedIndex]) {
+        e.preventDefault();
+        handleSelect(suggestions[selectedIndex]);
+      } else if (onGroqSearch && query.trim()) {
+        e.preventDefault();
+        setIsOpen(false);
+        onGroqSearch(query.trim());
+      }
+      return;
+    }
+
     if (!isOpen || suggestions.length === 0) return;
 
     if (e.key === "ArrowDown") {
@@ -79,9 +93,6 @@ export function NATMOGeoNamesSearchBar({
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setSelectedIndex((prev) => (prev > 0 ? prev - 1 : suggestions.length - 1));
-    } else if (e.key === "Enter" && selectedIndex >= 0) {
-      e.preventDefault();
-      handleSelect(suggestions[selectedIndex]);
     } else if (e.key === "Escape") {
       setIsOpen(false);
     }
@@ -133,8 +144,36 @@ export function NATMOGeoNamesSearchBar({
       </div>
 
       {/* Dropdown Suggestions */}
-      {isOpen && suggestions.length > 0 && (
+      {isOpen && (suggestions.length > 0 || (onGroqSearch && query.trim().length > 1)) && (
         <div className="absolute left-0 right-0 top-12 z-50 bg-white rounded-2xl border border-slate-200/90 shadow-xl overflow-hidden py-1.5 animate-in fade-in zoom-in-95 duration-100 max-h-80 overflow-y-auto">
+          {onGroqSearch && query.trim().length > 1 && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false);
+                onGroqSearch(query.trim());
+              }}
+              className="w-full text-left px-3.5 py-2.5 flex items-center gap-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-950 border-b border-amber-200/60 transition cursor-pointer"
+            >
+              <div className="shrink-0 p-1.5 rounded-lg bg-amber-500/20 text-amber-700">
+                <Zap className="w-4 h-4 fill-amber-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-xs text-amber-950 truncate">
+                    Ask Groq AI: &ldquo;{query}&rdquo;
+                  </span>
+                  <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-amber-500 text-slate-950">
+                    Fast LPU
+                  </span>
+                </div>
+                <p className="text-[11px] text-amber-800 truncate">
+                  Reason over travel intent &amp; extract curated attractions
+                </p>
+              </div>
+            </button>
+          )}
+
           <div className="px-3 py-1 text-[10px] uppercase font-semibold tracking-wider text-slate-600 border-b border-slate-100 flex items-center justify-between">
             <span>NATMO & GeoNames Verified Index</span>
             <span className="font-mono text-[9px] text-slate-600">GeoNames · NATMO · MoT</span>

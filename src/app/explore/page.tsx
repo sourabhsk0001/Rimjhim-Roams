@@ -16,6 +16,7 @@ import {
   Palmtree,
   Flame,
   ArrowRight,
+  Zap,
 } from "lucide-react";
 import { Navigation } from "@/components/navigation";
 import { Input } from "@/components/ui/input";
@@ -27,10 +28,12 @@ import { Destination } from "@/types/travel";
 import { IndiaTourismExplorer } from "@/components/tourism/IndiaTourismExplorer";
 import { NATMOGeoNamesSearchBar } from "@/components/tourism/NATMOGeoNamesSearchBar";
 import { PersonalizedRecommendations } from "@/components/tourism/PersonalizedRecommendations";
+import { GroqAISearchDeck } from "@/components/tourism/GroqAISearchDeck";
 import { AutocompleteSuggestion } from "@/types/recommendations";
 
 export default function ExplorePage() {
-  const [activeTab, setActiveTab] = useState<"india_kb" | "recommendations" | "destinations">("india_kb");
+  const [activeTab, setActiveTab] = useState<"india_kb" | "recommendations" | "destinations" | "groq_ai">("india_kb");
+  const [groqQuery, setGroqQuery] = useState("");
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [search, setSearch] = useState("");
   const [climate, setClimate] = useState("all");
@@ -113,12 +116,24 @@ export default function ExplorePage() {
               <NATMOGeoNamesSearchBar
                 placeholder="Search any state (e.g. Rajasthan, Kerala), circuit, or attraction..."
                 onSelect={handleAutocompleteSelect}
+                onGroqSearch={(q) => {
+                  setGroqQuery(q);
+                  setActiveTab("groq_ai");
+                }}
                 className="w-full"
               />
             </div>
 
             {/* Quick Thematic Circuit Tags */}
             <div className="flex flex-wrap items-center justify-center gap-2 mt-3 text-xs">
+              <button
+                type="button"
+                onClick={() => setActiveTab("groq_ai")}
+                className="px-3 py-1 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-medium transition-all cursor-pointer active:scale-95 flex items-center gap-1 shadow-sm"
+              >
+                <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+                <span>⚡ Groq AI Search</span>
+              </button>
               <span className="text-slate-400 font-medium">Popular:</span>
               {[
                 "🏛️ Golden Triangle",
@@ -203,6 +218,19 @@ export default function ExplorePage() {
             >
               <Compass className="w-4 h-4 text-emerald-500" />
               <span>City Portals Catalog</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("groq_ai")}
+              className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
+                activeTab === "groq_ai"
+                  ? "bg-amber-500 text-slate-950 shadow-md font-bold scale-[1.02]"
+                  : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-100"
+              }`}
+            >
+              <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+              <span>⚡ Groq AI Search</span>
             </button>
           </div>
 
@@ -302,6 +330,19 @@ export default function ExplorePage() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Tab 4: Groq AI Travel Search */}
+        {activeTab === "groq_ai" && (
+          <div className="space-y-6">
+            <GroqAISearchDeck
+              initialQuery={groqQuery}
+              onSelectLocation={(locName) => {
+                setSearch(locName);
+                setActiveTab("india_kb");
+              }}
+            />
           </div>
         )}
       </main>

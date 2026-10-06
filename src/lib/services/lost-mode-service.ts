@@ -581,10 +581,27 @@ export class LostModeService {
       badgeLabel: "Public Haven",
     });
 
-    // Sort by proximity to traveler
+    // Sort by proximity to traveler while guaranteeing representation of critical havens (police, hospital)
     places.sort((a, b) => a.distanceMeters - b.distanceMeters);
 
-    return places.slice(0, 6);
+    const criticalTypes: Array<"police" | "hospital" | "transit" | "tourist_desk"> = [
+      "police",
+      "hospital",
+      "transit",
+      "tourist_desk",
+    ];
+    const guaranteed: SafePublicPlace[] = [];
+    for (const t of criticalTypes) {
+      const match = places.find((p) => p.type === t);
+      if (match && !guaranteed.some((g) => g.id === match.id)) {
+        guaranteed.push(match);
+      }
+    }
+    const remainder = places.filter((p) => !guaranteed.some((g) => g.id === p.id));
+    const combined = [...guaranteed, ...remainder];
+    combined.sort((a, b) => a.distanceMeters - b.distanceMeters);
+
+    return combined.slice(0, 8);
   }
 
   /**

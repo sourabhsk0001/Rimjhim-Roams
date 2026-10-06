@@ -57,6 +57,12 @@ test("Security Audit: No secrets, service-role keys, or Gemini keys in client co
       `Client component ${relativePath} must NOT reference GEMINI_API_KEY!`
     );
 
+    assert.strictEqual(
+      content.includes("GROQ_API_KEY"),
+      false,
+      `Client component ${relativePath} must NOT reference GROQ_API_KEY!`
+    );
+
     // Ensure no hardcoded raw API keys like 'AIzaSy'
     assert.strictEqual(
       /AIzaSy[A-Za-z0-9_-]{33}/.test(content),
