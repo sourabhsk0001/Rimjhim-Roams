@@ -37,6 +37,7 @@ import {
   Receipt,
   Calculator,
   AlertTriangle,
+  AlertOctagon,
   Sun,
   CloudRain,
   Droplets,
@@ -57,6 +58,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { InteractiveMap, MapMarkerItem } from "@/components/map/interactive-map";
 import { getDestinationTransitHubs } from "@/lib/geo/transit-hubs";
 import { LostModeModal } from "@/components/travel/lost-mode-modal";
+import { EmergencyModeModal } from "@/components/travel/emergency-mode-modal";
 import { TripWorkspaceNav } from "@/components/travel/trip-workspace-nav";
 import { ConfirmationModal } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
@@ -87,6 +89,7 @@ export default function TripDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showLostModal, setShowLostModal] = useState(false);
+  const [showEmergencyModal, setShowEmergencyModal] = useState(false);
 
   // Generation state
   const [isGenerating, setIsGenerating] = useState(false);
@@ -447,6 +450,16 @@ export default function TripDetailPage() {
 
           {trip && (
             <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => setShowEmergencyModal(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-red-700 hover:bg-red-800 text-white text-xs sm:text-sm font-bold shadow-md hover:scale-[1.03] active:scale-[0.98] transition-all"
+                title="🚨 Emergency Mode: Hospitals, Police, Pharmacies, Embassies"
+              >
+                <AlertOctagon className="w-3.5 h-3.5 text-white animate-pulse" />
+                <span>🚨 EMERGENCY</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setShowLostModal(true)}
@@ -896,6 +909,7 @@ export default function TripDetailPage() {
                       currentLocation={currentLocationPoint}
                       onMarkerSelect={(m) => setSelectedItemId(m.id)}
                       onLostModeClick={() => setShowLostModal(true)}
+                      onEmergencyModeClick={() => setShowEmergencyModal(true)}
                       height="500px"
                     />
                   </CardContent>
@@ -1463,6 +1477,16 @@ export default function TripDetailPage() {
             tripId={trip.id}
             isOpen={showLostModal}
             onClose={() => setShowLostModal(false)}
+            destinationName={trip.destination}
+          />
+        )}
+
+        {/* Emergency Mode Modal */}
+        {trip && (
+          <EmergencyModeModal
+            tripId={trip.id}
+            isOpen={showEmergencyModal}
+            onClose={() => setShowEmergencyModal(false)}
             destinationName={trip.destination}
           />
         )}

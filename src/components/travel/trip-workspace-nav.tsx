@@ -17,6 +17,7 @@ import {
   Bot,
   LayoutDashboard,
   AlertTriangle,
+  AlertOctagon,
 } from "lucide-react";
 
 export interface TripWorkspaceNavProps {
@@ -33,6 +34,7 @@ export function TripWorkspaceNav({ tripId, className }: TripWorkspaceNavProps) {
     { id: "budget", label: "Budget", href: `/trips/${tripId}/budget`, icon: Wallet },
     { id: "weather", label: "Weather", href: `/trips/${tripId}/weather`, icon: CloudSun },
     { id: "safety", label: "Safety Center", href: `/trips/${tripId}/safety`, icon: ShieldAlert },
+    { id: "emergency", label: "🚨 Emergency", href: `/trips/${tripId}/emergency`, icon: AlertOctagon, isAlert: true },
     { id: "lost", label: "🆘 I'm Lost", href: `/trips/${tripId}/lost`, icon: AlertTriangle, isAlert: true },
     { id: "group", label: "Group & Polls", href: `/trips/${tripId}/group`, icon: Users },
     { id: "expenses", label: "Split Expenses", href: `/trips/${tripId}/expenses`, icon: Scale },

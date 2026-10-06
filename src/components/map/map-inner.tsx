@@ -26,6 +26,7 @@ import {
   Star,
   Navigation as NavIcon,
   AlertTriangle,
+  AlertOctagon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { RouteMode } from "@/lib/geo/routing";
@@ -99,6 +100,8 @@ export interface MapInnerProps {
   };
   // Emergency "I'm Lost" trigger
   onLostModeClick?: () => void;
+  // Emergency Mode trigger
+  onEmergencyModeClick?: () => void;
 }
 
 export type MapStyleKey = "voyager" | "standard" | "positron" | "dark" | "topo";
@@ -186,6 +189,7 @@ export default function MapInner({
   onDaySelect,
   currentLocation,
   onLostModeClick,
+  onEmergencyModeClick,
 }: MapInnerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -928,6 +932,19 @@ export default function MapInner({
             >
               <AlertTriangle className="w-3 h-3 text-white animate-pulse" />
               <span>🆘 Lost?</span>
+            </button>
+          )}
+
+          {/* Emergency Mode Quick Trigger */}
+          {onEmergencyModeClick && (
+            <button
+              type="button"
+              onClick={onEmergencyModeClick}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-700 hover:bg-red-800 text-white text-[11px] font-bold shadow-xs transition-all hover:scale-[1.03] active:scale-[0.98]"
+              title="🚨 Emergency Mode (Hospitals, Police, Pharmacies, Embassies)"
+            >
+              <AlertOctagon className="w-3 h-3 text-white animate-pulse" />
+              <span>🚨 Emergency</span>
             </button>
           )}
 
