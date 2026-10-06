@@ -76,6 +76,8 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
   const [loading, setLoading] = useState(false);
   const [copilotPhase, setCopilotPhase] = useState<CopilotPhase>("thinking");
   const [activeProvider, setActiveProvider] = useState<string>("TripWise AI Copilot");
+  const [selectedEngine, setSelectedEngine] = useState<"gemini" | "groq">("gemini");
+  const [enginePromptAnswered, setEnginePromptAnswered] = useState(false);
   const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
   const [quotaInfo, setQuotaInfo] = useState<{
     userRemaining?: number;
@@ -83,6 +85,24 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
     serverRemaining?: number;
   } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("rr_preferred_ai_engine");
+      if (saved === "gemini" || saved === "groq") {
+        setSelectedEngine(saved);
+        setEnginePromptAnswered(true);
+      }
+    } catch {}
+  }, []);
+
+  const handleSelectEngine = (engine: "gemini" | "groq") => {
+    setSelectedEngine(engine);
+    setEnginePromptAnswered(true);
+    try {
+      localStorage.setItem("rr_preferred_ai_engine", engine);
+    } catch {}
+  };
 
   const fetchQuota = () => {
     fetch("/api/ai/quota")
@@ -149,6 +169,7 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
           message: textToSend,
           tripId: tripId || undefined,
           history,
+          provider: selectedEngine,
         }),
       });
 
@@ -224,9 +245,41 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Engine Selector Pills */}
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-full border border-slate-200 text-xs">
+            <button
+              type="button"
+              onClick={() => handleSelectEngine("gemini")}
+              className={`px-3 py-1 rounded-full flex items-center gap-1.5 font-medium transition-all ${
+                selectedEngine === "gemini"
+                  ? "bg-white text-slate-950 shadow-xs font-semibold"
+                  : "text-slate-600 hover:text-black"
+              }`}
+              title="Google Gemini 3.5 Flash (DeepMind multimodal model)"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+              <span className="hidden sm:inline">Gemini 3.5 Flash</span>
+              <span className="sm:hidden">Gemini</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSelectEngine("groq")}
+              className={`px-3 py-1 rounded-full flex items-center gap-1.5 font-medium transition-all ${
+                selectedEngine === "groq"
+                  ? "bg-white text-slate-950 shadow-xs font-semibold"
+                  : "text-slate-600 hover:text-black"
+              }`}
+              title="Groq LPU Ultra-Fast Llama 3.3 70B Inference"
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+              <span className="hidden sm:inline">Groq LPU</span>
+              <span className="sm:hidden">Groq</span>
+            </button>
+          </div>
+
           {quotaInfo && typeof quotaInfo.userRemaining === "number" && (
             <div
-              className={`text-[11px] font-medium px-2.5 py-1 rounded-full border flex items-center gap-1.5 transition-colors ${
+              className={`hidden md:flex text-[11px] font-medium px-2.5 py-1 rounded-full border items-center gap-1.5 transition-colors ${
                 quotaInfo.userRemaining <= 2
                   ? "bg-rose-50 text-rose-800 border-rose-200"
                   : "bg-amber-50 text-amber-800 border-amber-200"
@@ -235,21 +288,59 @@ export function CopilotChat({ tripId, initialMessage, tripSummary }: CopilotChat
             >
               <Sparkles className="w-3 h-3 text-amber-600" />
               <span>
-                AI Quota: <strong>{quotaInfo.userRemaining}</strong>/{quotaInfo.userLimit} today (Free Tier)
+                AI Quota: <strong>{quotaInfo.userRemaining}</strong>/{quotaInfo.userLimit}
               </span>
             </div>
           )}
 
           {tripId && (
-            <div className="hidden sm:flex items-center gap-2 text-xs bg-slate-50 px-3.5 py-1.5 rounded-full border border-slate-200/80">
-              <span className="text-[hsl(215,25%,32%)]">Active Trip:</span>
-              <span className="font-medium text-[#0f172a]">
+            <div className="hidden lg:flex items-center gap-2 text-xs bg-slate-50 px-3.5 py-1.5 rounded-full border border-slate-200/80">
+              <span className="text-[hsl(215,25%,32%)]">Trip:</span>
+              <span className="font-medium text-[#0f172a] truncate max-w-[120px]">
                 {tripSummary ? `${tripSummary.origin} → ${tripSummary.destination}` : "Loaded"}
               </span>
             </div>
           )}
         </div>
       </div>
+
+      {/* Interactive Engine Selection Banner */}
+      {!enginePromptAnswered && (
+        <div className="px-5 py-3 bg-gradient-to-r from-blue-50 via-indigo-50 to-amber-50 border-b border-indigo-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-slate-800">
+            <Bot className="w-4 h-4 text-indigo-600 shrink-0" />
+            <span>
+              <strong>Choose your AI Engine:</strong> Which model would you like to use for your journey?
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => handleSelectEngine("gemini")}
+              className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                selectedEngine === "gemini"
+                  ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                  : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>⚡ Gemini 3.5 Flash</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSelectEngine("groq")}
+              className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                selectedEngine === "groq"
+                  ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                  : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>🚀 Groq LPU</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Message Feed */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">

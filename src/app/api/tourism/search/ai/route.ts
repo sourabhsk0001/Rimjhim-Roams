@@ -21,6 +21,8 @@ export async function GET(req: NextRequest) {
     const preferredState = searchParams.get("state") || undefined;
     const budgetTier = searchParams.get("budget") as "budget" | "moderate" | "luxury" | undefined;
     const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!, 10) : 8;
+    const rawProvider = (searchParams.get("provider") || "").toLowerCase();
+    const provider = rawProvider === "gemini" ? "gemini" : rawProvider === "groq" ? "groq" : undefined;
 
     if (!query || !query.trim()) {
       return NextResponse.json(
@@ -34,6 +36,7 @@ export async function GET(req: NextRequest) {
       preferredState,
       budgetTier,
       limit,
+      provider,
     });
 
     return NextResponse.json({
@@ -56,7 +59,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { query, preferredState, budgetTier, limit } = body;
+    const { query, preferredState, budgetTier, limit, provider: reqProvider } = body;
 
     if (!query || typeof query !== "string" || !query.trim()) {
       return NextResponse.json(
@@ -65,11 +68,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const rawProvider = typeof reqProvider === "string" ? reqProvider.toLowerCase() : "";
+    const provider = rawProvider === "gemini" ? "gemini" : rawProvider === "groq" ? "groq" : undefined;
+
     const result = await groqSearchService.search({
       query: query.trim(),
       preferredState: typeof preferredState === "string" ? preferredState : undefined,
       budgetTier: ["budget", "moderate", "luxury"].includes(budgetTier) ? budgetTier : undefined,
       limit: typeof limit === "number" ? limit : 8,
+      provider,
     });
 
     return NextResponse.json({

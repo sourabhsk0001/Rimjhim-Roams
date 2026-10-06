@@ -13,17 +13,18 @@ import {
  * The model only selects tools and synthesizes explanations; it never calculates values itself.
  */
 export class GeminiModelProvider implements AIModelProvider {
-  public readonly name = "Google Gemini (gemini-1.5-flash)";
+  public readonly name: string;
   private client: GoogleGenerativeAI;
   private modelName: string;
 
-  constructor(apiKey?: string, modelName: string = "gemini-1.5-flash") {
+  constructor(apiKey?: string, modelName?: string) {
     const key = apiKey || process.env.GEMINI_API_KEY || "";
+    this.modelName = modelName || process.env.GEMINI_MODEL || "gemini-3.5-flash";
+    this.name = `Google Gemini (${this.modelName})`;
     if (!key) {
       throw new Error("GEMINI_API_KEY environment variable is required for GeminiModelProvider.");
     }
     this.client = new GoogleGenerativeAI(key);
-    this.modelName = modelName;
   }
 
   async generateResponse(
@@ -528,10 +529,10 @@ User Context: Authorized UserId: ${context?.userId || "anonymous"}, Active TripI
  * Allows swapping provider dynamically (Groq / Gemini) or falling back when API key is not present.
  */
 export function getAIModelProvider(preferredProvider?: string): AIModelProvider {
-  const provider = preferredProvider || process.env.AI_PROVIDER;
+  const provider = (preferredProvider || process.env.AI_PROVIDER || "").trim().toLowerCase();
 
-  // 1. Explicit Groq preference or Groq configured as default
-  if (provider === "groq" || (!provider && process.env.GROQ_API_KEY && !process.env.GEMINI_API_KEY)) {
+  // 1. Explicit Groq preference
+  if (provider === "groq") {
     try {
       return new GroqModelProvider();
     } catch {
@@ -539,8 +540,8 @@ export function getAIModelProvider(preferredProvider?: string): AIModelProvider 
     }
   }
 
-  // 2. Explicit Gemini preference or Gemini key available
-  if (provider === "gemini" || (!provider && process.env.GEMINI_API_KEY)) {
+  // 2. Explicit Gemini preference
+  if (provider === "gemini") {
     try {
       return new GeminiModelProvider();
     } catch {
@@ -548,7 +549,23 @@ export function getAIModelProvider(preferredProvider?: string): AIModelProvider 
     }
   }
 
-  // 3. Fallback to Groq if key exists
+  // 3. Auto-detect if both or either API key exists (prefer Groq if set or Gemini)
+  if (process.env.GROQ_API_KEY && !process.env.GEMINI_API_KEY) {
+    try {
+      return new GroqModelProvider();
+    } catch {
+      // Fall through
+    }
+  }
+
+  if (process.env.GEMINI_API_KEY) {
+    try {
+      return new GeminiModelProvider();
+    } catch {
+      return new DeterministicCopilotProvider();
+    }
+  }
+
   if (process.env.GROQ_API_KEY) {
     try {
       return new GroqModelProvider();

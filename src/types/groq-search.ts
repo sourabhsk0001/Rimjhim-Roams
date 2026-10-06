@@ -24,7 +24,7 @@ export interface GroqSearchResult {
   matchedCircuits: NATMOCircuitDefinition[];
   suggestedFollowUps: string[];
   executionTimeMs: number;
-  source: "groq_lpu" | "deterministic_engine";
+  source: "groq_lpu" | "gemini_flash" | "deterministic_engine";
 }
 
 export interface GroqSearchRequest {
@@ -32,4 +32,5 @@ export interface GroqSearchRequest {
   preferredState?: string;
   budgetTier?: "budget" | "moderate" | "luxury";
   limit?: number;
+  provider?: "groq" | "gemini";
 }

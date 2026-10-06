@@ -270,7 +270,7 @@ export class GeminiDailyQuotaManager {
       explanation: {
         title: "Rimjhim Roams — Student Project Free-Tier AI Quota Policy",
         studentProjectNotice:
-          "Rimjhim Roams is an academic student project engineered for intelligent travel planning education. All AI capabilities run strictly on the free tier of the Google Gemini API (gemini-1.5-flash).",
+          "Rimjhim Roams is an academic student project engineered for intelligent travel planning education. All AI capabilities run strictly on the free tier of the Google Gemini API (gemini-3.5-flash).",
         fairUsePolicy:
           `To maintain equitable access for all student evaluators, recruiters, and travelers without incurring paid cloud billing costs, each account receives ${this.userLimit} Gemini requests per day, within a server-wide ceiling of ${this.serverLimit} requests per day.`,
         deterministicFallbackNotice:

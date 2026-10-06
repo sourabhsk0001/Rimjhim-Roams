@@ -41,6 +41,7 @@ export function GroqAISearchDeck({
   className = "",
 }: GroqAISearchDeckProps) {
   const [query, setQuery] = useState(initialQuery);
+  const [engine, setEngine] = useState<"gemini" | "groq">("gemini");
   const [budgetTier, setBudgetTier] = useState<"budget" | "moderate" | "luxury">("moderate");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +62,7 @@ export function GroqAISearchDeck({
           query: q,
           budgetTier,
           limit: 6,
+          provider: engine,
         }),
       });
 
@@ -71,7 +73,7 @@ export function GroqAISearchDeck({
 
       setResult(data);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Error querying Groq AI search.");
+      setError(err instanceof Error ? err.message : "Error querying AI search.");
     } finally {
       setLoading(false);
     }
@@ -84,21 +86,25 @@ export function GroqAISearchDeck({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* 1. Groq Search Control Bar */}
+      {/* 1. AI Search Control Bar */}
       <Card className="p-4 sm:p-6 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white border-amber-500/20 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-2">
-              <span className="p-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                <Zap className="w-5 h-5 fill-amber-300 text-amber-300" />
+              <span className={`p-1.5 rounded-lg border ${engine === "gemini" ? "bg-blue-500/20 text-blue-300 border-blue-500/30" : "bg-amber-500/20 text-amber-300 border-amber-500/30"}`}>
+                {engine === "gemini" ? (
+                  <Sparkles className="w-5 h-5 fill-blue-300 text-blue-300" />
+                ) : (
+                  <Zap className="w-5 h-5 fill-amber-300 text-amber-300" />
+                )}
               </span>
               <div>
                 <h3 className="font-semibold text-lg text-white tracking-tight flex items-center gap-2">
-                  Groq LPU Travel Search
+                  {engine === "gemini" ? "Gemini 3.5 Flash Search" : "Groq LPU Travel Search"}
                   <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    Ultra-Fast LPU
+                    {engine === "gemini" ? "Gemini 3.5 Flash" : "Ultra-Fast LPU"}
                   </span>
                 </h3>
                 <p className="text-xs text-slate-300">
@@ -107,23 +113,55 @@ export function GroqAISearchDeck({
               </div>
             </div>
 
-            {/* Budget Filter */}
-            <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-lg p-1 text-xs">
-              <span className="text-slate-400 px-2">Budget:</span>
-              {(["budget", "moderate", "luxury"] as const).map((tier) => (
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Engine Toggle */}
+              <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-lg p-1 text-xs">
                 <button
-                  key={tier}
                   type="button"
-                  onClick={() => setBudgetTier(tier)}
-                  className={`px-2.5 py-1 rounded capitalize font-medium transition-all ${
-                    budgetTier === tier
-                      ? "bg-amber-500 text-slate-950 shadow-sm"
+                  onClick={() => setEngine("gemini")}
+                  className={`px-2.5 py-1 rounded font-medium flex items-center gap-1.5 transition-all ${
+                    engine === "gemini"
+                      ? "bg-blue-600 text-white shadow-xs font-semibold"
                       : "text-slate-300 hover:text-white hover:bg-white/5"
                   }`}
+                  title="Google Gemini 3.5 Flash Multimodal Reasoning"
                 >
-                  {tier}
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Gemini 3.5</span>
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => setEngine("groq")}
+                  className={`px-2.5 py-1 rounded font-medium flex items-center gap-1.5 transition-all ${
+                    engine === "groq"
+                      ? "bg-amber-500 text-slate-950 shadow-xs font-semibold"
+                      : "text-slate-300 hover:text-white hover:bg-white/5"
+                  }`}
+                  title="Groq LPU Ultra-Fast Inference"
+                >
+                  <Zap className="w-3.5 h-3.5 fill-current" />
+                  <span>Groq LPU</span>
+                </button>
+              </div>
+
+              {/* Budget Filter */}
+              <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-lg p-1 text-xs">
+                <span className="text-slate-400 px-1.5">Budget:</span>
+                {(["budget", "moderate", "luxury"] as const).map((tier) => (
+                  <button
+                    key={tier}
+                    type="button"
+                    onClick={() => setBudgetTier(tier)}
+                    className={`px-2 py-1 rounded capitalize font-medium transition-all ${
+                      budgetTier === tier
+                        ? "bg-amber-500 text-slate-950 shadow-sm"
+                        : "text-slate-300 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    {tier}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

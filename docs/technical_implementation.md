@@ -470,7 +470,7 @@ Implemented via a high-performance in-memory sliding token bucket (`src/lib/secu
 ## 13. Gemini API Daily Quota Architecture & Student Project Free-Tier Policy
 
 ### 13.1 Academic Motivation & Free-Tier Operational Bounds
-Rimjhim Roams is an academic student project engineered for intelligent travel planning orchestration. All generative AI capabilities rely strictly on the **Google Gemini API Free Tier** (`gemini-1.5-flash`), which imposes a non-commercial hard ceiling of **1,500 Requests Per Day (RPD)**.
+Rimjhim Roams is an academic student project engineered for intelligent travel planning orchestration. All generative AI capabilities rely strictly on the **Google Gemini API Free Tier** (`gemini-3.5-flash`), which imposes a non-commercial hard ceiling of **1,500 Requests Per Day (RPD)**.
 
 To operate sustainably within this free tier without incurring commercial cloud hosting or API billing charges, and to guarantee that all student evaluators, recruiters, and travelers receive equitable access, Rimjhim Roams enforces a **Two-Level Daily Quota System**:
 

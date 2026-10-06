@@ -14,6 +14,6 @@ export function getGeminiClient(): GoogleGenerativeAI {
   return genAIInstance;
 }
 
-export const GEMINI_MODEL = "gemini-1.5-flash";
+export const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash";
 
 export { geminiQuotaManager, enforceGeminiQuota } from "@/lib/security/gemini-quota";

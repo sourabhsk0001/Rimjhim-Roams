@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { Navigation } from "@/components/navigation";
 import { CopilotChat } from "@/components/ai/CopilotChat";
 import { Sparkles, ShieldCheck, Compass, CloudSun, MapPin, Calculator } from "lucide-react";
@@ -23,7 +25,7 @@ export default function GlobalAssistantPage() {
             </h1>
 
             <p className="text-[17px] text-[hsl(215,25%,32%)] font-normal leading-relaxed mt-2">
-              Powered by Google Gemini and backed by TripWise domain engines. The copilot never guesses
+              Powered by Google Gemini 3.5 Flash & Groq LPU, backed by TripWise domain engines. The copilot never guesses
               travel math, route geometry, or opening hours—every calculation is verified by real backend tools.
             </p>
           </div>

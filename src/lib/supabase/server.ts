@@ -31,10 +31,12 @@ export function createClient() {
     // cookies() can throw in certain static generation / build contexts
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || FALLBACK_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || FALLBACK_SUPABASE_ANON_KEY;
+  const rawUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim();
+  const rawKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "").trim();
+  const supabaseUrl = rawUrl.length > 0 ? rawUrl : FALLBACK_SUPABASE_URL;
+  const supabaseAnonKey = rawKey.length > 0 ? rawKey : FALLBACK_SUPABASE_ANON_KEY;
 
-  return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+  const cookieHandlers = {
     cookies: {
       getAll() {
         try {
@@ -61,5 +63,11 @@ export function createClient() {
         }
       },
     },
-  });
+  };
+
+  try {
+    return createServerClient<Database>(supabaseUrl, supabaseAnonKey, cookieHandlers);
+  } catch {
+    return createServerClient<Database>(FALLBACK_SUPABASE_URL, FALLBACK_SUPABASE_ANON_KEY, cookieHandlers);
+  }
 }

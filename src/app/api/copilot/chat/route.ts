@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     if (quotaResponse) return quotaResponse;
 
     const body = await req.json().catch(() => ({}));
-    const { message, tripId, history } = body;
+    const { message, tripId, history, provider } = body;
 
     if (!message || typeof message !== "string" || !message.trim()) {
       return NextResponse.json({ error: "Message is required." }, { status: 400 });
@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
         message: message.trim(),
         tripId: typeof tripId === "string" ? tripId : undefined,
         history: Array.isArray(history) ? history : undefined,
+        provider: typeof provider === "string" ? provider : undefined,
       },
       userId
     );

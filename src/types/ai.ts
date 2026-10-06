@@ -62,6 +62,7 @@ export interface CopilotChatRequest {
     role: "user" | "assistant";
     content: string;
   }>;
+  provider?: "gemini" | "groq" | string;
 }
 
 export interface CopilotChatResponse {

@@ -62,7 +62,7 @@ export class CopilotService {
       timestamp: new Date().toISOString(),
     });
 
-    const provider = getAIModelProvider();
+    const provider = getAIModelProvider(request.provider);
     const toolEvents: ToolExecutionEvent[] = [];
     let finalReply = "";
 

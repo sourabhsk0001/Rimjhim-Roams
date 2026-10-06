@@ -152,7 +152,7 @@ Built around a **Zero LLM Math** architectural invariant, AI models are strictly
 - **🚀 High-Speed LPU Inference**: Integrates Groq API (`llama-3.3-70b-versatile` & `llama-3.1-8b-instant`) delivering sub-second natural language reasoning over travel intent.
 - **🧠 Natural-Language Intent Extraction**: Parses freeform travel queries (e.g. *"quiet mountain retreats under ₹3000/day"* or *"peaceful beaches in Goa with coastal dining"*) into structured travel styles, pacing, seasonal windows, and budget tiers.
 - **🗺️ Authoritative Catalog Mapping**: Cross-references AI intent against verified Ministry of Tourism (MoT) locations, OpenStreetMap (OSM) nodes, and NATMO thematic circuits.
-- **🤖 Dual-Provider AI Copilot Architecture**: Extends `getAIModelProvider` with `GroqModelProvider`, allowing seamless switching between Google Gemini (`gemini-1.5-flash`) and Groq (`llama-3.3-70b-versatile`) while preserving the strict zero-authoritative-math invariant.
+- **🤖 Dual-Provider AI Copilot Architecture**: Extends `getAIModelProvider` with `GroqModelProvider`, allowing seamless switching between Google Gemini (`gemini-3.5-flash`) and Groq (`llama-3.3-70b-versatile`) while preserving the strict zero-authoritative-math invariant.
 - **⚡ Interactive AI Search Deck**: Dedicated interactive search experience in `/explore` featuring LPU latency metrics, intent pills, curated place cards with `PlaceComfortBadge`, and clickable suggested follow-up inquiries.
 - **🛡️ Deterministic Offline Fallback**: Works with zero keys or network access, ensuring reliable continuous integration and offline test execution.
 
@@ -168,7 +168,7 @@ Built around a **Zero LLM Math** architectural invariant, AI models are strictly
 | **Database** | Supabase (PostgreSQL 15 + PostGIS 3.3 + pgvector) | [Supabase Free Tier](https://supabase.com) |
 | **Local DB Fallback** | Atomic File-Persistent JSON Engine (`data/app-db.json`) | Built-in |
 | **Authentication** | Supabase Auth SSR + Dual-Layer Session Cookie Bridge | [Supabase Auth](https://supabase.com) |
-| **AI LLM** | Google Gemini 1.5 Flash via `@google/generative-ai` | [Google AI Studio](https://aistudio.google.com/) |
+| **AI LLM** | Google Gemini 3.5 Flash via `@google/generative-ai` | [Google AI Studio](https://aistudio.google.com/) |
 | **AI Fast Inference** | Groq LPU (Llama 3.3 70B Versatile) | [Groq Console](https://console.groq.com) |
 | **Vector Embeddings** | Gemini `text-embedding-004` (768 dimensions) | [Google AI Studio](https://aistudio.google.com/) |
 | **Interactive Maps** | MapLibre GL JS (WebGL GPU-accelerated 3D Terrain & Routes) | Open Source |

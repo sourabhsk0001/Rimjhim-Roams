@@ -17,6 +17,7 @@ import { indiaTourismService } from "@/lib/services/india-tourism-service";
 import { NATMO_THEMATIC_CIRCUITS } from "@/lib/services/tourism-autocomplete-service";
 import { IndiaTourismLocation } from "@/types/india-tourism";
 import { NATMOCircuitDefinition } from "@/types/recommendations";
+import { getGeminiClient } from "@/lib/gemini/client";
 
 export class GroqSearchService {
   private client: GroqClient;
@@ -26,7 +27,7 @@ export class GroqSearchService {
   }
 
   /**
-   * Search India tourism destinations and circuits using natural language powered by Groq.
+   * Search India tourism destinations and circuits using natural language powered by Groq or Gemini.
    */
   public async search(request: GroqSearchRequest): Promise<GroqSearchResult> {
     const startTime = Date.now();
@@ -36,8 +37,25 @@ export class GroqSearchService {
       throw new Error("Search query cannot be empty.");
     }
 
-    // If Groq is configured, attempt high-speed LPU inference
-    if (this.client.isConfigured()) {
+    const preferredProvider =
+      request.provider ||
+      (this.client.isConfigured() ? "groq" : process.env.GEMINI_API_KEY ? "gemini" : "groq");
+
+    // 1. If user explicitly requested Gemini 3.5 Flash
+    if (preferredProvider === "gemini" && process.env.GEMINI_API_KEY) {
+      try {
+        const geminiResult = await this.executeGeminiSearch(query, request);
+        return {
+          ...geminiResult,
+          executionTimeMs: Math.max(1, Date.now() - startTime),
+        };
+      } catch (err) {
+        console.warn("Gemini API search error, falling back to deterministic engine:", err);
+      }
+    }
+
+    // 2. If Groq is requested/configured, attempt high-speed LPU inference
+    if (preferredProvider === "groq" && this.client.isConfigured()) {
       try {
         const groqResult = await this.executeGroqLpuSearch(query, request);
         return {
@@ -46,11 +64,23 @@ export class GroqSearchService {
         };
       } catch (err) {
         console.warn("Groq API search error, falling back to deterministic engine:", err);
-        // Seamless fallback to deterministic engine on network / quota errors
       }
     }
 
-    // Deterministic Intelligence Fallback Engine
+    // 3. Fallback to Gemini if Groq was requested but not configured
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const geminiResult = await this.executeGeminiSearch(query, request);
+        return {
+          ...geminiResult,
+          executionTimeMs: Math.max(1, Date.now() - startTime),
+        };
+      } catch (err) {
+        console.warn("Gemini API search error, falling back to deterministic engine:", err);
+      }
+    }
+
+    // 4. Deterministic Intelligence Fallback Engine
     const fallbackResult = this.executeDeterministicFallbackSearch(query, request);
     return {
       ...fallbackResult,
@@ -154,6 +184,102 @@ You must respond ONLY with a JSON object matching this schema:
             `3-day itinerary recommendations`,
           ],
       source: "groq_lpu",
+    };
+  }
+
+  /**
+   * Dispatches the natural language search prompt to Google Gemini (gemini-3.5-flash).
+   */
+  private async executeGeminiSearch(
+    query: string,
+    request: GroqSearchRequest
+  ): Promise<Omit<GroqSearchResult, "executionTimeMs">> {
+    const modelName = process.env.GEMINI_MODEL || "gemini-3.5-flash";
+
+    const systemPrompt = `You are Rimjhim Roams' India Tourism AI search engine powered by Google Gemini (${modelName}).
+Analyze the traveler's natural language search query and return a valid, well-structured JSON response.
+
+Contextual Knowledge:
+- 28 States & 8 Union Territories of India (Goa, Rajasthan, Himachal Pradesh, Kerala, West Bengal, Karnataka, Ladakh, Tamil Nadu, Uttarakhand, etc.)
+- NATMO Thematic Circuits: Golden Triangle, Desert Triangle & Thar Dunes, Buddhist Heritage, Malabar Coast & Spice Route, Himalayan Footsteps, North-East Explorer.
+- Tourism categories: Historical Monument, Nature & Beach, Hill Station, Adventure, Spiritual & Pilgrimage, Wildlife, Cultural.
+
+You must respond ONLY with a JSON object matching this schema:
+{
+  "aiSummary": "2-3 sentence evocative, actionable travel recommendation directly answering the traveler's request.",
+  "travelStyle": "string e.g. Coastal Relaxation | Royal Heritage | Mountain Trek | Cultural Discovery",
+  "idealSeason": "string e.g. October to March | April to June | Monsoon Bliss | Year-round",
+  "estimatedBudgetTier": "budget" | "moderate" | "luxury",
+  "suggestedPace": "relaxed" | "moderate" | "fast",
+  "detectedRegions": ["array of matching state or UT names in India"],
+  "themes": ["array of 2-4 detected travel themes"],
+  "relevantLocationKeywords": ["array of 3-6 specific sight, city, or attraction names relevant to the query"],
+  "suggestedCircuits": ["array of 1-2 matching NATMO circuit names"],
+  "suggestedFollowUps": ["array of 3 clickable related follow-up search queries"]
+}`;
+
+    const client = getGeminiClient();
+    const model = client.getGenerativeModel({
+      model: modelName,
+      generationConfig: {
+        responseMimeType: "application/json",
+        temperature: 0.2,
+      },
+      systemInstruction: systemPrompt,
+    });
+
+    const userPrompt = `Traveler Query: "${query}"${request.preferredState ? `\nPreferred State: ${request.preferredState}` : ""}${request.budgetTier ? `\nBudget Tier: ${request.budgetTier}` : ""}`;
+    const result = await model.generateContent(userPrompt);
+    const rawContent = result.response.text();
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(rawContent);
+    } catch {
+      throw new Error("Failed to parse JSON response from Gemini.");
+    }
+
+    const matchedLocations = this.resolveMatchedLocations(
+      parsed.relevantLocationKeywords || [],
+      parsed.detectedRegions || [],
+      query,
+      request.limit || 8
+    );
+
+    const matchedCircuits = this.resolveMatchedCircuits(
+      parsed.suggestedCircuits || [],
+      parsed.detectedRegions || [],
+      query
+    );
+
+    const intent: GroqSearchIntent = {
+      travelStyle: parsed.travelStyle || "General Exploration",
+      idealSeason: parsed.idealSeason || "October to March",
+      estimatedBudgetTier: ["budget", "moderate", "luxury"].includes(parsed.estimatedBudgetTier)
+        ? parsed.estimatedBudgetTier
+        : "moderate",
+      suggestedPace: ["relaxed", "moderate", "fast"].includes(parsed.suggestedPace)
+        ? parsed.suggestedPace
+        : "moderate",
+      detectedRegions: Array.isArray(parsed.detectedRegions) ? parsed.detectedRegions : [],
+      themes: Array.isArray(parsed.themes) ? parsed.themes : ["Exploration"],
+    };
+
+    return {
+      query,
+      model: `${modelName} (Google Gemini)`,
+      aiSummary: parsed.aiSummary || `Curated travel options matching "${query}".`,
+      intent,
+      matchedLocations,
+      matchedCircuits,
+      suggestedFollowUps: Array.isArray(parsed.suggestedFollowUps) && parsed.suggestedFollowUps.length > 0
+        ? parsed.suggestedFollowUps
+        : [
+            `Top budget stays for ${intent.detectedRegions[0] || "this route"}`,
+            `Best time to visit without crowds`,
+            `3-day itinerary recommendations`,
+          ],
+      source: "gemini_flash",
     };
   }
 
