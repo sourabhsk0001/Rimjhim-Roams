@@ -1,4 +1,4 @@
-import { createClient as createServerSupabase } from "@/lib/supabase/server";
+import { createClient as createServerSupabase, isTableMissingError, isSupabaseLive } from "@/lib/supabase/server";
 import { Database } from "@/types/database";
 import {
   BudgetCategory,
@@ -23,16 +23,8 @@ type PriceSnapshotRow = Database["public"]["Tables"]["price_snapshots"]["Row"];
 type ExpenseRow = Database["public"]["Tables"]["expenses"]["Row"];
 
 // In-memory fallback stores for local testing without live Supabase
-const memoryExpenses: Map<string, ExpenseRow> = new Map();
-const memorySnapshots: Map<string, PriceSnapshotRow> = new Map();
-
-function isSupabaseLive(): boolean {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  return Boolean(
-    url && key && !url.includes("mock-project") && key !== "mock-anon-key"
-  );
-}
+export const memoryExpenses: Map<string, ExpenseRow> = new Map();
+export const memorySnapshots: Map<string, PriceSnapshotRow> = new Map();
 
 /**
  * Returns complete budget data, category breakdown, deterministic alternatives,
@@ -184,15 +176,31 @@ export async function getTripPriceSnapshots(
 
   try {
     const supabase = createServerSupabase();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("price_snapshots")
       .select("*")
       .eq("trip_id", tripId)
       .order("created_at", { ascending: true });
 
+    if (error || !data || data.length === 0) {
+      const list: PriceSnapshotRecord[] = [];
+      for (const snap of Array.from(memorySnapshots.values())) {
+        if (snap.trip_id === tripId) {
+          list.push(snap as unknown as PriceSnapshotRecord);
+        }
+      }
+      return list;
+    }
+
     return (data || []) as unknown as PriceSnapshotRecord[];
   } catch {
-    return [];
+    const list: PriceSnapshotRecord[] = [];
+    for (const snap of Array.from(memorySnapshots.values())) {
+      if (snap.trip_id === tripId) {
+        list.push(snap as unknown as PriceSnapshotRecord);
+      }
+    }
+    return list;
   }
 }
 

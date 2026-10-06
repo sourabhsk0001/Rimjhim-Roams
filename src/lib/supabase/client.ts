@@ -22,6 +22,32 @@ export function isSupabaseLive(): boolean {
   return !isMockSupabase();
 }
 
+/**
+ * Detects if a Supabase PostgREST error is caused by missing database tables
+ * or an unmigrated database schema (e.g. table not found in schema cache).
+ */
+export function isTableMissingError(error: unknown): boolean {
+  if (!error) return false;
+  const errObj = error as { code?: string; message?: string; details?: string; hint?: string };
+  const code = (errObj.code || "").toUpperCase();
+  const msg = (errObj.message || "").toLowerCase();
+  const details = (errObj.details || "").toLowerCase();
+
+  return (
+    code === "PGRST205" || // PostgREST table not found in schema cache
+    code === "42P01" ||    // Postgres undefined_table (relation does not exist)
+    code === "PGRST204" || // column not found in schema cache
+    code === "PGRST116" || // no rows returned
+    msg.includes("schema cache") ||
+    msg.includes("could not find the table") ||
+    msg.includes("does not exist") ||
+    msg.includes("relation") ||
+    (msg.includes("table") && msg.includes("not found")) ||
+    details.includes("schema cache") ||
+    details.includes("does not exist")
+  );
+}
+
 export function createClient() {
   const rawUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim();
   const rawKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "").trim();

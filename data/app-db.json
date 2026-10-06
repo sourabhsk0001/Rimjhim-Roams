@@ -20,6 +20,26 @@
       "role": "admin",
       "created_at": "2026-10-05T14:56:58.190Z",
       "updated_at": "2026-10-05T14:56:58.190Z"
+    },
+    {
+      "id": "user-muws4mo6-77a75456",
+      "email": "traveler-1791297243065@test.com",
+      "full_name": "Aryan Sharma",
+      "password_hash": "e110454cc308765c11cfb47474da5d70f91907b13895552abefdaa27a6a12cc0841fdd9bfa67a86ed7ac5a699f0086fca42a17d1cdb09e8743c37dcfb8861b31",
+      "salt": "0c96a89b035c2eb4b32ce9be1b617593",
+      "role": "traveler",
+      "created_at": "2026-10-06T14:34:03.073Z",
+      "updated_at": "2026-10-06T14:34:03.073Z"
+    },
+    {
+      "id": "user-muws4moo-94994786",
+      "email": "login-1791297243092@test.com",
+      "full_name": "Vikram Malhotra",
+      "password_hash": "32d3d16a60a6f3a2cf4382efd33b60d8cf7c68456c8b5cb368e527258e6360bc8c59167d982069755c29c33a2b90d068ea4f2079457e284d519a34e7f46fcef5",
+      "salt": "68507f783fcaf2d5462532362fa9843c",
+      "role": "traveler",
+      "created_at": "2026-10-06T14:34:03.096Z",
+      "updated_at": "2026-10-06T14:34:03.096Z"
     }
   ],
   "sessions": [
@@ -71,6 +91,30 @@
       "onboarding_completed": true,
       "created_at": "2026-10-05T14:56:58.190Z",
       "updated_at": "2026-10-05T14:56:58.190Z"
+    },
+    {
+      "user_id": "user-muws4mo6-77a75456",
+      "full_name": "Aryan Sharma",
+      "email": "traveler-1791297243065@test.com",
+      "home_currency": "INR",
+      "travel_pace": "moderate",
+      "interests": [],
+      "travel_style": "balanced",
+      "onboarding_completed": false,
+      "created_at": "2026-10-06T14:34:03.073Z",
+      "updated_at": "2026-10-06T14:34:03.073Z"
+    },
+    {
+      "user_id": "user-muws4moo-94994786",
+      "full_name": "Vikram Malhotra",
+      "email": "login-1791297243092@test.com",
+      "home_currency": "INR",
+      "travel_pace": "moderate",
+      "interests": [],
+      "travel_style": "balanced",
+      "onboarding_completed": false,
+      "created_at": "2026-10-06T14:34:03.096Z",
+      "updated_at": "2026-10-06T14:34:03.096Z"
     }
   ],
   "public_profiles": [

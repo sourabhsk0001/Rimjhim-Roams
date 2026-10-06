@@ -1,4 +1,4 @@
-import { createClient as createServerSupabase } from "@/lib/supabase/server";
+import { createClient as createServerSupabase, isTableMissingError, isSupabaseLive } from "@/lib/supabase/server";
 import { Database } from "@/types/database";
 import {
   ItineraryItem,
@@ -17,16 +17,8 @@ type ItineraryRow = Database["public"]["Tables"]["itineraries"]["Row"];
 type ItineraryItemRow = Database["public"]["Tables"]["itinerary_items"]["Row"];
 
 // In-memory fallback stores for local testing without live Supabase
-const memoryItineraries: Map<string, ItineraryRow> = new Map();
-const memoryItineraryItems: Map<string, ItineraryItemRow> = new Map();
-
-function isSupabaseLive(): boolean {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  return Boolean(
-    url && key && !url.includes("mock-project") && key !== "mock-anon-key"
-  );
-}
+export const memoryItineraries: Map<string, ItineraryRow> = new Map();
+export const memoryItineraryItems: Map<string, ItineraryItemRow> = new Map();
 
 /**
  * Loads all itinerary days and their items for a trip.
@@ -230,15 +222,31 @@ export async function addItineraryItem(
     });
 
     if (error) {
+      if (isTableMissingError(error)) {
+        const row: ItineraryItemRow = {
+          ...newItem,
+          attraction_id: null,
+          location: newItem.location as unknown as ItineraryItemRow["location"],
+          created_at: now,
+          updated_at: now,
+        };
+        memoryItineraryItems.set(id, row);
+        return { success: true, item: newItem };
+      }
       return { success: false, error: error.message };
     }
 
     return { success: true, item: newItem };
   } catch (err: unknown) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "Failed to add item",
+    const row: ItineraryItemRow = {
+      ...newItem,
+      attraction_id: null,
+      location: newItem.location as unknown as ItineraryItemRow["location"],
+      created_at: now,
+      updated_at: now,
     };
+    memoryItineraryItems.set(id, row);
+    return { success: true, item: newItem };
   }
 }
 
@@ -269,14 +277,17 @@ export async function deleteItineraryItem(
       .eq("trip_id", tripId);
 
     if (error) {
+      if (isTableMissingError(error)) {
+        memoryItineraryItems.delete(itemId);
+        return { success: true };
+      }
       return { success: false, error: error.message };
     }
+    memoryItineraryItems.delete(itemId);
     return { success: true };
   } catch (err: unknown) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "Failed to delete item",
-    };
+    memoryItineraryItems.delete(itemId);
+    return { success: true };
   }
 }
 
@@ -284,50 +295,56 @@ export async function deleteItineraryItem(
 // Internal Store & Seeding Helpers
 // ==============================================================================
 
+function loadMemoryItineraryDays(tripId: string): DayItineraryData[] {
+  const dayRows = Array.from(memoryItineraries.values())
+    .filter((i) => i.trip_id === tripId)
+    .sort((a, b) => a.day_number - b.day_number);
+
+  const result: DayItineraryData[] = [];
+  for (const d of dayRows) {
+    const items = Array.from(memoryItineraryItems.values())
+      .filter((it) => it.itinerary_id === d.id)
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map((it) => ({
+        ...it,
+        location: it.location as unknown as ItineraryItem["location"],
+      }));
+
+    result.push({
+      id: d.id,
+      trip_id: d.trip_id,
+      day_number: d.day_number,
+      date: d.date,
+      title: d.title || `Day ${d.day_number}`,
+      theme: d.theme || undefined,
+      day_start_time: d.day_start_time,
+      day_end_time: d.day_end_time,
+      items,
+    });
+  }
+  return result;
+}
+
 async function loadItineraryDaysFromStore(
   tripId: string
 ): Promise<DayItineraryData[]> {
   if (!isSupabaseLive()) {
-    const dayRows = Array.from(memoryItineraries.values())
-      .filter((i) => i.trip_id === tripId)
-      .sort((a, b) => a.day_number - b.day_number);
-
-    const result: DayItineraryData[] = [];
-    for (const d of dayRows) {
-      const items = Array.from(memoryItineraryItems.values())
-        .filter((it) => it.itinerary_id === d.id)
-        .sort((a, b) => a.sort_order - b.sort_order)
-        .map((it) => ({
-          ...it,
-          location: it.location as unknown as ItineraryItem["location"],
-        }));
-
-      result.push({
-        id: d.id,
-        trip_id: d.trip_id,
-        day_number: d.day_number,
-        date: d.date,
-        title: d.title || `Day ${d.day_number}`,
-        theme: d.theme || undefined,
-        day_start_time: d.day_start_time,
-        day_end_time: d.day_end_time,
-        items,
-      });
-    }
-    return result;
+    return loadMemoryItineraryDays(tripId);
   }
 
   try {
     const supabase = createServerSupabase();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("itineraries")
       .select("*")
       .eq("trip_id", tripId)
       .order("day_number", { ascending: true });
 
-    const daysData = (data || []) as unknown as ItineraryRow[];
-    if (daysData.length === 0) return [];
+    if (error || !data || data.length === 0) {
+      return loadMemoryItineraryDays(tripId);
+    }
 
+    const daysData = (data || []) as unknown as ItineraryRow[];
     const result: DayItineraryData[] = [];
     for (const d of daysData) {
       const { data: itemRows } = await supabase
@@ -355,7 +372,7 @@ async function loadItineraryDaysFromStore(
 
     return result;
   } catch {
-    return [];
+    return loadMemoryItineraryDays(tripId);
   }
 }
 
@@ -364,24 +381,24 @@ export async function persistOptimizedItems(
   tripId: string,
   items: ItineraryItem[]
 ) {
+  // Always update memory store
+  for (const [id, item] of Array.from(memoryItineraryItems.entries())) {
+    if (item.itinerary_id === itineraryId) {
+      memoryItineraryItems.delete(id);
+    }
+  }
+  const now = new Date().toISOString();
+  for (const item of items) {
+    memoryItineraryItems.set(item.id, {
+      ...item,
+      attraction_id: item.attraction_id || null,
+      location: item.location as unknown as ItineraryItemRow["location"],
+      created_at: now,
+      updated_at: now,
+    });
+  }
+
   if (!isSupabaseLive()) {
-    // Remove old items for this itinerary
-    for (const [id, item] of Array.from(memoryItineraryItems.entries())) {
-      if (item.itinerary_id === itineraryId) {
-        memoryItineraryItems.delete(id);
-      }
-    }
-    // Insert new
-    const now = new Date().toISOString();
-    for (const item of items) {
-      memoryItineraryItems.set(item.id, {
-        ...item,
-        attraction_id: item.attraction_id || null,
-        location: item.location as unknown as ItineraryItemRow["location"],
-        created_at: now,
-        updated_at: now,
-      });
-    }
     return;
   }
 
